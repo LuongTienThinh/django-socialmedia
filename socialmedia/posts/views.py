@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.views.generic import View, CreateView
 from .models import Post
 from .forms import PostForm
@@ -8,26 +8,18 @@ from authentication.models import User
 # Create your views here.
 
 def index(request, page):
-    post_list = Post.objects.all()
+    post_list = Post.objects.all().order_by('-created_at')
     return render(request, 'index.html', {'page': page,'post_list':post_list})
 def home(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.all().order_by('-created_at')
     return render(request, 'index.html',{'post_list':post_list})
 
-# class AddPostView(CreateView):
-#     model = Post
-#     form_class = PostForm
-#     template_name = "upload_post.html"
-#     def form_valid(self, form):
-#         return super().form_valid(form)
-
-#     def get_success_url(self):
-#         return reverse_lazy('upload_post.html')
-
 class AddPostView(View):
-    template_name = 'upload_post.html'
+    
+    template_name = 'index.html'
 
     def get(self, request):
+        post_list = Post.objects.all()
         form = PostForm()  # Tạo một mẫu trống để hiển thị
         return render(request, self.template_name, {'form': form})
 
@@ -40,3 +32,16 @@ class AddPostView(View):
 
             post.save()  # Lưu bài viết vào cơ sở dữ liệu   
         return render(request, self.template_name, {'form': form})
+
+
+def Like_Post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    
+    # Kiểm tra xem người dùng hiện tại đã thích bài viết chưa.
+    if request.user.is_authenticated:
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)  # Nếu đã thích, loại bỏ thích.
+        else:
+            post.likes.add(request.user)  # Nếu chưa thích, thêm thích.
+
+    return redirect('home1')

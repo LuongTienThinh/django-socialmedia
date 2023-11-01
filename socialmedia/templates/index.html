@@ -72,7 +72,7 @@
                                 <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo bài viết {{user.username}}</h1>
                                 <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <form action="{% url 'upload_post' %}" method="post">
+                            <form action="{% url 'upload_post' %}" method="post" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="modal-body">
                                     <div href="" class="user">
@@ -99,12 +99,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer justify-content-between">
-                                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
-                                    <button type="button" class="btn-add-file">
-                                        <i class="fa-solid fa-images"></i>
-                                        <span>Đính kèm</span>
+                                <div class="modal-footer justify-content-lg-center">
+                                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->                          
+                                    <button type="file" class="btn-add-file">
+                                        <i class="fa-solid fa-images">
+                                            <span>Ảnh</span>
+                                        <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
+                                        </i>
                                     </button>
+                                    <button type="file" class="btn-add-file">
+                                        <i class="fa-solid fa-images">
+                                            <span>video</span>
+                                        <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
+                                        </i>
+                                    </button>                                                                 
                                     <button type="submit" class="btn btn-primary btn-upload">Đăng bài</button>
                                 </div>
                             </form>
@@ -236,27 +244,59 @@
                     <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" class="card-img-top" alt="avatar">
                     <div class="author ms-2">
                         <a href="#" class="name">{{ post.user }}</a>
-                        <div class="upload-time">{{ post.created_at }}</div>
+                        <div class="upload-time">{{ post.created_at|timesince }} ago</div>
                     </div>
 
                 </div>
                 <div class="card-body">
                     <div class="post-body mb-3">
-                        {{ post.title }}  <br>
-                        {{ post.content }}
-                    </div>
+                        {{ post.title }}  <br>                        
+                        <a href="{{ post.content }} | #" id="content">{{ post.content }}</a>
+                    </div>                  
+                    <script>
+                        // Lấy phần tử a với id "content"
+                        var linkElement = document.getElementById("content");
+                        
+                        // Kiểm tra xem href có chứa giao thức hay không
+                        if (!linkElement.href.match(/(http:\/\/|https:\/\/|ftp:\/\/)/)) {
+                            // Nếu không có giao thức, hiển thị post.content như đoạn văn bản thông thường
+                            linkElement.removeAttribute("href");
+                            linkElement.style.textDecoration = "none";
+                            linkElement.style.cursor = "default";
+                            // Các xử lí CSS khác nếu cần thiết
+                        }else{
+                            linkElement.style.textDecoration = "underline";
+                        }
+                    </script>
                     {% if post.video %}
                         <div class="file-upload">
                             <video style="width: 100%;" controls>
-                                <source src="{% static 'post.video' %}" type="video/mp4">
+                                <source src="media/{{post.video}}" type="video/mp4">
                             </video>
                         </div>
                     {% endif %}
+                    {% if post.image %}
+                        <div class="file-upload">                            
+                            <img style="width: 100%;" src="media/{{post.image}}" alt="">
+                        </div>
+                    {% endif %}
+                    
                 </div>
                 <div class="count d-flex justify-content-between align-items-center">
                     <div class="react">
-                        <i class="fa-solid fa-thumbs-up"></i>
-                        <span>1.2k</span>
+                        {% if user in post.likes.all %}
+                            <i class="fa-solid fa-thumbs-up" style="color: #0866ff;"></i>
+                            <span> {{ post.total_likes }}</span>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'like_post' post.id %}" class="action-item react">
+                                <i class="fa-solid fa-thumbs-up"></i>
+                                <span>Like</span>
+                                {% if post.total_likes > 0  %}
+                                    <span> {{ post.total_likes }}</span>
+                                {% endif %}
+                            </a>
+                        {% endif %}
                     </div>
                     <div class="d-flex align-items-center">
                         <div class="comment">
@@ -270,10 +310,17 @@
                     </div>
                 </div>
                 <div class="action d-flex justify-content-between align-items-center border-top">
-                    <a href="#" class="action-item react">
-                        <i class="fa-solid fa-thumbs-up"></i>
-                        <span>Like</span>
-                    </a>
+                    {% if user in post.likes.all %}
+                        <a href="{% url 'like_post' post.id %}" class="action-item react" style="color: #0866ff;">
+                            <i class="fa-solid fa-thumbs-up" style="color: #0866ff;"></i>
+                            <span>Liked</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'like_post' post.id %}" class="action-item react">
+                            <i class="fa-solid fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </a>
+                    {% endif %}                    
                     <a href="#" class="action-item comment">
                         <i class="fa-solid fa-message"></i>
                         <span>Comment</span>
