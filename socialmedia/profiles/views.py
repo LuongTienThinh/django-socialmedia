@@ -3,6 +3,8 @@ from django.views.generic import DetailView, CreateView, UpdateView
 from .models import Profile
 from .forms import ProfileForm
 from social.models import Friendship  # Đảm bảo rằng bạn đã import model Friendship
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 class ProfileDetailView(DetailView):
     model = Profile

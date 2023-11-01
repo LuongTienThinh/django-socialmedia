@@ -1,11 +1,12 @@
 # authentication/views.py
 from django.views.generic import CreateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy,reverse
 from django.shortcuts import render
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ChangePasswordForm
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.shortcuts import redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
+from profiles.models import Profile
 
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
