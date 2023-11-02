@@ -19,6 +19,12 @@ header {
     font-size: 2.5rem;
 }
 
+.left-nav .logo img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50% !important;
+}
+
 .left-nav .input-search {
     border-radius: 2rem !important;
     background: var(--bg-light-1);
@@ -716,3 +722,5 @@ ul.func a:hover,
     font-weight: 600;
     margin-bottom: 1rem;
 }
+
+/* Comment  */

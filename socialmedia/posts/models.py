@@ -15,12 +15,25 @@ class Post(models.Model):
 
     def __str__(self) :
         return f'{self.title} | {self.user}'
+    
+    def total_comment(self):
+        return self.comments.count()
+    
 
 class Comment(models.Model):
     content = models.TextField()
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self) :
+        return f'{self.post} | {self.content}'
+    
+class Reply(models.Model):
+    content = models.TextField()
+    comment = models.ForeignKey(Comment, related_name='replies', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 
 class Share(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

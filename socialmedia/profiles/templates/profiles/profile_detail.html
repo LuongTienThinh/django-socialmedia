@@ -4,13 +4,35 @@
 <div class="profile-area p-4">
   <div class="container">
     <div class="profile-detail">
-      <div class="info d-flex justify-content-center align-items-center">
-        <div class="avatar">
-          <img src="{{ object.profile_pic.url }}" alt="">
+      <div class="d-flex justify-content-around align-items-center">
+        <div class="info d-flex justify-content-center align-items-center">
+          <div class="avatar">
+            <img src="{{ object.profile_pic.url }}" alt="">
+          </div>
+          <div class="user">
+            <div class="name fs-3">{{ object.user.username }}</div>
+            <div class="friend fs-5 mt-2">999 bạn bè</div>
+          </div>
         </div>
-        <div class="user">
-          <div class="name fs-3">{{ object.user.username }}</div>
-          <div class="friend fs-5 mt-2">999 bạn bè</div>
+        <div class="add-friend">
+          {% if request.user.id != object.user.id %}
+            {% if not friendship %}
+              <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Send Friend Request</button>
+              </form>
+            {% else %}
+                <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit">Cancel Friend Request</button>
+                </form>
+            {% endif %}
+          {% elif friendship.status == 'pending' and friendship.user2 == request.user %}
+            <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit">Accept Friend Request</button>
+            </form>
+          {% endif %}
         </div>
       </div>
       <hr>
@@ -279,6 +301,7 @@
                 </a>
               </div>
             </div>
+            {% endfor %}
           </div>
         </div>
       </div>

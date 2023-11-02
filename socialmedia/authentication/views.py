@@ -32,6 +32,7 @@ class LoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'authentication/login.html'
     def form_valid(self, form):
+        response = super().form_valid(form)
         user = form.get_user()
         if user.is_authenticated:
             context = {
