@@ -208,7 +208,7 @@ ul.func a:hover,
 
 .card .count,
 .card .action {
-    margin: 0 2rem;
+    margin: 0 1rem;
 }
 
 /* Post detail */
@@ -234,7 +234,7 @@ ul.func a:hover,
 }
 
 .post-detail .count {
-    padding: .5rem 0;
+    padding: .5rem 1rem;
 }
 
 .post-detail .action .action-item {
@@ -724,3 +724,30 @@ ul.func a:hover,
 }
 
 /* Comment  */
+.comment-form {
+    border-top: 1px solid var(--border-color-1) !important;
+    padding: 1rem 0;
+    margin: 0 1rem;
+}
+.post-comment input.content {
+    width: calc(100% - 100px);
+}
+
+.comment-content {
+    border: none !important;
+    margin: .25rem;
+    padding: .5rem;
+}
+
+.comment-content .author {
+    background-color: #f0f2f5;
+    width: fit-content;
+    border-radius: 25px; 
+    margin-left: 1rem;
+    padding: .5rem 1rem;
+}
+
+.comment-content .author .name {
+    margin-bottom: .5rem;
+    display: block;
+}

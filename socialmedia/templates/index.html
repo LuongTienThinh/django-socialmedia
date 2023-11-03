@@ -175,11 +175,11 @@
             <div class="action d-flex justify-content-between align-items-center border-top">
                 <a href="#" class="action-item react">
                     <i class="fa-solid fa-thumbs-up"></i>
-                    <span>Like</span>
+                    <span>Thích</span>
                 </a>
                 <a href="#" class="action-item comment">
                     <i class="fa-solid fa-message"></i>
-                    <span>Comment</span>
+                    <span>Bình luận</span>
                 </a>
                 <a href="#" class="action-item share">
                     <i class="fa-solid fa-share"></i>
@@ -226,11 +226,11 @@
             <div class="action d-flex justify-content-between align-items-center border-top">
                 <a href="#" class="action-item react">
                     <i class="fa-solid fa-thumbs-up"></i>
-                    <span>Like</span>
+                    <span>Thích</span>
                 </a>
                 <a href="#" class="action-item comment">
                     <i class="fa-solid fa-message"></i>
-                    <span>Comment</span>
+                    <span>Bình luận</span>
                 </a>
                 <a href="#" class="action-item share">
                     <i class="fa-solid fa-share"></i>
@@ -295,7 +295,6 @@
                             <span> {{ post.total_likes }}</span>
                         {% else %}
                                 <i class="fa-solid fa-thumbs-up"></i>
-                                <span>Like</span>
                                 {% if post.total_likes > 0 %}
                                     <span> {{ post.total_likes }}</span>
                                 {% endif %}
@@ -314,22 +313,14 @@
                 </div>
                 <div class="action d-flex justify-content-between align-items-center border-top">
                     <!-- like -->
-                    {% if user in post.likes.all %}
-                        <a href="{% url 'like_post' post.id %}" class="action-item react like-button" style="color: #0866ff;">
-                            <i class="fa-solid fa-thumbs-up" style="color: #0866ff;"></i>
-                            <span>Liked</span>
-                        </a>
-                    {% else %}
-                        <a href="{% url 'like_post' post.id %}" class="action-item react like-button">
-                            <i class="fa-solid fa-thumbs-up"></i>
-                            <span>Like</span>
-                        </a>
-                    {% endif %}         
-                                                         
+                    <a href="{% url 'like_post' post.id %}" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %}>
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>Thích</span>
+                    </a>    
                      <!-- comment button-->
                     <a href="#commentpost{{post.id}}"  class="action-item comment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         <i class="fa-solid fa-message"></i>
-                        <span>Comment</span>
+                        <span>Bình luận</span>
                     </a>
                     <!-- share -->
                     <a href="#" class="action-item share">
@@ -338,115 +329,109 @@
                     </a>
                 </div>
                 <!-- comment form -->
-                <div class="collapse" id="commentpost{{post.id}}">
-                    <hr>   
+                <div class="collapse comment-form" id="commentpost{{post.id}}">
                     <div class="form-group">
-                        <form method="post" action="{% url 'add_comment' post.id %}"> 
+                        <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment"> 
                             {% csrf_token %}
-                            <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
-                                <input name="content" class="w-100 rounded-pill"  placeholder="Type your comment" required id="id_body">
-                                <input type="hidden" name="parent_id" value="None">                          
-                                <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                            <div class="d-flex justify-content-between px-2">
+                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                                <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
+                                <button class="btn btn-send d-flex align-items-center justify-content-center"><i class="fa-solid fa-paper-plane fa-beat"></i></button>
                             </div>
                         </form>        
                       </div>
                   </div>
 
                 <!-- View All comment -->
-                {% for comment in post.comments.all %}
-                    <div class="comment-content border m-1 p-3" style="background-color: #f0f2f5; width: fit-content; border-radius: 25px;">
-                        <div class="d-flex align-items-center">
+                <div class="comment-root">
+                    {% for comment in post.comments.all %}
+                    <div class="comment-content border">
+                        <div class="d-flex align-items-start">
                             <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                            <div class="author ms-1">
+                            <div class="author">
                                 <a href="#" class="name">{{ comment.user.username }}</a>
-                            </div>    
-                        </div>                  
+                                <!-- comment view -->
+                                <p class="">
+                                    {{ comment.content }}
+                                    {% if user == comment.user %}
+                                    <a href="{% url 'delete_comment' comment.id %}" class="text-danger">(delete) </a>-
+                                    <a href="#comment{{comment.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
+                                    <a href="#reply{{comment.id}}" class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false">(reply)</a>
 
-                        
-                        <!-- comment view -->
-                        <p class="m-1">
-                            {{ comment.content }}
-                            {% if user == comment.user %}
-                            <a href="{% url 'delete_comment' comment.id %}" class="text-danger">(delete) </a>-
-                            <a href="#comment{{comment.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
-                            <a href="#reply{{comment.id}}" class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false">(reply) </a>                            
-
-                            <!-- edit comment form -->
-                            <div class="collapse" id="comment{{comment.id}}">
-                                <hr>   
-                                <div class="form-group">
-                                    <form method="post" action="{% url 'edit_comment' comment.id %}"> 
-                                        {% csrf_token %}
-                                        <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                            <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
-                                            <input name="content" class="w-100 rounded-pill"  placeholder="Type your content" value="{{comment.content}}" required id="id_body">
-                                            <input type="hidden" name="parent_id" value="None">                          
-                                            <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                    <!-- edit comment form -->
+                                    <div class="collapse" id="comment{{comment.id}}">
+                                        <hr>   
+                                        <div class="form-group">
+                                            <form method="post" action="{% url 'edit_comment' comment.id %}">
+                                                {% csrf_token %}
+                                                <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
+                                                    <input name="content" class="ms-2 w-100 rounded-pill" value="{{comment.content}}" required id="id_body">
+                                                    <input type="hidden" name="parent_id" value="None">
+                                                    <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                </div>
+                                            </form>
                                         </div>
-                                    </form>        
                                     </div>
-                                </div>
-                            {% endif %}
-                        </p>                           
+                                    {% endif %}
+                                </p>
+                            </div>    
+                        </div>
 
                         <!-- reply comment form -->
                         <div class="collapse" id="reply{{comment.id}}">
                             <hr>   
                             <div class="form-group">
-                                <form method="post" action="{% url 'add_reply' comment.id %}"> 
+                                <form method="post" action="{% url 'add_reply' comment.id %}" class="post-comment"> 
                                     {% csrf_token %}
-                                    <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                    <div class="d-flex justify-content-between px-2">
                                         <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
-                                        <input name="content" class="w-100 rounded-pill"  placeholder="Type your reply" required id="id_body">
-                                        <input type="hidden" name="parent_id" value="None">                          
+                                        <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
                                         <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
                                     </div>
                                 </form>        
                             </div>
                         </div>
-
-                        
                     </div>
-                    
-                    <!-- view all reply comment -->
+                        <!-- view all reply comment -->
                         {% for reply in comment.replies.all %}
-                            <div class="ms-5 comment-content border m-1 p-3" style="background-color: #f0f2f5; width: fit-content; border-radius: 25px;">
-                                <div class="d-flex align-items-center">
-                                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                                    <div class="author ms-1">
-                                        <a href="#" class="name">{{ reply.user.username }}</a>
-                                    </div>    
-                                </div>                 
-                                
-                                <!-- comment view -->
-                                <p class="m-1">
-                                    {{ reply.content }}
-                                    {% if user == reply.user %}
-                                    <a href="{% url 'delete_reply' reply.id %}" class="text-danger">(delete) </a>-
-                                    <a href="#comment{{reply.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
+                        <div class="ms-5 comment-content border">
+                            <div class="d-flex align-items-center">
+                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                                <div class="author">
+                                    <a href="#" class="name">{{ reply.user.username }}</a>
+                                    <!-- comment view -->
+                                    <p class="">
+                                        {{ reply.content }}
+                                        {% if user == reply.user %}
+                                        <a href="{% url 'delete_reply' reply.id %}" class="text-danger">(delete) </a>-
+                                        <a href="#comment{{reply.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
 
-                                    <!-- edit comment form -->
-                                    <div class="collapse" id="comment{{reply.id}}">
-                                        <hr>   
-                                        <div class="form-group">
-                                            <form method="post" action="{% url 'edit_reply' reply.id %}"> 
-                                                {% csrf_token %}
-                                                <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
-                                                    <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
-                                                    <input type="hidden" name="parent_id" value="None">                          
-                                                    <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
-                                                </div>
-                                            </form>        
+                                        <!-- edit comment form -->
+                                        <div class="collapse" id="comment{{reply.id}}">
+                                            <hr>   
+                                            <div class="form-group">
+                                                <form method="post" action="{% url 'edit_reply' reply.id %}"> 
+                                                    {% csrf_token %}
+                                                    <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                        <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
+                                                        <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
+                                                        <input type="hidden" name="parent_id" value="None">                          
+                                                        <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                    </div>
+                                                </form>        
                                             </div>
                                         </div>
-                                    {% endif %}
-                                </p>                         
-                               
-                            </div>
+                                        {% endif %}
+                                    </p>
+                                </div>    
+                            </div>                 
+                            
+                            
+                        </div>
                         {% endfor %}
-                {% endfor %}
+                    {% endfor %}
+                </div>
 
             </div>
         {% endfor %}
