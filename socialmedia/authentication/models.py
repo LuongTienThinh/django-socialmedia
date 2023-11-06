@@ -19,3 +19,4 @@ class User(AbstractUser):
         related_name="custom_user_set",
         related_query_name="user",
     )
+

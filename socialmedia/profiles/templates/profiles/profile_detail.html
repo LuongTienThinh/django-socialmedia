@@ -11,28 +11,35 @@
           </div>
           <div class="user">
             <div class="name fs-3">{{ object.user.username }}</div>
-            <div class="friend fs-5 mt-2">999 bạn bè</div>
+            <div class="friend fs-5 mt-2">{{ num_friends }} bạn bè</div>
           </div>
         </div>
         <div class="add-friend">
-          {% if request.user.id != object.user.id %}
-            {% if not friendship %}
-              <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Send Friend Request</button>
-              </form>
-            {% else %}
-                <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
-                  {% csrf_token %}
-                  <button type="submit">Cancel Friend Request</button>
-                </form>
-            {% endif %}
-          {% elif friendship.status == 'pending' and friendship.user2 == request.user %}
-            <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
-              {% csrf_token %}
-              <button type="submit">Accept Friend Request</button>
-            </form>
-          {% endif %}
+           <p>Bio: {{ object.bio }}</p>
+     {% if friendship %}
+        <h2>Friendship Information</h2>
+        <p>User1: {{ friendship.user1.username }}</p>
+        <p>User2: {{ friendship.user2.username }}</p>
+        <p>Created at: {{ friendship.created_at }}</p>
+        <p>Created at: {{ friendship.status }}</p>
+      {% else %}
+        <p>No Friendship record found.</p>
+      {% endif %}
+        <p>Friendship: {{ friendship }}</p>
+    
+      {% if request.user.id != object.user.id %}
+        {% if not friendship %}
+          <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Send Friend Request</button>
+          </form>
+        {% endif %}
+        {% elif friendship.status == 'pending' and friendship.user2 == request.user %}
+          <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Accept Friend Request</button>
+          </form>
+        {% endif %}
         </div>
       </div>
       <hr>
@@ -69,66 +76,21 @@
             <div class="friend">
               <div class="title d-flex justify-content-between align-items-center">
                 <span>Bạn bè</span>
-                <span class="fs-6">999 người bạn</span>
+                <span class="fs-6"> {{ num_friends }} người bạn</span>                  
               </div>
-              <ul class="detail d-flex justify-content-between align-items-center flex-wrap gap-3">
+              <ul class="detail d-flex justify-content-start align-items-center flex-wrap gap-3">
+                {% for friend in friends %}
                 <li>
                   <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
+                    <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                    <div class="name">{{ friend.username }}</div>
                   </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
-                <li>
-                  <a href="">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                </li>
+                </li>                                  
+                {% endfor %}
               </ul>
             </div>
           </div>
+
           <div class="right-profile">
             <div class="card upload-post mt-0">
               <div class="card-top d-flex align-items-center justify-content-between">
@@ -338,30 +300,12 @@
             </ul>
             <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
+                {% for friend in friends %}                  
+                  <a href="" class="friend-list-item d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                    <div class="name">{{ friend.username }}</div>                  
+                  </a>
+                {% endfor %}                
               </div>
             </div>
             <div class="accordion-collapse collapse friend-tab-detail" id="inviteFriend" data-bs-parent="#friend-tab">
@@ -436,7 +380,7 @@
           <div class="friend-card">
             <div class="title d-flex justify-content-between align-items-center">
               <span>Bạn bè</span>
-              <span class="fs-6">999 người bạn</span>
+              <span class="fs-6">{{ num_friends }} người bạn</span>
             </div>
             <ul class="accordion friend-tab d-flex align-items-center" id="friend-tab">
               <li class="accordion-item friend-tab-item">
@@ -452,30 +396,12 @@
             </ul>
             <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
-                <a href="" class="friend-list-item d-flex align-items-center">
-                  <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                  <div class="name">Lương Tiến Thịnh</div>
-                </a>
+                {% for friend in friends %}                  
+                  <a href="" class="friend-list-item d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                    <div class="name">{{ friend.username }}</div>                  
+                  </a>
+                {% endfor %}                   
               </div>
             </div>
             <div class="accordion-collapse collapse friend-tab-detail" id="inviteFriend" data-bs-parent="#friend-tab">

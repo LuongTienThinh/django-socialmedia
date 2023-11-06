@@ -2,8 +2,8 @@ from django.db import models
 from authentication.models import User
 
 class Post(models.Model):
-    title = models.TextField()
-    content = models.TextField()
+    title = models.TextField(blank=True)
+    content = models.TextField(blank=True)
     image = models.ImageField(upload_to='posts/images/', blank=True, null=True)
     video = models.FileField(upload_to='posts/videos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -17,7 +17,7 @@ class Post(models.Model):
         return f'{self.title} | {self.user}'
     
     def total_comment(self):
-        return self.comments.count()
+        return Comment.objects.filter(post=self).count() + Reply.objects.filter(comment__post=self).count()
     
 
 class Comment(models.Model):

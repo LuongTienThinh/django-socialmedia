@@ -2,9 +2,11 @@
 from django.views.generic import DetailView, CreateView, UpdateView
 from .models import Profile
 from .forms import ProfileForm
-from social.models import Friendship  # Đảm bảo rằng bạn đã import model Friendship
+from social.models import Friendship  
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.db.models import Q
+from authentication.models import User
+from posts.models import Post
 
 class ProfileDetailView(DetailView):
     model = Profile
@@ -20,9 +22,21 @@ class ProfileDetailView(DetailView):
         user1=self.object.user, user2=self.request.user
         ).first()
 
+        # Lấy danh sách bạn bè
+        friends = Friendship.objects.filter( user1=self.request.user, user2=self.object.user,status = 'Friends')
+        friends = User.objects.filter(
+            Q(friendships1__user2=self.object.user, friendships1__status='friends') |
+            Q(friendships2__user1=self.object.user, friendships2__status='friends')
+        ).distinct()[:6]
+        num_friends = friends.count()
+        post_list = Post.objects.filter(user=self.object.user).order_by('-created_at')
+
         context['friendship'] = friendship
+        context['friends'] = friends
+        context['num_friends'] = num_friends
+        context['post_list'] = post_list
         print(friendship)
-        return context
+        return context  
 
 
 class ProfileCreateView(CreateView):

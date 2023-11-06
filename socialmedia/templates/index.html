@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-
 <div class="content-area d-flex justify-content-between p-4">
     <div class="left-content">
         <ul class="func">
@@ -29,30 +28,15 @@
         <div class="shortcuts">
             <div class="title">Lối tắt của bạn</div>
             <ul>
+                {% for group in group_list %}        
                 <li>
-                    <a href="" class="shortcut-item">
+                    <a href="{% url 'group_posts' group.id %}" class="shortcut-item">
                         <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
-                        <span>Nhóm lập trình django</span>
+                        <span>{{ group.name }}</span>
                     </a>
-                </li>
-                <li>
-                    <a href="" class="shortcut-item">
-                        <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t39.30808-6/372631787_820615329434925_3104301065940049129_n.jpg?_nc_cat=1&ccb=1-7&_nc_sid=5f2048&_nc_ohc=cXuftT3mxiIAX_1lrSv&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfCQLb23Q0SI9d2nu0aBYh7aZJwk_hZWzeEV_XPaB_3FaQ&oe=653FA8E4" class="card-img" alt="avatar">
-                        <span>League of Legends</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="shortcut-item">
-                        <img src="https://scontent.fsgn5-11.fna.fbcdn.net/v/t39.30808-1/332765353_1251045782165736_662750591303582040_n.jpg?stp=dst-jpg_p320x320&_nc_cat=110&ccb=1-7&_nc_sid=5f2048&_nc_ohc=LVI5On4bzgkAX-i67k8&_nc_ht=scontent.fsgn5-11.fna&oh=00_AfBCehtwA7YCfBz9c3jMXoMA_2RgAk5-Ygdm6n1I1Nf02Q&oe=653F8E80" class="card-img" alt="avatar">
-                        <span>Garena Esport FO4 VN</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="shortcut-item">
-                        <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-6/301962485_751587722861858_878365837081963762_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=QSqUD6gHMHcAX91Sruq&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfAx3-DNnpCfQnsD5jZlfI7n25Xj4y1geoZn8_O5ByYn2Q&oe=65403036" class="card-img" alt="avatar">
-                        <span>Khoa Công nghệ thông tin - CĐ Công nghệ Thủ Đức</span>
-                    </a>
-                </li>
+                </li>                
+                {% endfor %}
+            
             </ul>
         </div>
     </div>
@@ -95,7 +79,7 @@
                                     <div class="post-body mt-4">
                                         <div class="custom-scrollbar w-100">
                                             <h3 class="post-title m-auto"><input type="text" name="title" placeholder="Nhập title"></h3>
-                                            <textarea id="textarea-post" cols="30" rows="10" name="content" placeholder="Tiến Thịnh ơi, bạn đang nghĩ gì?"></textarea>
+                                            <textarea id="textarea-post" cols="30" rows="10" name="content" placeholder="{{ user.username }} ơi, bạn đang nghĩ gì?"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -289,17 +273,20 @@
                     
                 </div>
                 <div class="count d-flex justify-content-between align-items-center">
-                    <div class="react">
-                        {% if user in post.likes.all %}
-                            <i class="fa-solid fa-thumbs-up" style="color: #0866ff;"></i>
-                            <span> {{ post.total_likes }}</span>
-                        {% else %}
-                                <i class="fa-solid fa-thumbs-up"></i>
-                                {% if post.total_likes > 0 %}
-                                    <span> {{ post.total_likes }}</span>
-                                {% endif %}
-                        {% endif %}
-                    </div>
+                    <form>
+                        {% csrf_token %}
+                        <div class="react">
+                            {% if user in post.likes.all %}
+                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
+                            {% else %}
+                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                            {% endif %}
+
+                            <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
+                        </div>
+                    </form>
+
+                    
                     <div class="d-flex align-items-center">
                         <div class="comment">
                             <span>{{ post.total_comment }}</span>
@@ -313,15 +300,17 @@
                 </div>
                 <div class="action d-flex justify-content-between align-items-center border-top">
                     <!-- like -->
-                    <a href="{% url 'like_post' post.id %}" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %}>
+                    <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
                         <i class="fa-solid fa-thumbs-up"></i>
                         <span>Thích</span>
-                    </a>    
+                    </a>                    
+                    
                      <!-- comment button-->
                     <a href="#commentpost{{post.id}}"  class="action-item comment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                         <i class="fa-solid fa-message"></i>
                         <span>Bình luận</span>
                     </a>
+                    
                     <!-- share -->
                     <a href="#" class="action-item share">
                         <i class="fa-solid fa-share"></i>
@@ -331,7 +320,7 @@
                 <!-- comment form -->
                 <div class="collapse comment-form" id="commentpost{{post.id}}">
                     <div class="form-group">
-                        <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment"> 
+                        <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment" data-post-id="{{ post.id }}"> 
                             {% csrf_token %}
                             <div class="d-flex justify-content-between px-2">
                                 <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
@@ -354,9 +343,10 @@
                                 <p class="">
                                     {{ comment.content }}
                                     {% if user == comment.user %}
-                                    <a href="{% url 'delete_comment' comment.id %}" class="text-danger">(delete) </a>-
-                                    <a href="#comment{{comment.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
-                                    <a href="#reply{{comment.id}}" class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false">(reply)</a>
+                                        <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button text-danger">(delete) </a>-
+                                        <a href="#comment{{comment.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
+                                    {% endif %}
+                                        <a href="#reply{{comment.id}}" class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false">(reply)</a>
 
                                     <!-- edit comment form -->
                                     <div class="collapse" id="comment{{comment.id}}">
@@ -373,16 +363,14 @@
                                             </form>
                                         </div>
                                     </div>
-                                    {% endif %}
                                 </p>
                             </div>    
                         </div>
-
                         <!-- reply comment form -->
                         <div class="collapse" id="reply{{comment.id}}">
                             <hr>   
                             <div class="form-group">
-                                <form method="post" action="{% url 'add_reply' comment.id %}" class="post-comment"> 
+                                <form method="post" action="{% url 'add_reply' comment.id %}" class="post-reply-comment"> 
                                     {% csrf_token %}
                                     <div class="d-flex justify-content-between px-2">
                                         <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
@@ -393,6 +381,7 @@
                             </div>
                         </div>
                     </div>
+
                         <!-- view all reply comment -->
                         {% for reply in comment.replies.all %}
                         <div class="ms-5 comment-content border">
@@ -430,6 +419,9 @@
                             
                         </div>
                         {% endfor %}
+                        
+                        <div class="comment-content border comment-add mt-1 mb-1"></div>
+
                     {% endfor %}
                 </div>
 

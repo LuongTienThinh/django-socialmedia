@@ -1,5 +1,5 @@
 # authentication/views.py
-from django.views.generic import CreateView
+from django.views.generic import CreateView ,DetailView
 from django.urls import reverse_lazy,reverse
 from django.shortcuts import render
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ChangePasswordForm
@@ -38,7 +38,7 @@ class LoginView(LoginView):
             context = {
                 'user': user,
             }            
-            return render(self.request, 'index.html', context)        
+            return redirect('home', page='home')  
         return super().form_valid(form)
 
 class CustomPasswordChangeView(PasswordChangeView):

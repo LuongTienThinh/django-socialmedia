@@ -2,17 +2,27 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
 from .models import Post, Comment, Reply
 from .forms import PostForm, CommentForm, ReplyForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from authentication.models import User
-
+from social.models import Group, GroupPost
+from django.db.models import Q
 # Create your views here.
 
 def index(request, page):
-    post_list = Post.objects.all().order_by('-created_at')    
-    return render(request, 'index.html', {'page': page,'post_list':post_list})
-def home(request):
-    post_list = Post.objects.all().order_by('-created_at')
-    return render(request, 'index.html',{'post_list':post_list})
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
+    num_friends = friends.count()
+    post_list = Post.objects.all().order_by('-created_at') 
+    group_list = request.user.custom_groups.all()
+    group_post = GroupPost.objects.all()
+    if page == 'home':
+        return render(request, 'index.html', {'page': page,'post_list':post_list, 'group_list':group_list})
+    elif page == 'friend':
+        return render(request, 'friends.html', {'page': page, 'post_list':post_list, 'friends':friends, 'num_friends':num_friends})
+    else:
+        return render(request, 'groups.html', {'page': page, 'post_list':post_list, 'group_list':group_list, 'group_post':group_post })
 
 class AddPostView(View):
     
@@ -35,6 +45,8 @@ class AddPostView(View):
 
 # Comment
 
+
+
 class AddCommentView(View):
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
@@ -45,18 +57,36 @@ class AddCommentView(View):
             comment.post = post
             comment.user = request.user
             comment.save()  
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-        return redirect('home1')
+            # Trả về phản hồi JSON với thông tin comment mới (nếu cần)
+            response_data = {
+                'comment_id': comment.id,
+                'content': comment.content,
+                'user': comment.user.username,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            return JsonResponse(response_data)
+
+        return JsonResponse({'error': 'Invalid form data'})
     
 class DeleteCommentView(View):
+    def post(self, request, comment_id):
+        comment = Comment.objects.get(pk=comment_id)
+
+        if request.user == comment.user:
+            comment.delete()
+
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
     def get(self, request, comment_id):
         comment = Comment.objects.get(pk=comment_id)
 
         if request.user == comment.user:
             comment.delete()
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+
 
 class EditCommentView(View):
     def post(self, request, comment_id):
@@ -67,9 +97,14 @@ class EditCommentView(View):
 
             if form.is_valid():
                 form.save()
-            return redirect('home1')
-        else:
-            return redirect('home1')
+                response_data = {
+                'comment_id': comment.id,
+                'content': comment.content,
+                'user': comment.user.username,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            return JsonResponse(response_data)
+        return JsonResponse({'message': 'Permission denied'}, status=403)
         
 # Reply
 
@@ -112,6 +147,7 @@ class AddReplyView(View):
 
 def Like_Post(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
+    liked = False
     
     # Kiểm tra xem người dùng hiện tại đã thích bài viết chưa.
     if request.user.is_authenticated:
@@ -119,5 +155,11 @@ def Like_Post(request, post_id):
             post.likes.remove(request.user)  # Nếu đã thích, loại bỏ thích.
         else:
             post.likes.add(request.user)  # Nếu chưa thích, thêm thích.
-            
-    return redirect('home1')
+            liked = True
+    
+    response_data = {
+        'liked': liked,
+        'total_likes': post.likes.count()
+    }
+    
+    return JsonResponse(response_data)
