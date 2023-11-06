@@ -434,8 +434,32 @@ ul.func a:hover,
 }
 
 .modal-footer .btn-add-file {
-    width: 35%;
+    width: 30%;
+}
+
+.modal-footer .btn-add-file li {
+    position: relative;
+    margin: 0 .5rem;
+}
+
+.modal-footer .btn-add-file li:hover {
     background-color: var(--bg-light-1);
+    border-radius: var(--border-radius-2);
+}
+
+.modal-footer .btn-add-file label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: text;
+    width: 100%;
+    text-align: center;
+}
+
+.modal-footer .btn-add-file input {
+    opacity: 0;
+    padding: .5rem;
 }
 
 .modal-footer .btn-upload {
