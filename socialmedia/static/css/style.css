@@ -314,10 +314,48 @@ ul.func a:hover,
     color: var(--dark);
 }
 
+/* notifycation */
+.right-nav .notifycation .dropdown-menu {
+    padding: 1rem;
+    border-radius: var(--border-radius-2);
+    min-width: 25rem;
+}
+
+.notifycation .action {
+    display: flex;
+    justify-content: center;
+}
+
+.notifycation .action button {
+    font-size: .9rem;
+    min-width: 120px;
+}
+
+.notifycation .action button.accept {
+    background-color: var(--primary-1);
+    color: var(--light);
+    border-radius: 15px !important
+}
+
+.notifycation .action button.reject {
+    background-color: var(--bg-light-3);
+    color: var(--dark);
+    border-radius: 15px !important
+
+}
+.notifycation .item {
+    padding: .5rem;
+
+}
+.notifycation .item:hover{
+    background-color: var(--color-dark-1);
+}
+
+
 /* Contact */
 .contact .title {
     color: var(--color-light-4);
-    font-weight: 600;
+    font-weight: 550;
     font-size: 1.2rem;
     margin-bottom: 1rem;
 }

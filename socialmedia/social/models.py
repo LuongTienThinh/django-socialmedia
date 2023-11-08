@@ -24,7 +24,7 @@ class Group(models.Model):
     description = models.CharField(max_length=255,blank=True)
     image = models.ImageField(upload_to='group_pic/images/', blank=True, null=True)
     members = models.ManyToManyField(User, related_name='custom_groups', through='GroupMembership')
-    # creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_groups', null=True, blank=True )
 
     def __str__(self):
         return f"{self.name}"
@@ -32,10 +32,14 @@ class Group(models.Model):
 class GroupMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=[('requested', 'Requested'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='requested')
+    is_creator = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user} | {self.group}"
+
+
 
 class GroupPost(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -50,6 +54,18 @@ class GroupPost(models.Model):
     def __str__(self):
         return f"{self.author} - {self.group}"
     
+class MessageGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE) 
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=[('requested', 'Requested'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='requested')
+    post = models.ForeignKey(
+    GroupPost, 
+    on_delete=models.CASCADE,
+    null=True,
+    blank=True
+  )
+
 class JoinRequest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)

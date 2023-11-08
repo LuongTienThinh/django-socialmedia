@@ -38,7 +38,7 @@ class LoginView(LoginView):
             context = {
                 'user': user,
             }            
-            return redirect('home', page='home')  
+            return redirect('home')  
         return super().form_valid(form)
 
 class CustomPasswordChangeView(PasswordChangeView):

@@ -1,16 +1,19 @@
 from django.views.generic import CreateView, UpdateView, DeleteView,DetailView
 from django.urls import reverse_lazy
-from .models import Friendship, Group, GroupPost, GroupMembership, JoinRequest
+from .models import Friendship, Group, GroupPost, GroupMembership,  MessageGroup
 from .forms import FriendshipForm, GroupForm, GroupPostForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404, HttpResponseRedirect
 from profiles.models import Profile
 from django.db import models
+from django.db.models import Q
+from posts.models import Post
 
 
 User = get_user_model()
 # views.py
+
 class SendFriendRequestView(CreateView):
     model = Friendship
     form_class = FriendshipForm
@@ -101,9 +104,9 @@ class CreateGroup(CreateView):
         form = GroupForm(request.POST, request.FILES)  # Truyền dữ liệu từ POST và FILES vào mẫu
         if form.is_valid():
             group = form.save()  # Lưu nhóm vào cơ sở dữ liệu
-            # group.creator = self.request.user
-            GroupMembership.objects.create(user=self.request.user, group=group)
-            return redirect('group_posts', group_id=group.id)  # Chuyển hướng đến trang bài viết của nhóm vừa tạo
+            group.creator = self.request.user
+            GroupMembership.objects.create(user=self.request.user, group=group, creator=self.request.user)
+            return redirect('social:group_posts', group_id=group.id)  # Chuyển hướng đến trang bài viết của nhóm vừa tạo
 
         return render(request, self.template_name, {'form': form})
 
@@ -119,11 +122,19 @@ class CreateGroupPostView(CreateView):
         post.group = group
         post.author = self.request.user
         post.save()
+
+        message = MessageGroup.objects.create(
+            group=group,
+            user=self.request.user,
+            message=f"Đã thêm bài viết mới: {post.title}",
+            post=post
+        )
+
         return super().form_valid(form)
     
     def get_success_url(self):
         group_id = self.kwargs.get('group_id')
-        return reverse_lazy('group_posts', args=[group_id])
+        return reverse_lazy('social:group_posts', args=[group_id])
 
 def Group_Posts(request, group_id):
     # Lấy thông tin nhóm dựa trên group_id
@@ -134,29 +145,62 @@ def Group_Posts(request, group_id):
 
     group_list = request.user.custom_groups.all()
     
+    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').all()
+    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
+    groups_not_joined = Group.objects.exclude(
+    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
+)
+    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+
     context = {
         'group': group,
         'posts': posts,
-        'group_list':group_list
+        'group_list':groups_joined,
+        'groups_not_joined':groups_not_joined,
+        'is_member':is_member,
+        'status':status
     }
     
     return render(request, 'group_posts.html', context)
+    
+class ManageGroupMembershipView(CreateView):
+    def post(self, request, group_id, user_id, action):
+        group = get_object_or_404(Group, id=group_id)
+        user = get_object_or_404(User, id=user_id)
+        if request.user == group.creator:
+            membership = GroupMembership.objects.get(user=user, group=group)
+            if action == 'approve':
+                membership.status = 'approved'
+            elif action == 'reject':
+                membership.status = 'rejected'
+            membership.save()
+        return redirect('social:group_posts', group_id=group.id)
 
 class JoinGroupView(CreateView):
     def get(self, request, group_id):
-        group = Group.objects.get(id=group_id)
-        # Kiểm tra xem người dùng đã gửi yêu cầu trước đó chưa
-        request_sent = JoinRequest.objects.filter(user=request.user, group=group, is_approved=False).exists()
-        if not request_sent:
-            join_request = JoinRequest(user=request.user, group=group)
-            join_request.save()
-        return redirect('group-detail', group_id=group_id)
+        group = get_object_or_404(Group, id=group_id)
+        membership, created = GroupMembership.objects.get_or_create(user=request.user, group=group)
+        message = f"{request.user.username} đã yêu cầu tham gia nhóm {group.name}"
+        MessageGroup.objects.create(user=request.user, group=group, message=message)
+        if created:
+            membership.status = 'requested'
+            membership.save()
+        
+        # Kiểm tra xem người dùng hiện tại có phải là người tạo nhóm hay không
+        if request.user == group.creator:
+            return redirect('social:membership-requests', group_id=group.id)
+        else:
+            # Lựa chọn một URL bạn muốn chuyển hướng người dùng trong trường hợp người tạo nhóm không thấy thông báo.
+            # Ví dụ: return redirect('social:group_posts', group_id=group.id)
+            return redirect('social:group_posts', group_id=group_id) 
     
-class ApproveJoinRequestView(CreateView):
-    def get(self, request, request_id):
-        join_request = JoinRequest.objects.get(id=request_id)
-        # Kiểm tra xem người đăng nhập có quyền phê duyệt yêu cầu không (là người tạo nhóm)
-        if join_request.group.creator == request.user:
-            join_request.is_approved = True
-            join_request.save()
-        return redirect('group-detail', group_id=join_request.group.id)
+class LeaveGroupView(CreateView):
+    def get(self, request, group_id):
+        try:
+            membership = GroupMembership.objects.get(user=request.user, group_id=group_id)
+            membership.delete()  # Xóa mối quan hệ của người dùng với nhóm
+        except GroupMembership.DoesNotExist:
+            pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
+
+        return redirect('social:group_posts', group_id=group_id) 

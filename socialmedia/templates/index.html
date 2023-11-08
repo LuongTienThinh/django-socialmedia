@@ -30,14 +30,29 @@
             <ul>
                 {% for group in group_list %}        
                 <li>
-                    <a href="{% url 'group_posts' group.id %}" class="shortcut-item">
+                    <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
                         <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
                         <span>{{ group.name }}</span>
                     </a>
                 </li>                
                 {% endfor %}
             
-            </ul>
+            </ul>            
+        </div>
+        <hr>
+        <div class="shortcuts">
+            <div class="title">Nhóm gợi ý</div>
+            <ul>
+                {% for group in groups_not_joined %}        
+                <li>
+                    <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
+                        <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
+                        <span>{{ group.name }}</span>
+                    </a>
+                </li>                
+                {% endfor %}
+            
+            </ul>            
         </div>
     </div>
     <div class="main-content">
@@ -261,13 +276,13 @@
                     {% if post.video %}
                         <div class="file-upload">
                             <video style="width: 100%;" controls>
-                                <source src="media/{{post.video}}" type="video/mp4">
+                                <source src="{{ post.video.url }}" type="video/mp4">
                             </video>
                         </div>
                     {% endif %}
                     {% if post.image %}
                         <div class="file-upload">                            
-                            <img style="width: 100%;" src="media/{{post.image}}" alt="">
+                            <img style="width: 100%;" src="{{ post.image.url }}" alt="">
                         </div>
                     {% endif %}
                     
