@@ -1,4 +1,5 @@
-{% extends "base_generic.html" %}
+{% extends 'base_generic.html' %}
+{% load static %}
 
 {% block content %}
 <div class="profile-area p-4">
@@ -11,6 +12,60 @@
         <div class="user">
           <div class="name fs-3">{{ object.user.username }}</div>
           <div class="friend fs-5 mt-2">999 bạn bè</div>
+          <p>Bio: {{ object.bio }}</p>
+          {% if follows %}
+          <p>Follower:</p>
+          <ul>
+            {% for follow in follows %}
+              <li>{{ follow.follower.username }}</li>
+            {% endfor %}
+          </ul>
+          <p>Followee:</p>
+          <ul>
+            {% for follow in follows %}
+              <li>{{ follow.followee.username }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        
+          {% if friendship %}
+          <h2>Friendship Information</h2>
+          <p>User1: {{ friendship.user1.username }}</p>
+          <p>User2: {{ friendship.user2.username }}</p>
+          <p>Created at: {{ friendship.created_at }}</p>
+          <p>Created at: {{ friendship.status }}</p>
+          {% else %}
+          <p>No Friendship record found.</p>
+          {% endif %}
+          {% if request.user.id != object.user.id %}
+            {% if not friendship %}
+              <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Send Friend Request</button>
+              </form>
+            {% endif %}
+            {% endif %}
+            {%if friendship.status == 'pending' and friendship.user2 == request.user%}
+            <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit">Accept Friend Request</button>
+            </form>
+            <form action="{% url 'social:reject_friend_request' pk=friendship.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit">Reject Friend Request</button> 
+            </form>
+          {% endif %}
+          {% if not can_follow and request.user.id != object.user.id %}
+          <form action="{% url 'social:follow_user' user_id=object.user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Follow</button>
+          </form>
+          {% elif request.user.id != object.user.id %}
+          <form action="{% url 'social:unfollow_user' user_id=object.user.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Unfollow</button>
+          </form>
+          {% endif %}
         </div>
       </div>
       <hr>

@@ -38,6 +38,7 @@
                             <div class="username">
                                 {% if user.is_authenticated %}
                                 {{ user.username }}
+                                {{ user.pk }}
                                 {% endif %}
                             </div>
                         </a>

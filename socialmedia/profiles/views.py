@@ -2,8 +2,11 @@
 from django.views.generic import DetailView, CreateView, UpdateView
 from .models import Profile
 from .forms import ProfileForm
-from social.models import Friendship  # Đảm bảo rằng bạn đã import model Friendship
+from social.models import Friendship, Follow # Đảm bảo rằng bạn đã import model Friendship
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.urls import reverse_lazy, reverse
+
 
 
 class ProfileDetailView(DetailView):
@@ -12,16 +15,17 @@ class ProfileDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Lấy đối tượng Friendship dựa trên user hiện tại và user của profile
-        # Giả định rằng user1 là người gửi yêu cầu kết bạn và user2 là người nhận
+        
         friendship = Friendship.objects.filter(
-        user1=self.request.user, user2=self.object.user
-        ).first() or Friendship.objects.filter(
-        user1=self.object.user, user2=self.request.user
+        Q(user1=self.request.user) and
+        Q(user1=self.object.user)
         ).first()
 
+        follows = Follow.objects.filter(Q(follower=self.object.user))
+        can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
+        context['follows'] = follows
         context['friendship'] = friendship
-        print(friendship)
+        context['can_follow'] = can_follow
         return context
 
 
@@ -38,3 +42,13 @@ class ProfileUpdateView(UpdateView):
     model = Profile
     form_class = ProfileForm
     template_name = 'profiles/profile_form.html'
+
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return super().form_valid(form)
+    
+
+    def get_success_url(self):
+        return reverse('profiles:profile', kwargs={'pk': self.object.pk})
+

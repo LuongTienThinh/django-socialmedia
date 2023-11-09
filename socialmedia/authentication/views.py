@@ -7,6 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.shortcuts import redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from profiles.models import Profile
+from django.contrib.auth import get_user_model
 
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
@@ -32,13 +33,13 @@ class LoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'authentication/login.html'
     def form_valid(self, form):
+        response = super().form_valid(form)
         user = form.get_user()
         if user.is_authenticated:
             context = {
                 'user': user,
             }            
-            return render(self.request, 'index.html', context)        
-        return super().form_valid(form)
+            return render(self.request, 'index.html', context)      
 
 class CustomPasswordChangeView(PasswordChangeView):
     form_class = ChangePasswordForm

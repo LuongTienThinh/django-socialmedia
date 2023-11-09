@@ -1,10 +1,13 @@
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.views.generic import CreateView, UpdateView, DeleteView, View
 from django.urls import reverse_lazy
 from .models import Friendship, Follow
 from .forms import FriendshipForm, FollowForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404,redirect
 from django.http import Http404
+from profiles.models import Profile
+from django.contrib.auth.decorators import login_required
+
 
 
 User = get_user_model()
@@ -67,21 +70,26 @@ class AcceptFriendRequestView(UpdateView):
         # Phương thức này không còn cần thiết nữa, vì chúng ta đã xử lý mọi thứ trong post
         pass
 
-class FollowUserView(CreateView):
-    model = Follow
-    form_class = FollowForm
-    template_name = 'social/follow_form.html'
+class RejectFriendRequestView(CreateView):
+    def post(self, request, pk):
+        friend_request = get_object_or_404(Friendship, id=pk)        
+        friend_request.delete()
+        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
 
-    def form_valid(self, form):
-        form.instance.follower = self.request.user
-        return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse_lazy('profiles:profile', kwargs={'pk': self.object.followee.pk})
+class FollowUserView(View):
+    def dispatch(self, request, *args, **kwargs):
+        _follower = get_object_or_404(User, pk=kwargs['user_id'])
+        follower, created = Follow.objects.get_or_create(follower=_follower, followee=request.user)
+        return redirect(reverse_lazy('profiles:profile', kwargs={'pk': _follower.pk}))
 
-class UnfollowUserView(DeleteView):
-    model = Follow
-    template_name = 'social/unfollow_confirm.html'
+class UnfollowUserView(View):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            _follower = get_object_or_404(User, pk=kwargs['user_id'])
+            follower = Follow.objects.get(follower=_follower, followee=request.user)
+            follower.delete()
+        except Follow.DoesNotExist:
+            raise Http404("Bạn chưa theo dõi người dùng này.")
 
-    def get_success_url(self):
-        return reverse_lazy('profiles:profile', kwargs={'pk': self.object.followee.pk})
+        return redirect(reverse_lazy('profiles:profile', kwargs={'pk': _follower.pk}))
