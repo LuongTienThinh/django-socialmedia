@@ -4,17 +4,16 @@ from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  Mess
 from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404, HttpResponseRedirect
-from profiles.models import Profile
-from django.db import models
+from django.http import Http404
 from django.db.models import Q
-from posts.models import Post
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from posts.models import Post
 
 
 User = get_user_model()
 # views.py
-
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class SendFriendRequestView(CreateView):
     model = Friendship
     form_class = FriendshipForm
@@ -41,6 +40,7 @@ class SendFriendRequestView(CreateView):
         pass
 
 
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class AcceptFriendRequestView(UpdateView):
     model = Friendship
     form_class = FriendshipForm
@@ -98,8 +98,10 @@ class UnfollowUserView(View):
         return redirect(reverse_lazy('profiles:profile', kwargs={'pk': _follower.pk}))
 
 
-# group 
 
+# Group 
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class CreateGroup(CreateView):
     template_name = 'groups.html'
 
@@ -117,6 +119,7 @@ class CreateGroup(CreateView):
 
         return render(request, self.template_name, {'form': form})
 
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class CreateGroupPostView(CreateView):
     model = GroupPost
     form_class = GroupPostForm
@@ -143,34 +146,51 @@ class CreateGroupPostView(CreateView):
         group_id = self.kwargs.get('group_id')
         return reverse_lazy('social:group_posts', args=[group_id])
 
+@login_required(login_url='/auth/login/')
 def Group_Posts(request, group_id):
     # Lấy thông tin nhóm dựa trên group_id
     group = Group.objects.get(id=group_id)
     
     # Lấy tất cả bài viết thuộc nhóm đó
     posts = GroupPost.objects.filter(group=group)
-
-    group_list = request.user.custom_groups.all()
-    
-    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').all()
+    # danh sách người dùng tham gia nhóm
+    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
+    # danh sách nhóm đã tham gia    
+    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
+    # danh sách nhóm bị từ chối
     groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
+    # danh sách nhom chưa tham gia
     groups_not_joined = Group.objects.exclude(
     Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-)
+    ) 
+    # kiểm tra là thành viên của nhóm
     is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    # trạng thái
     status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+
+    # hiển thị thông báo
+    groups = Group.objects.filter(creator=request.user)
+    memberships = GroupMembership.objects.filter(
+        group__in=groups,
+        status='requested'
+    )
+    # Lấy các group_ids mà có thông báo
+    group_ids_with_messages = memberships.values_list('group', flat=True)
+    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
 
     context = {
         'group': group,
         'posts': posts,
-        'group_list':groups_joined,
+        'groups_joined':user_groups,
         'groups_not_joined':groups_not_joined,
         'is_member':is_member,
-        'status':status
+        'status':status,
+        'messages':messages,
     }
     
     return render(request, 'group_posts.html', context)
-    
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class ManageGroupMembershipView(CreateView):
     def post(self, request, group_id, user_id, action):
         group = get_object_or_404(Group, id=group_id)
@@ -184,6 +204,7 @@ class ManageGroupMembershipView(CreateView):
             membership.save()
         return redirect('social:group_posts', group_id=group.id)
 
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class JoinGroupView(CreateView):
     def get(self, request, group_id):
         group = get_object_or_404(Group, id=group_id)
@@ -201,7 +222,8 @@ class JoinGroupView(CreateView):
             # Lựa chọn một URL bạn muốn chuyển hướng người dùng trong trường hợp người tạo nhóm không thấy thông báo.
             # Ví dụ: return redirect('social:group_posts', group_id=group.id)
             return redirect('social:group_posts', group_id=group_id) 
-    
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class LeaveGroupView(CreateView):
     def get(self, request, group_id):
         try:

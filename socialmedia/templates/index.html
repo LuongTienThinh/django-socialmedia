@@ -28,11 +28,11 @@
         <div class="shortcuts">
             <div class="title">Lối tắt của bạn</div>
             <ul>
-                {% for group in group_list %}        
+                {% for user in user_groups %}        
                 <li>
-                    <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
-                        <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
-                        <span>{{ group.name }}</span>
+                    <a href="{% url 'social:group_posts' user.group.id %}" class="shortcut-item">
+                        <img src="{{ user.group.image.url }}" class="card-img" alt="avatar">
+                        <span>{{ user.group }}</span>
                     </a>
                 </li>                
                 {% endfor %}
@@ -46,7 +46,7 @@
                 {% for group in groups_not_joined %}        
                 <li>
                     <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
-                        <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
+                        <img src="{{ group.image.url  }}" class="card-img" alt="avatar">
                         <span>{{ group.name }}</span>
                     </a>
                 </li>                
@@ -59,11 +59,11 @@
         <div class="card upload-post mt-0">
             <div class="card-top d-flex align-items-center justify-content-between">
                 <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" id="modalUploadPost">
+                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#uploadPostModal" id="modalUploadPost">
                     <input type="text" placeholder="Bạn đang nghĩ gì?">
                 </a>
                 {% block modal-upload-post %}
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="uploadPostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -98,20 +98,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer justify-content-lg-center">
-                                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->                          
-                                    <button type="file" class="btn-add-file">
-                                        <i class="fa-solid fa-images">
-                                            <span>Ảnh</span>
-                                        <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
-                                        </i>
-                                    </button>
-                                    <button type="file" class="btn-add-file">
-                                        <i class="fa-solid fa-images">
-                                            <span>video</span>
-                                        <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
-                                        </i>
-                                    </button>                                                                 
+                                <div class="modal-footer justify-content-evenly">
+                                    <div class="dropdown" style="width: 35%;">
+                                        <button class="btn-success w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Đính kèm
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <label for="image">Hình ảnh</label>
+                                                <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
+                                            </li>
+                                            <li>
+                                                <label for="video">Video</label>
+                                                <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
+                                            </li>
+                                        </ul>
+                                    </div>
                                     <button type="submit" class="btn btn-primary btn-upload">Đăng bài</button>
                                 </div>
                             </form>
@@ -245,7 +247,30 @@
                         <a href="#" class="name">{{ post.user }}</a>
                         <div class="upload-time">{{ post.created_at|timesince }} ago</div>
                     </div>
-
+                    {% if post.user == user %}
+                    <div class="author-action ms-auto">
+                        <div class="dropdown">
+                            <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                <li>                             
+                                    <a href="{% url 'delete_post' post.id %}" class="dropdown-item logout">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>Xóa bài viết</span>
+                                    </a>                                 
+                                </li>
+                                <li>
+                                    <a href="#" class="dropdown-item logout">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                        <span>Chỉnh sửa bài viết</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <div class="post-body mb-3">
@@ -308,12 +333,12 @@
                             <i class="fa-solid fa-message"></i>
                         </div>
                         <div class="share ms-3">
-                            <span>8</span>
+                            <span>{{ post.share_count }}</span>
                             <i class="fa-solid fa-share"></i>
                         </div>
                     </div>
                 </div>
-                <div class="action d-flex justify-content-between align-items-center border-top">
+                <div class="action d-flex justify-content-between align-items-center border-top border-bottom">
                     <!-- like -->
                     <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
                         <i class="fa-solid fa-thumbs-up"></i>
@@ -327,9 +352,13 @@
                     </a>
                     
                     <!-- share -->
-                    <a href="#" class="action-item share">
-                        <i class="fa-solid fa-share"></i>
-                        <span>Share</span>
+                    <a class="action-item share">
+                        <form action="{% url 'share_post' post.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="action-item share">                                
+                                <span><i class="fa-solid fa-share"></i> Share</span>
+                            </button>
+                        </form> 
                     </a>
                 </div>
                 <!-- comment form -->

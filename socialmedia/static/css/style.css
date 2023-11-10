@@ -262,7 +262,12 @@ ul.func a:hover,
 .post-detail .action .action-item {
     width: 30%;
     text-align: center;
-    padding: 1rem 0;
+    padding: .5rem 0;
+}
+.post-detail .action .action-item button {
+    width: 100%;
+    text-align: center;
+    background-color: white;
 }
 
 /* Right content */
@@ -499,9 +504,37 @@ ul.func a:hover,
     background: #f0f0f0;
 }
 
+.modal-footer .dropdown-menu {
+    width: 100%;
+}
+
+.modal-footer .dropdown-menu li {
+    position: relative;
+    margin: 0 .5rem;
+    padding: .5rem;
+    cursor: pointer;
+}
+
+.modal-footer .dropdown-menu li:hover {
+    background-color: var(--color-dark-1);
+    border-radius: var(--border-radius-1);
+}
+
+.modal-footer label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    width: 100%;
+    text-align: center;
+}
+
 .modal-footer .btn-add-file {
-    width: 35%;
-    background-color: var(--bg-light-1);
+    background-color: transparent !important;
+    opacity: 0;
+    padding: 0;
 }
 
 .modal-footer .btn-upload {
@@ -592,7 +625,7 @@ ul.func a:hover,
 .profile-detail {
     background-color: var(--light);
     border-radius: 50px 50px 0 0;
-    padding: 0 2rem;
+    /* padding: 0 2rem; */
     /* box-shadow: var(--shadow-2); */
 }
 
@@ -635,6 +668,11 @@ ul.func a:hover,
     border-radius: var(--border-radius-2);
     position: relative;
     background-color: transparent;
+}
+/* update profile  */
+.profile-detail  .update-profile button:hover{
+    background-color: var(--primary-1);
+    color: var(--light);
 }
 
 /* Profile page posts */
@@ -827,3 +865,4 @@ ul.func a:hover,
     margin-bottom: .5rem;
     display: block;
 }
+

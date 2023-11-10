@@ -1,13 +1,14 @@
 # authentication/views.py
-from django.views.generic import CreateView ,DetailView
-from django.urls import reverse_lazy,reverse
-from django.shortcuts import render
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ChangePasswordForm
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
-from django.shortcuts import redirect, HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView, PasswordChangeView, LogoutView
+from django.shortcuts import redirect
 from profiles.models import Profile
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
+# đăng kí 
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
@@ -19,15 +20,7 @@ class RegisterView(CreateView):
         Profile.objects.create(user=self.object, profile_pic=profile_pic_path)  #
         return response  # Return the response object to continue the no
 
-# class LoginView(LoginView):
-#     form_class = CustomAuthenticationForm
-#     template_name = 'authentication/login.html'
-
-#     def form_valid(self, form):
-#         response = super().form_valid(form)  # This will log the user in
-#         user_profile_url = reverse('profiles:profile', kwargs={'pk': self.request.user.pk})
-#         return redirect(user_profile_url)  # Redirect to user's profile page
-
+# đăng nhập
 class LoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'authentication/login.html'
@@ -41,6 +34,8 @@ class LoginView(LoginView):
             return redirect('home')  
         return super().form_valid(form)
 
+# đổi mật khẩu
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class CustomPasswordChangeView(PasswordChangeView):
     form_class = ChangePasswordForm
     template_name = 'authentication/password_reset.html' 
