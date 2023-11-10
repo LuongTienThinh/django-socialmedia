@@ -99,7 +99,16 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer justify-content-lg-center">
-                                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->                          
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                          Dropdown button
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                          <li><a class="dropdown-item" href="#">Action</a></li>
+                                          <li><a class="dropdown-item" href="#">Another action</a></li>
+                                          <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                        </ul>
+                                    </div>
                                     <button type="file" class="btn-add-file">
                                         <i class="fa-solid fa-images">
                                             <span>Ảnh</span>
@@ -111,7 +120,7 @@
                                             <span>video</span>
                                         <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
                                         </i>
-                                    </button>                                                                 
+                                    </button>
                                     <button type="submit" class="btn btn-primary btn-upload">Đăng bài</button>
                                 </div>
                             </form>
