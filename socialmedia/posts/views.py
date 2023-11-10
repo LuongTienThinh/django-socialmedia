@@ -4,7 +4,8 @@ from .models import Post, Comment, Reply
 from .forms import PostForm, CommentForm, ReplyForm
 from django.http import HttpResponseRedirect, JsonResponse
 from authentication.models import User
-from social.models import Group, GroupPost, GroupMembership, MessageGroup
+from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship
+from profiles.models import Profile
 from django.db.models import Q
 
 # Create your views here.
@@ -22,11 +23,16 @@ def home1(request):
     group_list = request.user.custom_groups.all()
     groups_joined = Group.objects.filter(groupmembership__user= request.user)
     groups_not_joined = Group.objects.exclude(id__in=groups_joined.values_list('id', flat=True))
+
+    invite_friends = Friendship.objects.filter(
+        Q(user2=request.user, status='pending')
+    )
     context = {
         'messages': messages,
-        'post_list':post_list,
-        'group_list':group_list,
-        'groups_not_joined':groups_not_joined
+        'post_list': post_list,
+        'group_list': group_list,
+        'groups_not_joined': groups_not_joined,
+        'invite_friends': invite_friends,
     }
     return render(request, 'index.html', context)
 

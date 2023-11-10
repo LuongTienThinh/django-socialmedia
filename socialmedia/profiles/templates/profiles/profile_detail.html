@@ -4,42 +4,57 @@
 <div class="profile-area p-4">
   <div class="container">
     <div class="profile-detail">
-      <div class="d-flex justify-content-around align-items-center">
+      <div class="position-relative d-flex justify-content-around align-items-center">
         <div class="info d-flex justify-content-center align-items-center">
           <div class="avatar">
             <img src="{{ object.profile_pic.url }}" alt="">
           </div>
           <div class="user">
-            <div class="name fs-3">{{ user.username }}</div>
+            <div class="name fs-3">{{ object.user.username }}</div>
             <div class="friend fs-5 mt-2">{{ num_friends }} bạn bè</div>
           </div>
-        </div>
-        <div class="add-friend">
-           <p>Bio: {{ object.bio }}</p>
-     {% if friendship %}
-        <h2>Friendship Information</h2>
-        <p>User1: {{ friendship.user1.username }}</p>
-        <p>User2: {{ friendship.user2.username }}</p>
-        <p>Created at: {{ friendship.created_at }}</p>
-        <p>Created at: {{ friendship.status }}</p>
-      {% else %}
-        <p>No Friendship record found.</p>
-      {% endif %}
-        <p>Friendship: {{ friendship }}</p>
-    
-      {% if request.user.id != object.user.id %}
-        {% if not friendship %}
-          <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit">Send Friend Request</button>
-          </form>
-        {% endif %}
-        {% elif friendship.status == 'pending' and friendship.user2 == request.user %}
-          <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit">Accept Friend Request</button>
-          </form>
-        {% endif %}
+          <div class="multi-user">
+            {% if request.user.id != object.user.id %}
+              {% if status == 'none' %}
+              <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Thêm bạn bè</button>
+              </form>
+              {% elif status == 'pending' %}
+                {% if friendship.first.user2.id == request.user.id %}
+                <div>
+                  <form class="d-inline-block" action="{% url 'social:accept_friend_request' pk=friendship.first.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Xác nhận</button>
+                  </form>
+                  <form class="d-inline-block" action="{% url 'social:reject_friend_request' pk=friendship.first.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Xóa</button> 
+                  </form>
+                </div>
+                {% endif %}
+                {% if friendship.first.user1.id == request.user.id %}
+                <form action="{% url 'social:reject_friend_request' pk=friendship.first.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit">Hủy kết bạn</button>
+                </form>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+            <div class="mt-3">
+              {% if not can_follow and request.user.id != object.user.id %}
+              <form action="{% url 'social:follow_user' user_id=object.user.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Theo dõi</button>
+              </form>
+              {% elif request.user.id != object.user.id %}
+              <form action="{% url 'social:unfollow_user' user_id=object.user.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Hủy theo dõi</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
         </div>
       </div>
       <hr>
@@ -294,11 +309,13 @@
                   Bạn bè
                 </button>
               </li>
+              {% if request.user.id == object.user.id %}
               <li class="accordion-item friend-tab-item">
                 <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriend" aria-expanded="false" aria-controls="inviteFriend">
                   Lời mời kết bạn
                 </button>
               </li>
+              {% endif %}
             </ul>
             <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
@@ -307,71 +324,23 @@
                     <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
                     <div class="name">{{ friend.username }}</div>                  
                   </a>
-                {% endfor %}                
+                {% endfor %}
               </div>
             </div>
             <div class="accordion-collapse collapse friend-tab-detail" id="inviteFriend" data-bs-parent="#friend-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                {% for friend in invite_friends %}
                 <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
+                  <a href="" class="d-flex align-items-center p-0">
+                    <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                    <div class="name">{{ friend.user1 }}</div>
                   </a>
                   <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
+                    <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="accept">Xác nhận</a>
+                    <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="reject">Từ chối</a>
                   </div>
                 </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
+                {% endfor %}
               </div>
             </div>
           </div>
@@ -384,21 +353,23 @@
               <span>Bạn bè</span>
               <span class="fs-6">{{ num_friends }} người bạn</span>
             </div>
-            <ul class="accordion friend-tab d-flex align-items-center" id="friend-tab">
-              <li class="accordion-item friend-tab-item">
-                <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFriend" aria-expanded="true" aria-controls="listFriend">
+            <ul class="accordion friend-tab d-flex align-items-center" id="friend-page-tab">
+              <li class="accordion-item friend-page-tab-item">
+                <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFriendPage" aria-expanded="true" aria-controls="listFriendPage">
                   Bạn bè
                 </button>
               </li>
-              <li class="accordion-item friend-tab-item">
-                <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriend" aria-expanded="false" aria-controls="inviteFriend">
+              {% if request.user.id == object.user.id %}
+              <li class="accordion-item friend-page-tab-item">
+                <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriendPage" aria-expanded="false" aria-controls="inviteFriendPage">
                   Lời mời kết bạn
                 </button>
               </li>
+              {% endif %}
             </ul>
-            <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
+            <div class="accordion-collapse collapse show friend-page-tab-detail" id="listFriendPage" data-bs-parent="#friend-page-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                {% for friend in friends %}                  
+                {% for friend in friends %}
                   <a href="" class="friend-list-item d-flex align-items-center">
                     <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
                     <div class="name">{{ friend.username }}</div>                  
@@ -406,68 +377,20 @@
                 {% endfor %}                   
               </div>
             </div>
-            <div class="accordion-collapse collapse friend-tab-detail" id="inviteFriend" data-bs-parent="#friend-tab">
+            <div class="accordion-collapse collapse friend-page-tab-detail" id="inviteFriendPage" data-bs-parent="#friend-page-tab">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                {% for friend in invite_friends %}
                 <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
+                  <a href="" class="d-flex align-items-center p-0">
+                    <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                    <div class="name">{{ friend.user1 }}</div>
                   </a>
                   <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
+                    <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="accept">Xác nhận</a>
+                    <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="reject">Từ chối</a>
                   </div>
                 </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
-                <div class="invite-list-item d-flex justify-content-between align-items-center">
-                  <a href="" class="d-flex align-items-center">
-                    <img src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t39.30808-6/359361062_3578732925742345_2837509200923816125_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_ohc=GVD86aaaVT8AX8xj-a_&_nc_ht=scontent.fsgn19-1.fna&oh=00_AfDEJxqSGBXaJLD0wXt4yMtVEQ7edcYr_ANtVqU-xB10jA&oe=6543A9C6" alt="avatar">
-                    <div class="name">Lương Tiến Thịnh</div>
-                  </a>
-                  <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Từ chối</button>
-                  </div>
-                </div>
+                {% endfor %}
               </div>
             </div>
           </div>

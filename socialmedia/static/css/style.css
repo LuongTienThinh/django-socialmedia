@@ -300,16 +300,20 @@ ul.func a:hover,
     margin-left: calc(.5rem + 80px);
 }
 
-.invite-friend .action button {
+.invite-friend .action a {
     min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
+    display: inline-block;
+    text-align: center;
 }
 
-.invite-friend .action button.accept {
+.invite-friend .action a.accept {
     background-color: var(--primary-1);
     color: var(--light);
 }
 
-.invite-friend .action button.reject {
+.invite-friend .action a.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
 }
@@ -326,18 +330,20 @@ ul.func a:hover,
     justify-content: center;
 }
 
-.notifycation .action button {
+.notifycation .action a {
     font-size: .9rem;
     min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
 }
 
-.notifycation .action button.accept {
+.notifycation .action a.accept {
     background-color: var(--primary-1);
     color: var(--light);
     border-radius: 15px !important
 }
 
-.notifycation .action button.reject {
+.notifycation .action a.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
     border-radius: 15px !important
@@ -583,6 +589,13 @@ ul.func a:hover,
     font-weight: 600;
 }
 
+.profile-detail .info .multi-user {
+    position: absolute;
+    right: 100px;
+    top: 60%;
+    transform: translateY(-50%);
+}
+
 .profile-detail .action {
     padding-bottom: 4px;
 }
@@ -707,7 +720,7 @@ ul.func a:hover,
     background-color: var(--bg-light-1);
 }
 
-.friend-card .friend-tab-detail {
+.friend-card .friend-tab-detail, .friend-card .friend-page-tab-detail {
     padding: 1rem;
 }
 
@@ -733,16 +746,18 @@ ul.func a:hover,
     margin-left: 1rem;
 }
 
-.friend-card .invite-list-item button {
+.friend-card .invite-list-item a {
     min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
 }
 
-.friend-card .invite-list-item button.accept {
+.friend-card .invite-list-item a.accept {
     background-color: var(--primary-1);
     color: var(--light);
 }
 
-.friend-card .invite-list-item button.reject {
+.friend-card .invite-list-item a.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
 }

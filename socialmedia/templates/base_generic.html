@@ -46,7 +46,7 @@
 
         // Action button invite friend
         const itemElement = document.querySelector('.invite-friend .item');
-        const buttonElement = document.querySelectorAll('.invite-friend .item .action>button');
+        const buttonElement = document.querySelectorAll('.invite-friend .item .action>a');
 
         itemElement && itemElement.addEventListener('mouseover', function() {
             itemElement.style.backgroundColor = 'var(--bg-light-1)';
@@ -93,6 +93,7 @@
 
         accordion('.action-item', '.profile-page');
         accordion('.friend-tab-item', '.friend-tab-detail');
+        accordion('.friend-page-tab-item', '.friend-page-tab-detail');
 
     </script>
 </body>
