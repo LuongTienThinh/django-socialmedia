@@ -1,8 +1,9 @@
 from .models import Post, Comment, Reply, Share
 from .forms import PostForm, CommentForm, ReplyForm, ShareForm
 from authentication.models import User
-from social.models import Group, GroupPost, GroupMembership, MessageGroup
+from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship
 from django.http import HttpResponseRedirect, JsonResponse
+from profiles.models import Profile
 from django.db.models import Q
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -35,12 +36,18 @@ def home1(request):
     # danh sách nhom chưa tham gia
     groups_not_joined = Group.objects.exclude(
     Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    )   
+    )
+
+    invite_friends = Friendship.objects.filter(
+        Q(user2=request.user, status='pending')
+    )
+
     context = {
         'messages': messages,
         'post_list':post_list,
         'user_groups':user_groups,
-        'groups_not_joined':groups_not_joined
+        'groups_not_joined':groups_not_joined,
+        'invite_friends': invite_friends,
     }
     return render(request, 'index.html', context)
 

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="content-area d-flex justify-content-between p-4">
+<div class="content-area">
     <div class="left-content">
         <ul class="func">
             <li>
@@ -423,7 +423,6 @@
                             </div>
                         </div>
                     </div>
-
                         <!-- view all reply comment -->
                         {% for reply in comment.replies.all %}
                         <div class="ms-5 comment-content border">
@@ -455,31 +454,27 @@
                                         </div>
                                         {% endif %}
                                     </p>
-                                </div>    
-                            </div>                 
-                            
-                            
+                                </div>
+                            </div>
                         </div>
                         {% endfor %}
-                        
                         <div class="comment-content border comment-add mt-1 mb-1"></div>
-
                     {% endfor %}
                 </div>
-
             </div>
         {% endfor %}
     </div>
     <div class="right-content">
         <div class="invite-friend">
             <div class="title">Lời mời kết bạn</div>
+            {% if invite_friends.first %}
             <div class="item rounded">
                 <div class="represent mb-2">
                     <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_ohc=VTT51jsf8n4AX8b7IUm&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfDair0x-_SGJPKMWp9M3TmeRBK_c0fNf4D4q7rMl2aZTA&oe=6561D2B8" class="card-img" alt="avatar">
                     <div class="detail">
                         <div class="d-flex justify-content-between">
-                            <div class="name">Đức Thắng</div>
-                            <div class="time">2 ngày</div>
+                            <div class="name">{{invite_friends.first.user1}}</div>
+                            <div class="time">{{invite_friends.first.created_at|timesince}}</div>
                         </div>
                         <div class="mutual d-flex align-items-center mt-2">
                             <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
@@ -488,10 +483,11 @@
                     </div>
                 </div>
                 <div class="action">
-                    <button class="accept">Xác nhận</button>
-                    <button class="reject">Xóa</button>
+                    <a href="{% url 'social:accept_friend_request' pk=invite_friends.first.id %}" class="accept">Xác nhận</a>
+                    <a href="{% url 'social:reject_friend_request' pk=invite_friends.first.id %}" class="reject">Xóa</a>
                 </div>
             </div>
+            {% endif %}
         </div>
         <hr>
         <div class="contact">

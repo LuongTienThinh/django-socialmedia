@@ -2,6 +2,8 @@
 from .models import Profile
 from .forms import ProfileForm
 from social.models import Friendship  
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from authentication.models import User
 from posts.models import Post, Share
 from social.models import Group, GroupMembership, MessageGroup
@@ -18,26 +20,13 @@ class ProfileDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Lấy đối tượng Friendship dựa trên user hiện tại và user của profile
-        # Giả định rằng user1 là người gửi yêu cầu kết bạn và user2 là người nhận
+
         friendship = Friendship.objects.filter(
         user1=self.request.user, user2=self.object.user
         ).first() or Friendship.objects.filter(
         user1=self.object.user, user2=self.request.user
         ).first()
 
-        # hiển thị thông báo
-        groups = Group.objects.filter(creator=self.request.user)
-        memberships = GroupMembership.objects.filter(
-            group__in=groups,
-            status='requested'
-        )
-        # Lấy các group_ids mà có thông báo
-        group_ids_with_messages = memberships.values_list('group', flat=True)
-        messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
-
-        # Lấy danh sách bạn bè
-        friends = Friendship.objects.filter( user1=self.request.user, user2=self.object.user,status = 'Friends')
         friends = User.objects.filter(
             Q(friendships1__user2=self.object.user, friendships1__status='friends') |
             Q(friendships2__user1=self.object.user, friendships2__status='friends')
@@ -49,15 +38,13 @@ class ProfileDetailView(DetailView):
         profile = Profile.objects.get(user=self.object.user)
         form = ProfileForm(instance=profile)
 
-        context['friendship'] = friendship
         context['friends'] = friends
         context['num_friends'] = num_friends
         context['post_list'] = post_list
-        context['shared_posts'] = shared_posts
-        context['form'] = form
-        context['messages'] = messages
-        return context
-    
+        print(friendship)
+        return context  
+
+
 class ProfileCreateView(CreateView):
     model = Profile
     form_class = ProfileForm
@@ -80,3 +67,12 @@ class ProfileUpdateView(View):
             return redirect('profiles:profile', pk=request.user.id)
 
         return render(request, self.template_name, {'form': form})
+
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return super().form_valid(form)
+    
+
+    def get_success_url(self):
+        return reverse('profiles:profile', kwargs={'pk': self.object.pk})

@@ -1,5 +1,17 @@
 from django.urls import path
-from .views import SendFriendRequestView, AcceptFriendRequestView, CreateGroup, CreateGroupPostView, Group_Posts, JoinGroupView, LeaveGroupView, ManageGroupMembershipView
+from .views import (
+    SendFriendRequestView, 
+    AcceptFriendRequestView, 
+    CreateGroup, 
+    CreateGroupPostView, 
+    Group_Posts, 
+    JoinGroupView, 
+    LeaveGroupView, 
+    ManageGroupMembershipView,
+    FollowUserView, 
+    UnfollowUserView, 
+    RejectFriendRequestView
+)
 
 
 app_name = 'social'
@@ -7,6 +19,9 @@ app_name = 'social'
 urlpatterns = [
     path('send_friend_request/<int:user_id>/', SendFriendRequestView.as_view(), name='send_friend_request'),
     path('accept_friend_request/<int:pk>/', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
+    path('reject_friend_request/<int:pk>/', RejectFriendRequestView.as_view(), name='reject_friend_request'),
+    path('follow_user/<int:user_id>', FollowUserView.as_view(), name='follow_user'),
+    path('unfollow_user/<int:user_id>/', UnfollowUserView.as_view(), name='unfollow_user'),
     path('create_group/', CreateGroup.as_view(), name='create_group'),
     path('group/<int:group_id>/', Group_Posts, name='group_posts'),
     path('group/<int:group_id>/create-post/', CreateGroupPostView.as_view(), name='create_group_post'),
