@@ -18,49 +18,49 @@
                     </a>
                 </li>              
                 <li>
-                    <a href="" class="func-item" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <a href="" class="func-item" data-bs-toggle="modal" data-bs-target="#uploadGroupModal">
                         <i class="fa-solid fa-people-group"></i>
                         <span>Tạo Nhóm của bạn</span>
                     </a>
-                </li>
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo Nhóm</h1>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <form action="{% url 'social:create_group' %}" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                                <div href="" class="user">
-                                    <a href="" class="d-flex align-items-center justify-content-center">
-                                        <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                                    </a>
-                                    <div class="author">
-                                        <div>{{ user.username }}</div>                                       
-                                    </div>
-                                </div>
-                                <div class="post-body mt-4">
-                                    <div class="custom-scrollbar w-100">
-                                        <h3 class="post-title m-auto"><input type="text" name="name" placeholder="Nhập tên nhóm"></h3>
-                                        <textarea id="textarea-post" cols="30" rows="10" name="description" placeholder="Nhập mô tả"></textarea>
-                                    </div>
-                                </div>
-                            </div>                               
-                            <div class="modal-footer justify-content-lg-center">
-                                <button type="file" class="btn-add-file">
-                                    <i class="fa-solid fa-images">
-                                        <span>Ảnh</span>
-                                        <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image">
-                                    </i>
-                                </button>                           
-                                <button type="submit" class="btn btn-primary btn-upload">Tạo nhóm</button>
+                    <div class="modal fade" id="uploadGroupModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo Nhóm</h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                        </form>
-                      </div>
+                            <form action="{% url 'social:create_group' %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div href="" class="user">
+                                        <a href="" class="d-flex align-items-center justify-content-center">
+                                            <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                                        </a>
+                                        <div class="author">
+                                            <div>{{ user.username }}</div>                                       
+                                        </div>
+                                    </div>
+                                    <div class="post-body mt-4">
+                                        <div class="custom-scrollbar w-100">
+                                            <h3 class="post-title m-auto"><input type="text" name="name" placeholder="Nhập tên nhóm"></h3>
+                                            <textarea id="textarea-post" cols="30" rows="10" name="description" placeholder="Nhập mô tả"></textarea>
+                                        </div>
+                                    </div>
+                                </div>                               
+                                <div class="modal-footer justify-content-lg-center">
+                                    <button type="file" class="btn-add-file">
+                                        <i class="fa-solid fa-images">
+                                            <span>Ảnh</span>
+                                            <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image">
+                                        </i>
+                                    </button>                           
+                                    <button type="submit" class="btn btn-primary btn-upload">Tạo nhóm</button>
+                                </div>
+                            </form>
+                          </div>
+                        </div>
                     </div>
-                </div>
+                </li>
             </ul>
             <hr>
             <div class="shortcuts">
@@ -97,11 +97,11 @@
             <div class="card upload-post mt-0">
                 <div class="card-top d-flex align-items-center justify-content-between">
                     <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                    <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" id="modalUploadPost">
+                    <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#uploadPostModal1" id="modalUploadPost">
                         <input type="text" placeholder="Bạn đang nghĩ gì?">
                     </a>
                     {% block modal-upload-post %}
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="uploadPostModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">

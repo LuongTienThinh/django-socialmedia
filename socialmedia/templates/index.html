@@ -59,11 +59,11 @@
         <div class="card upload-post mt-0">
             <div class="card-top d-flex align-items-center justify-content-between">
                 <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal1" id="modalUploadPost">
+                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#uploadPostModal" id="modalUploadPost">
                     <input type="text" placeholder="Bạn đang nghĩ gì?">
                 </a>
                 {% block modal-upload-post %}
-                <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="uploadPostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -98,29 +98,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer justify-content-lg-center">
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                          Dropdown button
+                                <div class="modal-footer justify-content-evenly">
+                                    <div class="dropdown" style="width: 35%;">
+                                        <button class="btn-success w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Đính kèm
                                         </button>
                                         <ul class="dropdown-menu">
-                                          <li><a class="dropdown-item" href="#">Action</a></li>
-                                          <li><a class="dropdown-item" href="#">Another action</a></li>
-                                          <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                            <li>
+                                                <label for="image">Hình ảnh</label>
+                                                <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
+                                            </li>
+                                            <li>
+                                                <label for="video">Video</label>
+                                                <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
+                                            </li>
                                         </ul>
                                     </div>
-                                    <button type="file" class="btn-add-file">
-                                        <i class="fa-solid fa-images">
-                                            <span>Ảnh</span>
-                                        <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
-                                        </i>
-                                    </button>
-                                    <button type="file" class="btn-add-file">
-                                        <i class="fa-solid fa-images">
-                                            <span>video</span>
-                                        <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
-                                        </i>
-                                    </button>
                                     <button type="submit" class="btn btn-primary btn-upload">Đăng bài</button>
                                 </div>
                             </form>

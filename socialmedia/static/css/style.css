@@ -504,9 +504,37 @@ ul.func a:hover,
     background: #f0f0f0;
 }
 
+.modal-footer .dropdown-menu {
+    width: 100%;
+}
+
+.modal-footer .dropdown-menu li {
+    position: relative;
+    margin: 0 .5rem;
+    padding: .5rem;
+    cursor: pointer;
+}
+
+.modal-footer .dropdown-menu li:hover {
+    background-color: var(--color-dark-1);
+    border-radius: var(--border-radius-1);
+}
+
+.modal-footer label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 10;
+    width: 100%;
+    text-align: center;
+}
+
 .modal-footer .btn-add-file {
-    width: 35%;
-    background-color: var(--bg-light-1);
+    background-color: transparent !important;
+    opacity: 0;
+    padding: 0;
 }
 
 .modal-footer .btn-upload {
