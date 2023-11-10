@@ -19,6 +19,8 @@ class Friendship(models.Model):
 #     class Meta:
 #         unique_together = ('follower', 'followee')
 
+# -- Group
+
 class Group(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255,blank=True)
@@ -38,7 +40,6 @@ class GroupMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} | {self.group}"
-
 
 
 class GroupPost(models.Model):

@@ -60,17 +60,17 @@
                         </form>
                       </div>
                     </div>
-                  </div>
+                </div>
             </ul>
             <hr>
             <div class="shortcuts">
                 <div class="title">Lối tắt của bạn</div>
                 <ul>
-                    {% for group in group_list %}        
+                    {% for user in user_groups %}        
                     <li>
-                        <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
-                            <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
-                            <span>{{ group.name }}</span>
+                        <a href="{% url 'social:group_posts' user.group.id %}" class="shortcut-item">
+                            <img src="{{ user.group.image.url  }}" class="card-img" alt="avatar">
+                            <span>{{ user.group.name }}</span>
                         </a>
                     </li>                
                     {% endfor %}
@@ -84,7 +84,7 @@
                     {% for group in groups_not_joined %}        
                     <li>
                         <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
-                            <img src="https://scontent.fsgn5-5.fna.fbcdn.net/v/t39.30808-1/309001372_480410104123834_487738197727010924_n.png?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=uotzRB1zA0wAX8norcz&_nc_ht=scontent.fsgn5-5.fna&oh=00_AfDEH273T-ZGBUFf8etlXJiPykKdpfOtEG9JmonfBzVeAw&oe=653E92C9" class="card-img" alt="avatar">
+                            <img src="{{ group.image.url  }}" class="card-img" alt="avatar">
                             <span>{{ group.name }}</span>
                         </a>
                     </li>                

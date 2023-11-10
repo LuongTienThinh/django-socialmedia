@@ -1,45 +1,65 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+
 <div class="profile-area p-4">
   <div class="container">
     <div class="profile-detail">
+      <img class="w-100" style="border-radius: 20px; height: 450px;" src="https://images.unsplash.com/photo-1699306113718-72fe0f9dfb2c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxMjh8fHxlbnwwfHx8fHw%3D" alt="">
       <div class="d-flex justify-content-around align-items-center">
         <div class="info d-flex justify-content-center align-items-center">
           <div class="avatar">
-            <img src="{{ object.profile_pic.url }}" alt="">
+            {% if object.profile_pic %}
+              <img src="{{ object.profile_pic.url }}" alt="">
+            {% else %}
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+            {% endif %}
           </div>
           <div class="user">
-            <div class="name fs-3">{{ user.username }}</div>
+            <div class="name fs-3">{{ object.user.username }}</div>
             <div class="friend fs-5 mt-2">{{ num_friends }} bạn bè</div>
           </div>
         </div>
         <div class="add-friend">
-           <p>Bio: {{ object.bio }}</p>
-     {% if friendship %}
-        <h2>Friendship Information</h2>
-        <p>User1: {{ friendship.user1.username }}</p>
-        <p>User2: {{ friendship.user2.username }}</p>
-        <p>Created at: {{ friendship.created_at }}</p>
-        <p>Created at: {{ friendship.status }}</p>
-      {% else %}
-        <p>No Friendship record found.</p>
-      {% endif %}
-        <p>Friendship: {{ friendship }}</p>
-    
-      {% if request.user.id != object.user.id %}
-        {% if not friendship %}
-          <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit">Send Friend Request</button>
-          </form>
-        {% endif %}
+           
+        {% if request.user.id != object.user.id %}
+          {% if not friendship %}
+            <form action="{% url 'social:send_friend_request' user_id=object.user.id %}" method="post">
+              {% csrf_token %}
+              <button type="submit">Send Friend Request</button>
+            </form>
+          {% endif %}
         {% elif friendship.status == 'pending' and friendship.user2 == request.user %}
           <form action="{% url 'social:accept_friend_request' pk=friendship.id %}" method="post">
             {% csrf_token %}
             <button type="submit">Accept Friend Request</button>
           </form>
         {% endif %}
+        </div>
+        <div class="update-profile">
+          <button class="button p-2" data-bs-toggle="modal" data-bs-target="#profileModal"  >
+              Chỉnh Sửa Trang Cá Nhân
+          </button>
+          <!-- model -->
+          <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5 text-center" id="profileModalLabel">Chỉnh sửa trang cá nhân</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'profiles:profile_update' object.user.id %}" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="modal-body custom-scrollbar w-100">
+                      {{ form.as_div }}
+                  </div>                                        
+                  <div class="modal-footer justify-content-lg-center">                                          
+                        <button type="submit" value="Save" class="btn btn-primary btn-upload">Lưu</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <hr>
@@ -94,7 +114,12 @@
           <div class="right-profile">
             <div class="card upload-post mt-0">
               <div class="card-top d-flex align-items-center justify-content-between">
-                <img src="{{ object.profile_pic.url }}" class="card-img-top" alt="avatar">
+                {% if object.profile_pic %}
+                  <img src="{{ object.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                {% else %}
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+                {% endif %}
+
                 <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" id="modalUploadPost">
                   <input type="text" placeholder="Bạn đang nghĩ gì?">
                 </a>
@@ -112,7 +137,10 @@
                         <div class="modal-body">
                           <div href="" class="user">
                             <a href="" class="d-flex align-items-center justify-content-center">
-                              <img src="{{ object.profile_pic.url }}" class="card-img-top" alt="avatar">
+                              {% if object.profile_pic %}
+                                <img src="{{ object.profile_pic.url }}" alt="">
+                              {% endif %}
+                              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
                             </a>
                             <div class="author">
                               <div>{{ object.user.username }}</div>
@@ -168,7 +196,11 @@
 
             <div class="card post-detail">
               <div class="card-top d-flex align-items-center">
-                <img src="{{ object.image.url }}" class="card-img-top" alt="avatar">
+                {% if object.profile_pic %}
+                  <img src="{{ object.profile_pic.url }}"  style="width: 50px; height:50px"  alt="">
+                {% else %}
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+                {% endif %}
                 <div class="author ms-2">
                   <a href="#" class="name">{{ user.username }}</a>
                   <div class="upload-time">1 giờ</div>
@@ -180,7 +212,7 @@
                   Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae, maxime expedita? Tempore, eos commodi eligendi at ab tenetur. Dolorem quis cupiditate architecto, labore ea maxime doloremque? Provident debitis possimus corrupti.
                 </div>
                 <div class="file-upload">
-                  <img style="width: 100%;" src="https://scontent.fsgn5-10.fna.fbcdn.net/v/t39.30808-6/398183935_345840234785834_6715728988585718484_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_ohc=DByoMNZzQH0AX9p3SHO&_nc_ht=scontent.fsgn5-10.fna&oh=00_AfBWz3uU_whyuMehfR_r5tU9KVrMppUQucnIQVCm95SjWA&oe=654588B9" alt="">
+                  <img class="w-100" src="https://images.unsplash.com/photo-1699119846325-9f8429f36e42?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwzfHx8ZW58MHx8fHx8" alt="">
                 </div>
               </div>
               <div class="count d-flex justify-content-between align-items-center">
@@ -214,10 +246,16 @@
                 </a>
               </div>
             </div>
+            <!-- user's post -->
+
             {% for post in post_list %}
             <div class="card post-detail">
               <div class="card-top d-flex align-items-center">
-                <img src="{{ object.profile_pic.url }}" class="card-img-top" alt="avatar">
+                {% if object.profile_pic %}
+                  <img src="{{ object.profile_pic.url }}" style="width: 50px; height: 50px;" alt="">
+                {% else %}
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+                {% endif %}
                 <div class="author ms-2">
                   <a href="#" class="name">{{ post.user }}</a>
                   <div class="upload-time">{{ post.created_at|timesince }} ago</div>
@@ -266,9 +304,139 @@
               </div>
             </div>
             {% endfor %}
+            <!-- user's share post -->
+            {% for post in shared_posts %}
+            <div class="card post-detail">
+                  <div class="share-title p-3"><span style="font-size: 1.1rem;font-weight: 600;">{{ post.user.username }}</span> đã chia sẻ bài viết của <span style="font-size: 1.1rem;font-weight: 600;">{% if post.user == post.post.user %}chính mình {% else %}{{ post.post.user.username }}{% endif %}</span> </div>
+                  <div class="d-flex  border border-2 rounded m-3">
+                    <div class="share-post" style="width: 90%;">
+                      <div class="card-top d-flex align-items-center">
+                        {% if object.profile_pic %}
+                          <img src="{{ object.profile_pic.url }}"   style="width: 50px; height:50px" alt="">
+                        {% else %}
+                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+                        {% endif %}
+                        <div class="author ms-2">
+                          <a href="#" class="name">{{ post.post.user.username }}</a>
+                          <div class="upload-time">{{ post.post.created_at|timesince }} ago</div>
+                        </div>
+                      </div>
+                      <div class="card-body">
+                        <div class="post-body mb-3">
+                          {{ post.post.title }}  <br><br>       
+                          <a href="{{ post.post.content }} | #" id="content">{{ post.post.content }}</a>
+                        </div> 
+                        <div class="file-upload ms-5">
+                          {% if post.post.image %}
+                              <img style="width: 100%;" src="{{ post.post.image.url }}" alt="{{ post.post.title }}">
+                          {% endif %}
+                          {% if post.post.video %}
+                            <div class="file-upload">
+                                <video style="width: 100%;" controls>
+                                    <source src="{{ post.post.video.url }}" type="video/mp4">
+                                </video>
+                            </div>
+                        {% endif %}
+                        </div>
+                      </div>
+                      <div class="count d-flex justify-content-between align-items-center">
+                        <form>
+                            {% csrf_token %}
+                            <div class="react">
+                                {% if user in post.post.likes.all %}
+                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                                {% endif %}
+    
+                                <span class="like-count" id="like-count-{{ post.post.id }}">{{ post.post.total_likes }}</span>
+                            </div>
+                        </form>                           
+                        <div class="d-flex align-items-center">
+                            <div class="comment">
+                                <span>{{ post.post.total_comment }}</span>
+                                <i class="fa-solid fa-message"></i>
+                            </div>
+                            <div class="share ms-3">
+                                <span>{{ post.post.share_count }}</span>
+                                <i class="fa-solid fa-share"></i>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="action d-flex justify-content-between align-items-center border-top border-bottom">
+                    <!-- like -->
+                    <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>Thích</span>
+                    </a>                    
+                    
+                     <!-- comment button-->
+                    <a href="#commentpost{{post.id}}"  class="action-item comment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        <i class="fa-solid fa-message"></i>
+                        <span>Bình luận</span>
+                    </a>
+                    
+                    <!-- share -->
+                    <a class="action-item share">
+                        <form action="{% url 'share_post' post.id %}" method="post">
+                            {% csrf_token %}
+                            <button class="action-item share">                                
+                                <span><i class="fa-solid fa-share"></i> Share</span>
+                            </button>
+                        </form> 
+                    </a>
+                </div>
+                <!-- comment form -->
+                <div class="collapse comment-form" id="commentpost{{post.id}}">
+                    <div class="form-group">
+                        <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment" data-post-id="{{ post.id }}"> 
+                            {% csrf_token %}
+                            <div class="d-flex justify-content-between px-2">
+                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                                <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
+                                <button class="btn btn-send d-flex align-items-center justify-content-center"><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                            </div>
+                        </form>        
+                      </div>
+                  </div>
+                    </div>
+                  </div>
+                  <div class="count d-flex justify-content-between align-items-center">
+                    <div class="react">
+                      <i class="fa-solid fa-thumbs-up"></i>
+                      <span>1.2k</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <div class="comment">
+                        <span>15</span>
+                        <i class="fa-solid fa-message"></i>
+                      </div>
+                      <div class="share ms-3">
+                        <span>8</span>
+                        <i class="fa-solid fa-share"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="action d-flex justify-content-between align-items-center border-top">
+                    <a href="#" class="action-item react">
+                      <i class="fa-solid fa-thumbs-up"></i>
+                      <span>Like</span>
+                    </a>
+                    <a href="#" class="action-item comment">
+                      <i class="fa-solid fa-message"></i>
+                      <span>Comment</span>
+                    </a>
+                    <a href="#" class="action-item share">
+                      <i class="fa-solid fa-share"></i>
+                      <span>Share</span>
+                    </a>
+                  </div>
+                </div>
+            {% endfor %}
           </div>
         </div>
       </div>
+
       <div class="accordion-collapse collapse profile-page" id="introducePage" data-bs-parent="#profilePage">
         <div class="introduce">
           <div class="introduce-card d-flex justify-content-between">

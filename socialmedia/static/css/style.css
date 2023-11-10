@@ -240,7 +240,12 @@ ul.func a:hover,
 .post-detail .action .action-item {
     width: 30%;
     text-align: center;
-    padding: 1rem 0;
+    padding: .5rem 0;
+}
+.post-detail .action .action-item button {
+    width: 100%;
+    text-align: center;
+    background-color: white;
 }
 
 /* Right content */
@@ -563,7 +568,7 @@ ul.func a:hover,
 .profile-detail {
     background-color: var(--light);
     border-radius: 50px 50px 0 0;
-    padding: 0 2rem;
+    /* padding: 0 2rem; */
     /* box-shadow: var(--shadow-2); */
 }
 
@@ -599,6 +604,11 @@ ul.func a:hover,
     border-radius: var(--border-radius-2);
     position: relative;
     background-color: transparent;
+}
+/* update profile  */
+.profile-detail  .update-profile button:hover{
+    background-color: var(--primary-1);
+    color: var(--light);
 }
 
 /* Profile page posts */
@@ -789,3 +799,4 @@ ul.func a:hover,
     margin-bottom: .5rem;
     display: block;
 }
+

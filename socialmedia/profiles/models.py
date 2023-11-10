@@ -8,4 +8,3 @@ class Profile(models.Model):
     cover_photo = models.ImageField(upload_to='cover_photos/', blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
-    social_links = models.JSONField(default=dict, blank=True)
