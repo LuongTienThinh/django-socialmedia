@@ -2,6 +2,13 @@
 header {
     box-shadow: var(--shadow-1);
     color: var(--color-light-1);
+    position: fixed;
+    background-color: var(--gray-light);
+    height: 70px;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .left-nav,
@@ -81,11 +88,26 @@ header {
 /* Content */
 .content-area {
     background: var(--gray-light);
+    margin-top: 70px;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
 }
 
 .left-content,
 .right-content {
     width: 25%;
+    position: fixed;
+    margin-top: 70px;
+    top: 1.5rem;
+}
+
+.left-content {
+    left: 1.5rem;
+}
+
+.right-content {
+    right: 1.5rem;
 }
 
 /* Left content */
@@ -564,6 +586,7 @@ ul.func a:hover,
 
 .profile-area {
     background-color: var(--bg-light-1);
+    margin-top: 70px;
 }
 
 .profile-detail {
