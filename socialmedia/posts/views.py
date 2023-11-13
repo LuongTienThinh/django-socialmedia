@@ -1,11 +1,11 @@
 from .models import Post, Comment, Reply, Share
-from .forms import PostForm, CommentForm, ReplyForm, ShareForm
+from .forms import PostForm, CommentForm, ReplyForm
 from authentication.models import User
-from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship
-from django.http import HttpResponseRedirect, JsonResponse
 from profiles.models import Profile
+from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship
+from social.forms import GroupPostForm
+from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q
-from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
@@ -40,7 +40,28 @@ def home1(request):
 
     invite_friends = Friendship.objects.filter(
         Q(user2=request.user, status='pending')
-    )
+    ).order_by('-created_at')
+    post_forms = []
+
+    # sửa bài viết
+    for post in post_list:
+        current_post = Post.objects.get(id=post.id)
+        form = PostForm(instance=current_post)
+        
+        # Thêm biểu mẫu của bài viết hiện tại vào danh sách
+        post_forms.append({'post': current_post, 'form': form})
+
+    #danh sách bạn bè
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
+    profiles = Profile.objects.all()
+
+    suggest_friends = User.objects.exclude(
+        Q(friendships1__user2=request.user, friendships1__status='friends') |
+        Q(friendships2__user1=request.user, friendships2__status='friends')
+    ).exclude(pk=request.user.id)
 
     context = {
         'messages': messages,
@@ -48,6 +69,11 @@ def home1(request):
         'user_groups':user_groups,
         'groups_not_joined':groups_not_joined,
         'invite_friends': invite_friends,
+        'form':form,
+        'post_forms':post_forms,
+        'friends':friends,        
+        'profiles':profiles,        
+        'suggest_friends':suggest_friends,        
     }
     return render(request, 'index.html', context)
 
@@ -71,7 +97,10 @@ def friend(request):
     group_ids_with_messages = memberships.values_list('group', flat=True)
     messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
 
-    return render(request, 'friends.html', {'post_list':post_list, 'friends':friends, 'num_friends':num_friends,'messages': messages,})
+    profiles = Profile.objects.all()
+    
+
+    return render(request, 'friends.html', {'post_list':post_list, 'friends':friends, 'num_friends':num_friends,'messages': messages, 'profiles':profiles,})
 
 
 @login_required(login_url='/auth/login/')
@@ -107,7 +136,29 @@ def group(request):
     groups_not_joined = Group.objects.exclude(
     Q(id__in=groups_joined) | Q(id__in=groups_rejected)
     ) 
-    return render(request, 'groups.html', {'messages': messages,'post_list':post_list, 'group_list':group_list, 'group_post':group_post, 'groups_not_joined':groups_not_joined ,'user_groups':user_groups})
+    # edit group post
+    group_post_list = GroupPost.objects.all().order_by('-created_at')
+    post_forms = []
+    for post in group_post_list:
+        current_post = GroupPost.objects.get(id=post.id)
+        form = GroupPostForm(instance=current_post)
+        
+        # Thêm biểu mẫu của bài viết hiện tại vào danh sách
+        post_forms.append({'post': current_post, 'form': form})
+
+    invite_friends = Friendship.objects.filter(
+        Q(user2=request.user, status='pending')
+    ).order_by('-created_at')
+
+    profiles = Profile.objects.all()
+
+    suggest_friends = User.objects.exclude(
+        Q(friendships1__user2=request.user, friendships1__status='friends') |
+        Q(friendships2__user1=request.user, friendships2__status='friends')
+    ).exclude(pk=request.user.id)
+
+
+    return render(request, 'groups.html', {'messages': messages,'friends':friends, 'post_list':post_list, 'group_list':group_list, 'group_post':group_post, 'groups_not_joined':groups_not_joined ,'user_groups':user_groups, 'post_forms':post_forms, 'profiles':profiles, 'invite_friends':invite_friends, 'suggest_friends':suggest_friends})
 
 
 # add post
@@ -146,6 +197,19 @@ class DeletePost(View):
 
         return redirect('home')
 
+# edit post
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditPostView(View):
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        form = PostForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('home',{'form': form, 'post': post})
+
 
 
 
@@ -154,7 +218,6 @@ class DeletePost(View):
 class AddCommentView(View):
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-
         form = CommentForm(request.POST) 
         if form.is_valid():
             comment = form.save(commit=False)
@@ -163,15 +226,17 @@ class AddCommentView(View):
             comment.save()  
 
             # Trả về phản hồi JSON với thông tin comment mới (nếu cần)
-            response_data = {
-                'comment_id': comment.id,
-                'content': comment.content,
-                'user': comment.user.username,
-                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            }
-            return JsonResponse(response_data)
+        #     response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        #     }
+        #     return JsonResponse(response_data)
 
-        return JsonResponse({'error': 'Invalid form data'})
+        # return JsonResponse({'error': 'Invalid form data'})
+            return redirect('home')
+        return redirect('home')
     
 # delete comment
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
@@ -204,25 +269,36 @@ class EditCommentView(View):
 
             if form.is_valid():
                 form.save()
-                response_data = {
-                'comment_id': comment.id,
-                'content': comment.content,
-                'user': comment.user.username,
-                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            }
-            return JsonResponse(response_data)
-        return JsonResponse({'message': 'Permission denied'}, status=403)
-        
+        #         response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        #     }
+        #     return JsonResponse(response_data)
+        # return JsonResponse({'message': 'Permission denied'}, status=403)
+            return redirect('home')
+        else:
+            return redirect('home')
 # Reply
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class DeleteReplyView(View):
+    def post(self, request, reply_id):
+        reply = Reply.objects.get(pk=reply_id)
+
+        if request.user == reply.user:
+            reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+    
     def get(self, request, reply_id):
         reply = Reply.objects.get(pk=reply_id)
 
         if request.user == reply.user:
             reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class EditReplyView(View):

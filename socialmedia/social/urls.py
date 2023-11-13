@@ -10,7 +10,9 @@ from .views import (
     ManageGroupMembershipView,
     FollowUserView, 
     UnfollowUserView, 
-    RejectFriendRequestView
+    RejectFriendRequestView,
+    EditGroupPostView,
+    DeleteGroupPost
 )
 
 
@@ -28,6 +30,8 @@ urlpatterns = [
     path('groups/<int:group_id>/manage-membership/<int:user_id>/<str:action>/', ManageGroupMembershipView.as_view(), name='manage-group-membership'),
     path('groups/<int:group_id>/join/', JoinGroupView.as_view(), name='join-group'),
     path('groups/<int:group_id>/leave/', LeaveGroupView.as_view(), name='leave-group'),
+    path('delete_post/<int:post_id>/', DeleteGroupPost.as_view(), name='delete_group_post'),
+    path('edit_post/<int:post_id>/', EditGroupPostView.as_view(), name='edit_group_post'),
 #     path('follow_user/', FollowUserView.as_view(), name='follow_user'),
 #     path('unfollow_user/<int:pk>/', UnfollowUserView.as_view(), name='unfollow_user'),
 

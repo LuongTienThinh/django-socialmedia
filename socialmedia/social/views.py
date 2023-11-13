@@ -1,18 +1,97 @@
-from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, View
+from django.views.generic import CreateView, UpdateView, View
 from django.urls import reverse_lazy
+from profiles.models import Profile
 from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup
 from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from posts.models import Post
 
 
 User = get_user_model()
 # views.py
+
+@login_required(login_url='/auth/login/')
+def Group_Posts(request, group_id):
+    # Lấy thông tin nhóm dựa trên group_id
+    group = Group.objects.get(id=group_id)
+    
+    # Lấy tất cả bài viết thuộc nhóm đó
+    posts = GroupPost.objects.filter(group=group)
+    # danh sách người dùng tham gia nhóm
+    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
+    # danh sách nhóm đã tham gia    
+    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
+    # danh sách nhóm bị từ chối
+    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
+    # danh sách nhom chưa tham gia
+    groups_not_joined = Group.objects.exclude(
+    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
+    ) 
+    # kiểm tra là thành viên của nhóm
+    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    # trạng thái
+    status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+
+    # hiển thị thông báo
+    groups = Group.objects.filter(creator=request.user)
+    memberships = GroupMembership.objects.filter(
+        group__in=groups,
+        status='requested'
+    )
+    # Lấy các group_ids mà có thông báo
+    group_ids_with_messages = memberships.values_list('group', flat=True)
+    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+
+    # edit group post
+    group_post_list = GroupPost.objects.all().order_by('-created_at')
+    post_forms = []
+    for post in group_post_list:
+        current_post = GroupPost.objects.get(id=post.id)
+        form = GroupPostForm(instance=current_post)
+        
+        # Thêm biểu mẫu của bài viết hiện tại vào danh sách
+        post_forms.append({'post': current_post, 'form': form})
+
+    profiles = Profile.objects.all()
+
+    #danh sách bạn bè
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
+    
+    invite_friends = Friendship.objects.filter(
+        Q(user2=request.user, status='pending')
+    ).order_by('-created_at')
+
+    suggest_friends = User.objects.exclude(
+        Q(friendships1__user2=request.user, friendships1__status='friends') |
+        Q(friendships2__user1=request.user, friendships2__status='friends')
+    ).exclude(pk=request.user.id)
+
+    context = {
+        'group': group,
+        'posts': posts,
+        'groups_joined':user_groups,
+        'groups_not_joined':groups_not_joined,
+        'is_member':is_member,
+        'status':status,
+        'messages':messages,
+        'post_forms':post_forms,
+        'profiles':profiles,
+        'friends':friends,
+        'invite_friends':invite_friends,
+        'suggest_friends':suggest_friends,
+    }
+    
+    return render(request, 'group_posts.html', context)
+
+
+
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class SendFriendRequestView(CreateView):
     model = Friendship
@@ -67,7 +146,8 @@ class AcceptFriendRequestView(UpdateView):
             # Người dùng hiện tại không liên quan đến yêu cầu kết bạn này
             raise Http404("Yêu cầu kết bạn không hợp lệ.")
 
-        return redirect(reverse_lazy('profiles:profile', kwargs={'pk': friendship.user1.pk}))
+        # return redirect(reverse_lazy('profiles:profile', kwargs={'pk': friendship.user1.pk}))
+        return redirect('home')
     
     def get_success_url(self):
         # Phương thức này không còn cần thiết nữa, vì chúng ta đã xử lý mọi thứ trong post
@@ -112,9 +192,10 @@ class CreateGroup(CreateView):
     def post(self, request):
         form = GroupForm(request.POST, request.FILES)  # Truyền dữ liệu từ POST và FILES vào mẫu
         if form.is_valid():
-            group = form.save()  # Lưu nhóm vào cơ sở dữ liệu
+            group = form.save(commit=False)  # Lưu nhóm vào cơ sở dữ liệu
             group.creator = self.request.user
-            GroupMembership.objects.create(user=self.request.user, group=group, creator=self.request.user)
+            group.save()
+            GroupMembership.objects.create(user=self.request.user, group=group)
             return redirect('social:group_posts', group_id=group.id)  # Chuyển hướng đến trang bài viết của nhóm vừa tạo
 
         return render(request, self.template_name, {'form': form})
@@ -139,56 +220,39 @@ class CreateGroupPostView(CreateView):
             message=f"Đã thêm bài viết mới: {post.title}",
             post=post
         )
-
         return super().form_valid(form)
     
     def get_success_url(self):
         group_id = self.kwargs.get('group_id')
         return reverse_lazy('social:group_posts', args=[group_id])
 
-@login_required(login_url='/auth/login/')
-def Group_Posts(request, group_id):
-    # Lấy thông tin nhóm dựa trên group_id
-    group = Group.objects.get(id=group_id)
-    
-    # Lấy tất cả bài viết thuộc nhóm đó
-    posts = GroupPost.objects.filter(group=group)
-    # danh sách người dùng tham gia nhóm
-    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
-    # danh sách nhóm đã tham gia    
-    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
-    # danh sách nhóm bị từ chối
-    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
-    # danh sách nhom chưa tham gia
-    groups_not_joined = Group.objects.exclude(
-    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    ) 
-    # kiểm tra là thành viên của nhóm
-    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
-    # trạng thái
-    status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteGroupPost(View):
+    def post(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        if request.user == post.user:
+            post.delete()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            
+    def get(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        if request.user == post.author:
+            post.delete()
 
-    # hiển thị thông báo
-    groups = Group.objects.filter(creator=request.user)
-    memberships = GroupMembership.objects.filter(
-        group__in=groups,
-        status='requested'
-    )
-    # Lấy các group_ids mà có thông báo
-    group_ids_with_messages = memberships.values_list('group', flat=True)
-    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+        return redirect('group')
 
-    context = {
-        'group': group,
-        'posts': posts,
-        'groups_joined':user_groups,
-        'groups_not_joined':groups_not_joined,
-        'is_member':is_member,
-        'status':status,
-        'messages':messages,
-    }
-    
-    return render(request, 'group_posts.html', context)
+# edit post
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditGroupPostView(View):
+
+    def post(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        form = GroupPostForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('group',{'form': form, 'post': post})
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class ManageGroupMembershipView(CreateView):
@@ -233,3 +297,4 @@ class LeaveGroupView(CreateView):
             pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
 
         return redirect('social:group_posts', group_id=group_id) 
+# comment

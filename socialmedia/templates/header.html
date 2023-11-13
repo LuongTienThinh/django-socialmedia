@@ -45,33 +45,29 @@
                             <div class="title text-center">Thông báo</div>
                             <hr>
                             {% for message in messages  %}
-                            <div class="item rounded">
-                                <div class="represent mb-2">
-                                    <div class="detail">
-                                        <div class="d-flex justify-content-between">
-                                            <div class="name">{% if message.post %} {{ message.post.author }} {% endif %} {{ message.message }}</div>
+                                <div class="item rounded">
+                                    <div class="represent mb-2">
+                                        <div class="detail">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="name">{% if message.post %} {{ message.post.author }} {% endif %} {{ message.message }}</div>
+                                            </div>
                                         </div>
                                     </div>
+                                    {% if message.post %} 
+                                        <span>{{ message.post.created_at }}</span>
+                                    {% else %}
+                                        <div class="action">
+                                            {% if message.status == 'approved' %}
+                                                <p>Bạn đã xác nhận <i class="fa-solid fa-check" style="color: #0cca32;"></i></p>
+                                            {% elif message.status == 'rejected' %}
+                                                <p>Bạn đã từ chối <i class="fa-solid fa-xmark" style="color: #e51f29;"></i></p>
+                                            {% else %}
+                                                <a href="{% url 'confirm-membership' message.user.id 'approve' message.group.id %}" class="accept">Xác nhận</a>
+                                                <a href="{% url 'confirm-membership' message.user.id 'reject' message.group.id %}" class="reject">Từ chối</a>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                {% if message.post %} 
-                                    <span>{{ message.post.created_at  }}</span>
-                                {% else %}
-                                    <div class="action">
-                                        {% if message.status == 'approved' %}
-                                            <p>Bạn đã xác nhận <i class="fa-solid fa-check" style="color: #0cca32;"></i></p>
-                                        {% elif message.status == 'rejected' %}
-                                            <p>Bạn đã từ chối <i class="fa-solid fa-xmark" style="color: #e51f29;"></i></p>
-                                        {% else %}
-                                            <button class="accept">
-                                                <a href="{% url 'confirm-membership' message.user.id 'approve' message.group.id  %}" class="accept-link">Xác nhận</a>
-                                            </button>
-                                            <button class="reject">
-                                                <a href="{% url 'confirm-membership' message.user.id 'reject' message.group.id %}" class="reject-link">Từ chối</a>
-                                            </button>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            </div>
                             {% endfor %}
                         </div>
                     </li>
@@ -85,14 +81,22 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li>
+                        {% if user.is_authenticated %}
                         <a href="{% if user.is_authenticated %}{% url 'profiles:profile' pk=user.pk %}{% endif %}" class="dropdown-item profile d-flex align-items-center">
-                            <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" alt="Avatar">
-                            <div class="username">
-                                {% if user.is_authenticated %}
-                                {{ user.username }}
+                            {% for profile in profiles %}               
+                                {% if user.id == profile.user.id %}
+                                    {% if profile.profile_pic %}
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                        {% else %}
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        {% endif %}
                                 {% endif %}
+                            {% endfor %}
+                            <div class="username">
+                                {{ user.username }}
                             </div>
                         </a>
+                        {% endif %}
                     </li>
                     <li><hr></li>
                     <li>

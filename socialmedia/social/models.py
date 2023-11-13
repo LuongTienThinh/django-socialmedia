@@ -74,4 +74,3 @@ class JoinRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.user} to join {self.group}"
-    

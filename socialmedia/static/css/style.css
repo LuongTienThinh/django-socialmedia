@@ -324,10 +324,11 @@ ul.func a:hover,
 }
 
 .invite-friend .action {
-    margin-left: calc(.5rem + 80px);
+    display: flex;
+    justify-content: center;
 }
 
-.invite-friend .action a {
+.invite-friend .action button {
     min-width: 120px;
     padding: .6rem 1.2rem;
     border-radius: 8px !important;
@@ -335,14 +336,16 @@ ul.func a:hover,
     text-align: center;
 }
 
-.invite-friend .action a.accept {
+.invite-friend .action button.accept {
     background-color: var(--primary-1);
     color: var(--light);
+    margin: .4rem;
 }
 
-.invite-friend .action a.reject {
+.invite-friend .action button.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
+    margin: .4rem;
 }
 
 /* notifycation */
@@ -358,22 +361,25 @@ ul.func a:hover,
 }
 
 .notifycation .action a {
-    font-size: .9rem;
     min-width: 120px;
     padding: .6rem 1.2rem;
     border-radius: 8px !important;
+    display: inline-block;
+    text-align: center;
 }
 
 .notifycation .action a.accept {
     background-color: var(--primary-1);
     color: var(--light);
-    border-radius: 15px !important
+    border-radius: 8px !important;
+    margin: .5rem;
 }
 
 .notifycation .action a.reject {
+    margin: .5rem;
     background-color: var(--bg-light-3);
     color: var(--dark);
-    border-radius: 15px !important
+    border-radius: 8px !important;
 
 }
 .notifycation .item {
