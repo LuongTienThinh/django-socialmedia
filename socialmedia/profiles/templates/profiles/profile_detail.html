@@ -1,5 +1,7 @@
 {% extends "base_generic.html" %}
 
+{% load filter_option %}
+
 {% block content %}
 <div class="profile-area p-4">
   {% if is_blocked %}
@@ -347,7 +349,13 @@
                     {% endif %}
                     <div class="author ms-2">
                       <a href="#" class="name">{{ post.user }}</a>
-                      <div class="upload-time">{{ post.created_at|timesince }} ago</div>
+                      <div class="upload-time">
+                        {% with time_since=post.created_at|timesince %}
+                          {% with values=time_since|split_timesince:", " %}
+                            {{values}}
+                          {% endwith %}
+                        {% endwith %}
+                      </div>
                     </div>
                     {% if post.user == user %}
                         <div class="author-action ms-auto">
@@ -475,7 +483,13 @@
                           {% endif %}
                           <div class="author ms-2">
                             <a href="#" class="name">{{ post.post.user.username }}</a>
-                            <div class="upload-time">{{ post.post.created_at|timesince }} ago</div>
+                            <div class="upload-time">
+                              {% with time_since=post.created_at|timesince %}
+                                {% with values=time_since|split_timesince:", " %}
+                                  {{values}}
+                                {% endwith %}
+                              {% endwith %}
+                            </div>
                           </div>
                         </div>
                         <div class="card-body">

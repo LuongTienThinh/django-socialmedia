@@ -817,18 +817,23 @@ ul.func a:hover,
 
 /* Comment  */
 .comment-form {
-    border-top: 1px solid var(--border-color-1) !important;
-    padding: 1rem 0;
+    padding: .5rem 0;
     margin: 0 1rem;
 }
-.post-comment input.content {
+.post-comment input.content, .post-reply-comment input.content {
     width: calc(100% - 100px);
 }
 
 .comment-content {
-    border: none !important;
+    border: none;
     margin: .25rem;
     padding: .5rem;
+}
+
+.comment-content input {
+    line-height: 1.25rem;
+    padding: .375rem 1rem;
+    height: 40px;
 }
 
 .comment-content .author {
@@ -837,6 +842,7 @@ ul.func a:hover,
     border-radius: 25px; 
     margin-left: 1rem;
     padding: .5rem 1rem;
+    min-width: 150px;
 }
 
 .comment-content .author .name {
@@ -844,3 +850,13 @@ ul.func a:hover,
     display: block;
 }
 
+.comment-content .reply {
+    margin-left: 1.5rem;
+    margin-top: .25rem;
+    font-size: .875rem;
+    height: 16px;
+}
+
+.comment-content .reply:hover {
+    text-decoration: underline;
+}
