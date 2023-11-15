@@ -7,7 +7,7 @@ from django.db.models import Q
 from authentication.models import User
 from posts.models import Post, Share
 from django.views.generic import DetailView, CreateView, View
-from social.models import Group, GroupMembership, MessageGroup, Friendship
+from social.models import Group, GroupMembership, MessageGroup, Friendship, Follow, Block
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -26,6 +26,8 @@ class ProfileDetailView(DetailView):
         ).first() or Friendship.objects.filter(
         user1=self.object.user, user2=self.request.user
         ).first()
+
+        fs = Friendship.objects.filter(user1=self.request.user, user2=self.object.user)
 
         if friendship:
             status = friendship.status
@@ -66,7 +68,13 @@ class ProfileDetailView(DetailView):
         group_ids_with_messages = memberships.values_list('group', flat=True)
         messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
 
+        user_block = Block.objects.filter(blocker=self.request.user, blocked_user=self.object.user).exists()
 
+        # Kiểm tra xem người dùng hiện tại có bị chặn bởi profile_user không
+        is_blocked = Block.objects.filter(blocker=self.object.user, blocked_user=self.request.user).exists()       
+
+        follows = Follow.objects.filter(Q(follower=self.object.user))
+        can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
         context['friends'] = friends
         context['num_friends'] = num_friends
         context['post_list'] = user_post_list
@@ -76,7 +84,12 @@ class ProfileDetailView(DetailView):
         context['post_forms'] = post_forms
         context['messages'] = messages
         context['status'] = status
-        context['all_profiles'] = all_profiles
+        context['profiles'] = all_profiles
+        context['follows'] = follows
+        context['can_follow'] = can_follow
+        context['user_block'] = user_block
+        context['is_blocked'] = is_blocked
+        context['fs'] = fs
         return context  
 
 

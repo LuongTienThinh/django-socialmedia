@@ -25,6 +25,7 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('profiles/', include('profiles.urls')),
     path('social/', include('social.urls')),
+    # path("chat_private/", include("chat_private.urls")),
     path('', include('posts.urls')),
 ]
 

@@ -1,7 +1,7 @@
 from django.views.generic import CreateView, UpdateView, View
 from django.urls import reverse_lazy
 from profiles.models import Profile
-from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup
+from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup, Block
 from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
@@ -155,10 +155,28 @@ class AcceptFriendRequestView(UpdateView):
 
 class RejectFriendRequestView(CreateView):
     def post(self, request, pk):
-        friend_request = get_object_or_404(Friendship, id=pk)        
+        friend_request = get_object_or_404(Friendship, id=pk)
         friend_request.delete()
-        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
 
+        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
+    
+
+class CancelFriendRequestView(View):
+    def post(self, request, pk):
+        # Tìm kiếm yêu cầu kết bạn dựa trên id
+        friend_request = get_object_or_404(Friendship, id=pk)
+
+        # Kiểm tra xem người dùng hiện tại có liên quan đến yêu cầu kết bạn không
+        if request.user == friend_request.user1 or request.user == friend_request.user2:
+            # Xóa yêu cầu kết bạn
+            friend_request.delete()
+
+            # Nếu yêu cầu kết bạn đã được chấp nhận, thì xóa cả đối tượng Friendship mới
+            if friend_request.status == 'friends':
+                Friendship.objects.filter(user1=friend_request.user2, user2=friend_request.user1).delete()
+
+        # Chuyển hướng đến trang profile hoặc nơi khác phù hợp
+        return redirect('profiles:profile', pk=request.user.profile.pk)
 
 class FollowUserView(View):
     def dispatch(self, request, *args, **kwargs):
@@ -297,4 +315,32 @@ class LeaveGroupView(CreateView):
             pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
 
         return redirect('social:group_posts', group_id=group_id) 
-# comment
+
+# block user
+@login_required
+def block_user(request, user_id):
+    blocked_user = User.objects.get(pk=user_id)
+
+    # Kiểm tra xem đã có trong danh sách chặn chưa
+    if not Block.objects.filter(blocker=request.user, blocked_user=blocked_user).exists():
+        Block.objects.create(blocker=request.user, blocked_user=blocked_user)
+
+    return redirect('profiles:profile', pk=user_id)
+
+@login_required
+def unblock_user(request, user_id):
+    blocked_user = User.objects.get(pk=user_id)
+
+    # Kiểm tra xem đã chặn chưa
+    try:
+        block_entry = Block.objects.get(blocker=request.user, blocked_user=blocked_user)
+        block_entry.delete()  # Xóa bản ghi chặn nếu tồn tại
+    except Block.DoesNotExist:
+        pass  # Nếu không tìm thấy bản ghi chặn, không cần làm gì cả
+
+    # Điều hướng trở lại trang người dùng hoặc trang trước đó
+    referer = request.META.get('HTTP_REFERER', None)
+    if referer:
+        return redirect(referer)
+    else:
+        return redirect('profiles:profile', pk=user_id)

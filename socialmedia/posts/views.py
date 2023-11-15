@@ -2,7 +2,7 @@ from .models import Post, Comment, Reply, Share
 from .forms import PostForm, CommentForm, ReplyForm
 from authentication.models import User
 from profiles.models import Profile
-from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship
+from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship, Block
 from social.forms import GroupPostForm
 from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q
@@ -26,7 +26,13 @@ def home1(request):
     messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
 
     # danh sach bài viết 
-    post_list = Post.objects.all().order_by('-created_at') 
+    # Lấy danh sách những người dùng đã bị chặn bởi người dùng hiện tại
+    blocked_users = Block.objects.filter(blocked_user=request.user).values_list('blocker', flat=True)
+
+    # Lấy những bài post mà người tạo không bị chặn
+    post_list = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
+
+
     # danh sách nhóm
     user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
     # danh sách nhóm đã tham gia    
@@ -44,7 +50,8 @@ def home1(request):
     post_forms = []
 
     # sửa bài viết
-    for post in post_list:
+    form_post_list = Post.objects.all().order_by('-created_at')
+    for post in form_post_list:
         current_post = Post.objects.get(id=post.id)
         form = PostForm(instance=current_post)
         
@@ -74,6 +81,7 @@ def home1(request):
         'friends':friends,        
         'profiles':profiles,        
         'suggest_friends':suggest_friends,        
+        'blocked_users':blocked_users,        
     }
     return render(request, 'index.html', context)
 

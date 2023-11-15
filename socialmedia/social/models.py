@@ -74,3 +74,11 @@ class JoinRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.user} to join {self.group}"
+
+# block user
+class Block(models.Model):
+    blocker = models.ForeignKey(User, related_name='blocker', on_delete=models.CASCADE)
+    blocked_user = models.ForeignKey(User, related_name='blocked_user', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked_user')
