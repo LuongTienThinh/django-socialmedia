@@ -220,7 +220,7 @@
                 <div class="card post-detail">
                     <div class="card-top d-flex align-items-center">
                         
-                        {% for profile in profiles %}               
+                    {% for profile in profiles %}               
                         {% if user.id == profile.user.id %}
                             {% if profile.profile_pic %}
                                     <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">

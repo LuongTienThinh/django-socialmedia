@@ -73,6 +73,9 @@ class ProfileDetailView(DetailView):
         # Kiểm tra xem người dùng hiện tại có bị chặn bởi profile_user không
         is_blocked = Block.objects.filter(blocker=self.object.user, blocked_user=self.request.user).exists()       
 
+        # danh sách người dùng bị chặn
+        user_block_list = Block.objects.filter(blocker = self.request.user)
+
         follows = Follow.objects.filter(Q(follower=self.object.user))
         can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
         context['friends'] = friends
@@ -89,6 +92,7 @@ class ProfileDetailView(DetailView):
         context['can_follow'] = can_follow
         context['user_block'] = user_block
         context['is_blocked'] = is_blocked
+        context['user_block_list'] = user_block_list
         context['fs'] = fs
         return context  
 

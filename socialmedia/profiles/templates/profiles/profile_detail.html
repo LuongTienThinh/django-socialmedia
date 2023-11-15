@@ -4,7 +4,9 @@
 <div class="profile-area p-4">
   {% if is_blocked %}
     <h1 class="text-center">Trang cá nhân này không tồn tại hoặc bạn đã không có quyền xem trang cá nhân này</h1>
-  {% else  %}
+  {% elif user_block  %}
+    <h1 class="text-center">Bạn đã chặn người dùng này</h1>
+  {% else %}
     <div class="container">   
       <div class="profile-detail">
         {% if object.cover_photo %}
@@ -27,13 +29,7 @@
               <div class="friend fs-5 mt-2">{{ num_friends }} bạn bè</div>
             </div>
           </div>
-            {% if user_block   %}
-              <p>Bạn đã chặn người dùng này</p>
-              <form action="{% url 'social:unblock_user' user_id=object.user.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn-primary">Bỏ chặn người dùng</button>
-              </form>            
-            {% endif %}
+           
           <div class="author-action d-flex">
               <div class="update-profile">
                 {% if user.is_authenticated and user.id == object.user.id %}
@@ -98,31 +94,78 @@
                 </div>
               </div>
               <div class="dropdown ms-auto">
-                  {% if user.is_authenticated and user.id != object.user.id %}
                     <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-ellipsis-vertical"></i>
                     </button>
-                  {% endif %}
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                    {% if user.is_authenticated and user.id != object.user.id %}                      
                       <li>                             
-                          <a href="{% url 'social:block_user' user_id=object.user.id %}" class="dropdown-item logout">
-                              <span><i class="fa-solid fa-user-lock"></i> Chặn người dùng </span>
-                          </a>                                 
-                      </li>
+                            <a href="{% url 'social:block_user' user_id=object.user.id %}" class="dropdown-item logout">
+                                <span><i class="fa-solid fa-user-lock"></i> Chặn người dùng </span>
+                            </a>                                 
+                        </li>
+                    {% endif %}
                       <li>
-                          <!-- Chỉnh sửa bài viết -->
-                          {% if can_follow and request.user.id != object.user.id %}
+                        {% if user.id == object.user.id %}
+                          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            <i class="fa-solid fa-users"></i>  Người dùng đã chặn
+                          </button>
+                          {% endif %}
+                          
+                      </li>
+                      {% if can_follow and request.user.id != object.user.id %}
+                        <li>
                             <form action="{% url 'social:unfollow_user' user_id=object.user.id %}" method="post">
                               {% csrf_token %}
                               <button type="submit"><i class="fa-solid fa-xmark" ></i> Bỏ theo dõi </button>
                             </form>
-                          {% endif %}                             
-                      </li>
+                        </li>
+                      {% endif %}                             
                   </ul>
               </div>
               {% endif %}
             </div>
 
+        </div>
+        <!-- model block_user-->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Danh sách người dùng bị chặn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  {% for block in user_block_list %}
+                  <li class="d-flex">
+                    <a href="{% url 'profiles:profile' block.blocked_user.id   %}" class="user-item">
+                      {% for profile in profiles %}   
+                          {% if block.blocked_user.id == profile.user.id %}             
+                            <img src="{% if profile.profile_pic %}
+                                {{ profile.profile_pic.url  }}
+                            {% else %} 
+                                https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                            {% endif %} "
+                            class="card-img" style="width: 40px; height: 40px;" alt="avatar">
+                          {% endif %}
+                      {% endfor %}
+                      <span>{{ block.blocked_user.username }}</span>
+                    </a>
+                    <form class="ms-auto" action="{% url 'social:unblock_user' user_id=block.blocked_user.id %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-primary">Bỏ chặn người dùng</button>
+                    </form>  
+               
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>                
+              </div>
+            </div>
+          </div>
         </div>
         <hr>
         <ul class="accordion action d-flex justify-content-center align-items-center" id="profilePage">

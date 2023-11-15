@@ -39,6 +39,7 @@ urlpatterns = [
     path('edit_post/<int:post_id>/', EditGroupPostView.as_view(), name='edit_group_post'),
     path('block_user/<int:user_id>/', block_user, name='block_user'),
     path('unblock_user/<int:user_id>/', unblock_user, name='unblock_user'),
+
 #     path('follow_user/', FollowUserView.as_view(), name='follow_user'),
 #     path('unfollow_user/<int:pk>/', UnfollowUserView.as_view(), name='unfollow_user'),
 

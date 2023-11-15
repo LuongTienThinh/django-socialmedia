@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Friendship, Group, GroupMembership, GroupPost, MessageGroup, Follow, Block
+from .models import Friendship, Group, GroupMembership, GroupPost, MessageGroup, Follow, Block, GroupComment, GroupReply
 
 class FriendshipAdmin(admin.ModelAdmin):
     list_display = ('id', 'user1', 'user2', 'status', 'created_at')
@@ -18,3 +18,5 @@ admin.site.register(GroupPost)
 admin.site.register(Group)
 admin.site.register(MessageGroup)
 admin.site.register(Block)
+admin.site.register(GroupComment)
+admin.site.register(GroupReply)
