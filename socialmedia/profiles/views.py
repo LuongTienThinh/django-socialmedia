@@ -78,6 +78,7 @@ class ProfileDetailView(DetailView):
 
         follows = Follow.objects.filter(Q(follower=self.object.user))
         can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
+        
         context['friends'] = friends
         context['num_friends'] = num_friends
         context['post_list'] = user_post_list

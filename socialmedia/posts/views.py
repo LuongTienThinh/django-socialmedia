@@ -386,6 +386,7 @@ class ConfirmMembershipView(View):
 # Share
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class SharePostView(View):   
+
     def post(self, request, post_id):
         post = get_object_or_404(Post, pk=post_id)
         user = request.user
@@ -394,3 +395,26 @@ class SharePostView(View):
         user=user
         )
         return redirect('profiles:profile', pk=request.user.id)
+    
+def search(request):
+    query = request.GET.get('q', '')
+    
+    # Tìm kiếm bài post theo title hoặc content
+    post_results = Post.objects.filter(Q(title__icontains=query) | Q(content__icontains=query) | Q(user__username__icontains=query))
+    
+    # Tìm kiếm người dùng theo username
+    user_results = User.objects.filter(username__icontains=query)
+    
+    # Tìm kiếm nhóm theo tên nhóm
+    group_results = Group.objects.filter(name__icontains=query)
+    
+    profiles = Profile.objects.all()
+    context = {
+        'query': query,
+        'post_results': post_results,
+        'user_results': user_results,
+        'group_results': group_results,
+        'profiles': profiles,
+    }
+
+    return render(request, 'search_results.html', context)

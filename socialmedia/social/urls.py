@@ -16,6 +16,13 @@ from .views import (
     CancelFriendRequestView,
     block_user,
     unblock_user,
+    AddCommentView, 
+    DeleteCommentView, 
+    EditCommentView, 
+    AddReplyView, 
+    DeleteReplyView, 
+    EditReplyView,
+    
     
 )
 
@@ -39,7 +46,12 @@ urlpatterns = [
     path('edit_post/<int:post_id>/', EditGroupPostView.as_view(), name='edit_group_post'),
     path('block_user/<int:user_id>/', block_user, name='block_user'),
     path('unblock_user/<int:user_id>/', unblock_user, name='unblock_user'),
-
+    path('add_comment/<int:post_id>/', AddCommentView.as_view(), name='add_comment'),
+    path('delete_comment/<int:comment_id>/', DeleteCommentView.as_view(), name='delete_comment'),
+    path('edit_comment/<int:comment_id>/', EditCommentView.as_view(), name='edit_comment'),
+    path('add_reply/<int:comment_id>/', AddReplyView.as_view(), name='add_reply'),
+    path('delete_reply/<int:reply_id>/', DeleteReplyView.as_view(), name='delete_reply'),
+    path('edit_reply/<int:reply_id>/', EditReplyView.as_view(), name='edit_reply'),
 #     path('follow_user/', FollowUserView.as_view(), name='follow_user'),
 #     path('unfollow_user/<int:pk>/', UnfollowUserView.as_view(), name='unfollow_user'),
 

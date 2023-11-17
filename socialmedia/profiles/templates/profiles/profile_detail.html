@@ -1,5 +1,7 @@
 {% extends "base_generic.html" %}
 
+{% load filter_option %}
+
 {% block content %}
 <div class="profile-area p-4">
   {% if is_blocked %}
@@ -196,6 +198,9 @@
                   <li>Tiểu sử</li>
                   <li>Sở thích</li>
                   <li>Nơi ở</li>
+                  {% if object.user.followers %}
+                  <li>Có {{ object.user.followers.count }} người theo dõi</li>
+                  {% endif %}
                 </ul>
               </div>
               <div class="friend">
@@ -390,7 +395,13 @@
                     {% endif %}
                     <div class="author ms-2">
                       <a href="#" class="name">{{ post.user }}</a>
-                      <div class="upload-time">{{ post.created_at|timesince }} ago</div>
+                      <div class="upload-time">
+                        {% with time_since=post.created_at|timesince %}
+                          {% with values=time_since|split_timesince:", " %}
+                            {{values}}
+                          {% endwith %}
+                        {% endwith %}
+                      </div>
                     </div>
                     {% if post.user == user %}
                         <div class="author-action ms-auto">
@@ -518,7 +529,13 @@
                           {% endif %}
                           <div class="author ms-2">
                             <a href="#" class="name">{{ post.post.user.username }}</a>
-                            <div class="upload-time">{{ post.post.created_at|timesince }} ago</div>
+                            <div class="upload-time">
+                              {% with time_since=post.created_at|timesince %}
+                                {% with values=time_since|split_timesince:", " %}
+                                  {{values}}
+                                {% endwith %}
+                              {% endwith %}
+                            </div>
                           </div>
                         </div>
                         <div class="card-body">
@@ -658,24 +675,36 @@
               </div>
               <ul class="accordion friend-tab d-flex align-items-center" id="friend-tab">
                 <li class="accordion-item friend-tab-item">
-                  <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFriend" aria-expanded="true" aria-controls="listFriend">
-                    Bạn bè
+                  <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFriend" aria-expanded="true" aria-controls="listFriend">                 
+                 Bạn bè 
                   </button>
                 </li>
                 {% if request.user.id == object.user.id %}
                 <li class="accordion-item friend-tab-item">
-                  <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriend" aria-expanded="false" aria-controls="inviteFriend">
-                    Lời mời kết bạn
+                  <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#follower" aria-expanded="false" aria-controls="inviteFriend">
+                    Người theo dõi
                   </button>
                 </li>
                 {% endif %}
               </ul>
+              <!-- bạn bè -->
               <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
                   {% for friend in friends %}                  
                     <a href="{% url 'profiles:profile' friend.id %}" class="friend-list-item d-flex align-items-center">
                       <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
                       <div class="name">{{ friend.username }}</div>                  
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+              <!-- người theo dõi -->
+              <div class="accordion-collapse collapse show friend-tab-detail" id="follower" data-bs-parent="#friend-tab">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                  {% for follower in follows %}                  
+                    <a href="{% url 'profiles:profile' follower.id %}" class="friend-list-item d-flex align-items-center">
+                      <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
+                      <div class="name">{{ follower.username }}</div>                  
                     </a>
                   {% endfor %}
                 </div>
@@ -699,6 +728,9 @@
             </div>
           </div>
         </div>
+
+        <!-- Bạn bè -->
+
         <div class="accordion-collapse collapse profile-page" id="friendPage" data-bs-parent="#profilePage">
           <div class="friend">
             <div class="friend-card">
@@ -712,6 +744,11 @@
                     Bạn bè
                   </button>
                 </li>
+                <li class="accordion-item friend-page-tab-item">
+                  <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFollower" aria-expanded="true" aria-controls="listFriendPage">
+                    Người theo dõi
+                  </button>
+                </li>
                 {% if request.user.id == object.user.id %}
                 <li class="accordion-item friend-page-tab-item">
                   <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriendPage" aria-expanded="false" aria-controls="inviteFriendPage">
@@ -720,6 +757,7 @@
                 </li>
                 {% endif %}
               </ul>
+              <!-- friend list -->
               <div class="accordion-collapse collapse show friend-page-tab-detail" id="listFriendPage" data-bs-parent="#friend-page-tab">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
                   {% for friend in friends %}
@@ -739,6 +777,7 @@
                   {% endfor %}                   
                 </div>
               </div>
+              <!-- invited_list -->
               <div class="accordion-collapse collapse friend-page-tab-detail" id="inviteFriendPage" data-bs-parent="#friend-page-tab">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
                   {% for friend in invite_friends %}
@@ -752,6 +791,26 @@
                       <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="reject">Từ chối</a>
                     </div>
                   </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <!-- follower list -->
+              <div class="accordion-collapse collapse friend-page-tab-detail" id="listFollower" data-bs-parent="#friend-page-tab">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                  {% for follower in follows %}
+                    <a href="{% url 'profiles:profile' pk=follower.followee.id %}" class="friend-list-item d-flex align-items-center">
+                        {% for profile in profiles %}   
+                            {% if follower.followee.id == profile.user.id %}             
+                              <img src="{% if profile.profile_pic %}
+                                  {{ profile.profile_pic.url  }}
+                              {% else %} 
+                                  https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                              {% endif %} "
+                              class="card-img" alt="avatar">
+                            {% endif %}
+                        {% endfor %}
+                      <div class="name">{{ follower.followee.username }}</div>                  
+                    </a>
                   {% endfor %}
                 </div>
               </div>

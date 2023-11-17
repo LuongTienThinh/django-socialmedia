@@ -6,8 +6,8 @@
             </a>
             <nav class="navbar bg-body-tertiary" style="width: calc(100% - 80px)">
                 <div class="container-fluid">
-                    <form class="d-flex w-100" role="search">
-                        <input class="form-control me-2 input-search" type="search" placeholder="Tìm kiếm trên facebook" aria-label="Search">
+                    <form class="d-flex w-100" role="search" action="{% url 'search' %}">
+                        <input class="form-control me-2 input-search" name="q" type="search" placeholder="Tìm kiếm trên django social" aria-label="Search">
                     </form>
                 </div>
             </nav>

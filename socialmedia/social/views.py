@@ -1,11 +1,11 @@
 from django.views.generic import CreateView, UpdateView, View
 from django.urls import reverse_lazy
 from profiles.models import Profile
-from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup, Block
-from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm
+from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup, Block, GroupComment, GroupReply
+from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm, GroupCommentForm, GroupReplyForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -315,6 +315,127 @@ class LeaveGroupView(CreateView):
             pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
 
         return redirect('social:group_posts', group_id=group_id) 
+
+# comment group
+# Comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class AddCommentView(View):
+    def post(self, request, post_id):
+        post = GroupPost.objects.get(pk=post_id)
+        form = GroupCommentForm(request.POST) 
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()  
+
+            # Trả về phản hồi JSON với thông tin comment mới (nếu cần)
+        #     response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        #     }
+        #     return JsonResponse(response_data)
+
+        # return JsonResponse({'error': 'Invalid form data'})
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('group')
+    
+# delete comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteCommentView(View):
+    def post(self, request, comment_id):
+        comment = GroupComment.objects.get(pk=comment_id)
+
+        if request.user == comment.user:
+            comment.delete()
+
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+        
+    def get(self, request, comment_id):
+        comment = GroupComment.objects.get(pk=comment_id)
+
+        if request.user == comment.user:
+            comment.delete()
+
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+    
+
+# edit comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditCommentView(View):
+    def post(self, request, comment_id):
+        comment = get_object_or_404(GroupComment, pk=comment_id)
+
+        if request.user == comment.user:
+            form = GroupCommentForm(request.POST, instance=comment)
+
+            if form.is_valid():
+                form.save()
+        #         response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        #     }
+        #     return JsonResponse(response_data)
+        # return JsonResponse({'message': 'Permission denied'}, status=403)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+# Reply
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteReplyView(View):
+    def post(self, request, reply_id):
+        reply = GroupReply.objects.get(pk=reply_id)
+
+        if request.user == reply.user:
+            reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+    
+    def get(self, request, reply_id):
+        reply = GroupReply.objects.get(pk=reply_id)
+
+        if request.user == reply.user:
+            reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditReplyView(View):
+    def post(self, request, reply_id):
+        reply = get_object_or_404(GroupReply, pk=reply_id)
+
+        if request.user == reply.user:
+            form = GroupReplyForm(request.POST, instance=reply)
+
+            if form.is_valid():
+                form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class AddReplyView(View):
+    def post(self, request, comment_id):
+        comment = get_object_or_404(GroupComment, pk=comment_id)
+        reply_form = GroupReplyForm(request.POST)
+
+        if reply_form.is_valid():
+            content = reply_form.cleaned_data['content']
+            user = request.user  # Lấy người dùng hiện tại
+            reply = GroupReply(content=content, comment=comment, user=user)
+            reply.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
 
 # block user
 @login_required
