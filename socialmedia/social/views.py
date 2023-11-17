@@ -1,18 +1,97 @@
-from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, View
+from django.views.generic import CreateView, UpdateView, View
 from django.urls import reverse_lazy
-from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup
-from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm
+from profiles.models import Profile
+from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup, Block, GroupComment, GroupReply
+from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm, GroupCommentForm, GroupReplyForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from posts.models import Post
 
 
 User = get_user_model()
 # views.py
+
+@login_required(login_url='/auth/login/')
+def Group_Posts(request, group_id):
+    # Lấy thông tin nhóm dựa trên group_id
+    group = Group.objects.get(id=group_id)
+    
+    # Lấy tất cả bài viết thuộc nhóm đó
+    posts = GroupPost.objects.filter(group=group)
+    # danh sách người dùng tham gia nhóm
+    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
+    # danh sách nhóm đã tham gia    
+    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
+    # danh sách nhóm bị từ chối
+    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
+    # danh sách nhom chưa tham gia
+    groups_not_joined = Group.objects.exclude(
+    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
+    ) 
+    # kiểm tra là thành viên của nhóm
+    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    # trạng thái
+    status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+
+    # hiển thị thông báo
+    groups = Group.objects.filter(creator=request.user)
+    memberships = GroupMembership.objects.filter(
+        group__in=groups,
+        status='requested'
+    )
+    # Lấy các group_ids mà có thông báo
+    group_ids_with_messages = memberships.values_list('group', flat=True)
+    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+
+    # edit group post
+    group_post_list = GroupPost.objects.all().order_by('-created_at')
+    post_forms = []
+    for post in group_post_list:
+        current_post = GroupPost.objects.get(id=post.id)
+        form = GroupPostForm(instance=current_post)
+        
+        # Thêm biểu mẫu của bài viết hiện tại vào danh sách
+        post_forms.append({'post': current_post, 'form': form})
+
+    profiles = Profile.objects.all()
+
+    #danh sách bạn bè
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
+    
+    invite_friends = Friendship.objects.filter(
+        Q(user2=request.user, status='pending')
+    ).order_by('-created_at')
+
+    suggest_friends = User.objects.exclude(
+        Q(friendships1__user2=request.user, friendships1__status='friends') |
+        Q(friendships2__user1=request.user, friendships2__status='friends')
+    ).exclude(pk=request.user.id)
+
+    context = {
+        'group': group,
+        'posts': posts,
+        'groups_joined':user_groups,
+        'groups_not_joined':groups_not_joined,
+        'is_member':is_member,
+        'status':status,
+        'messages':messages,
+        'post_forms':post_forms,
+        'profiles':profiles,
+        'friends':friends,
+        'invite_friends':invite_friends,
+        'suggest_friends':suggest_friends,
+    }
+    
+    return render(request, 'group_posts.html', context)
+
+
+
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class SendFriendRequestView(CreateView):
     model = Friendship
@@ -67,7 +146,8 @@ class AcceptFriendRequestView(UpdateView):
             # Người dùng hiện tại không liên quan đến yêu cầu kết bạn này
             raise Http404("Yêu cầu kết bạn không hợp lệ.")
 
-        return redirect(reverse_lazy('profiles:profile', kwargs={'pk': friendship.user1.pk}))
+        # return redirect(reverse_lazy('profiles:profile', kwargs={'pk': friendship.user1.pk}))
+        return redirect('home')
     
     def get_success_url(self):
         # Phương thức này không còn cần thiết nữa, vì chúng ta đã xử lý mọi thứ trong post
@@ -75,10 +155,28 @@ class AcceptFriendRequestView(UpdateView):
 
 class RejectFriendRequestView(CreateView):
     def post(self, request, pk):
-        friend_request = get_object_or_404(Friendship, id=pk)        
+        friend_request = get_object_or_404(Friendship, id=pk)
         friend_request.delete()
-        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
 
+        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
+    
+
+class CancelFriendRequestView(View):
+    def post(self, request, pk):
+        # Tìm kiếm yêu cầu kết bạn dựa trên id
+        friend_request = get_object_or_404(Friendship, id=pk)
+
+        # Kiểm tra xem người dùng hiện tại có liên quan đến yêu cầu kết bạn không
+        if request.user == friend_request.user1 or request.user == friend_request.user2:
+            # Xóa yêu cầu kết bạn
+            friend_request.delete()
+
+            # Nếu yêu cầu kết bạn đã được chấp nhận, thì xóa cả đối tượng Friendship mới
+            if friend_request.status == 'friends':
+                Friendship.objects.filter(user1=friend_request.user2, user2=friend_request.user1).delete()
+
+        # Chuyển hướng đến trang profile hoặc nơi khác phù hợp
+        return redirect('profiles:profile', pk=request.user.profile.pk)
 
 class FollowUserView(View):
     def dispatch(self, request, *args, **kwargs):
@@ -112,9 +210,10 @@ class CreateGroup(CreateView):
     def post(self, request):
         form = GroupForm(request.POST, request.FILES)  # Truyền dữ liệu từ POST và FILES vào mẫu
         if form.is_valid():
-            group = form.save()  # Lưu nhóm vào cơ sở dữ liệu
+            group = form.save(commit=False)  # Lưu nhóm vào cơ sở dữ liệu
             group.creator = self.request.user
-            GroupMembership.objects.create(user=self.request.user, group=group, creator=self.request.user)
+            group.save()
+            GroupMembership.objects.create(user=self.request.user, group=group)
             return redirect('social:group_posts', group_id=group.id)  # Chuyển hướng đến trang bài viết của nhóm vừa tạo
 
         return render(request, self.template_name, {'form': form})
@@ -139,56 +238,39 @@ class CreateGroupPostView(CreateView):
             message=f"Đã thêm bài viết mới: {post.title}",
             post=post
         )
-
         return super().form_valid(form)
     
     def get_success_url(self):
         group_id = self.kwargs.get('group_id')
         return reverse_lazy('social:group_posts', args=[group_id])
 
-@login_required(login_url='/auth/login/')
-def Group_Posts(request, group_id):
-    # Lấy thông tin nhóm dựa trên group_id
-    group = Group.objects.get(id=group_id)
-    
-    # Lấy tất cả bài viết thuộc nhóm đó
-    posts = GroupPost.objects.filter(group=group)
-    # danh sách người dùng tham gia nhóm
-    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
-    # danh sách nhóm đã tham gia    
-    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
-    # danh sách nhóm bị từ chối
-    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
-    # danh sách nhom chưa tham gia
-    groups_not_joined = Group.objects.exclude(
-    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    ) 
-    # kiểm tra là thành viên của nhóm
-    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
-    # trạng thái
-    status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteGroupPost(View):
+    def post(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        if request.user == post.user:
+            post.delete()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            
+    def get(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        if request.user == post.author:
+            post.delete()
 
-    # hiển thị thông báo
-    groups = Group.objects.filter(creator=request.user)
-    memberships = GroupMembership.objects.filter(
-        group__in=groups,
-        status='requested'
-    )
-    # Lấy các group_ids mà có thông báo
-    group_ids_with_messages = memberships.values_list('group', flat=True)
-    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+        return redirect('group')
 
-    context = {
-        'group': group,
-        'posts': posts,
-        'groups_joined':user_groups,
-        'groups_not_joined':groups_not_joined,
-        'is_member':is_member,
-        'status':status,
-        'messages':messages,
-    }
-    
-    return render(request, 'group_posts.html', context)
+# edit post
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditGroupPostView(View):
+
+    def post(self, request, post_id):
+        post = get_object_or_404(GroupPost, id=post_id)
+        form = GroupPostForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('group',{'form': form, 'post': post})
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class ManageGroupMembershipView(CreateView):
@@ -233,3 +315,153 @@ class LeaveGroupView(CreateView):
             pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
 
         return redirect('social:group_posts', group_id=group_id) 
+
+# comment group
+# Comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class AddCommentView(View):
+    def post(self, request, post_id):
+        post = GroupPost.objects.get(pk=post_id)
+        form = GroupCommentForm(request.POST) 
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()  
+
+            # Trả về phản hồi JSON với thông tin comment mới (nếu cần)
+        #     response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        #     }
+        #     return JsonResponse(response_data)
+
+        # return JsonResponse({'error': 'Invalid form data'})
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('group')
+    
+# delete comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteCommentView(View):
+    def post(self, request, comment_id):
+        comment = GroupComment.objects.get(pk=comment_id)
+
+        if request.user == comment.user:
+            comment.delete()
+
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+        
+    def get(self, request, comment_id):
+        comment = GroupComment.objects.get(pk=comment_id)
+
+        if request.user == comment.user:
+            comment.delete()
+
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+    
+
+# edit comment
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditCommentView(View):
+    def post(self, request, comment_id):
+        comment = get_object_or_404(GroupComment, pk=comment_id)
+
+        if request.user == comment.user:
+            form = GroupCommentForm(request.POST, instance=comment)
+
+            if form.is_valid():
+                form.save()
+        #         response_data = {
+        #         'comment_id': comment.id,
+        #         'content': comment.content,
+        #         'user': comment.user.username,
+        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        #     }
+        #     return JsonResponse(response_data)
+        # return JsonResponse({'message': 'Permission denied'}, status=403)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+# Reply
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteReplyView(View):
+    def post(self, request, reply_id):
+        reply = GroupReply.objects.get(pk=reply_id)
+
+        if request.user == reply.user:
+            reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+    
+    def get(self, request, reply_id):
+        reply = GroupReply.objects.get(pk=reply_id)
+
+        if request.user == reply.user:
+            reply.delete()
+            response_data = {'message': 'Comment deleted successfully'}
+        return JsonResponse(response_data)
+
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditReplyView(View):
+    def post(self, request, reply_id):
+        reply = get_object_or_404(GroupReply, pk=reply_id)
+
+        if request.user == reply.user:
+            form = GroupReplyForm(request.POST, instance=reply)
+
+            if form.is_valid():
+                form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+    
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class AddReplyView(View):
+    def post(self, request, comment_id):
+        comment = get_object_or_404(GroupComment, pk=comment_id)
+        reply_form = GroupReplyForm(request.POST)
+
+        if reply_form.is_valid():
+            content = reply_form.cleaned_data['content']
+            user = request.user  # Lấy người dùng hiện tại
+            reply = GroupReply(content=content, comment=comment, user=user)
+            reply.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+
+# block user
+@login_required
+def block_user(request, user_id):
+    blocked_user = User.objects.get(pk=user_id)
+
+    # Kiểm tra xem đã có trong danh sách chặn chưa
+    if not Block.objects.filter(blocker=request.user, blocked_user=blocked_user).exists():
+        Block.objects.create(blocker=request.user, blocked_user=blocked_user)
+
+    return redirect('profiles:profile', pk=user_id)
+
+@login_required
+def unblock_user(request, user_id):
+    blocked_user = User.objects.get(pk=user_id)
+
+    # Kiểm tra xem đã chặn chưa
+    try:
+        block_entry = Block.objects.get(blocker=request.user, blocked_user=blocked_user)
+        block_entry.delete()  # Xóa bản ghi chặn nếu tồn tại
+    except Block.DoesNotExist:
+        pass  # Nếu không tìm thấy bản ghi chặn, không cần làm gì cả
+
+    # Điều hướng trở lại trang người dùng hoặc trang trước đó
+    referer = request.META.get('HTTP_REFERER', None)
+    if referer:
+        return redirect(referer)
+    else:
+        return redirect('profiles:profile', pk=user_id)

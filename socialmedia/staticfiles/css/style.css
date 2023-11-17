@@ -2,6 +2,13 @@
 header {
     box-shadow: var(--shadow-1);
     color: var(--color-light-1);
+    position: fixed;
+    background-color: var(--gray-light);
+    height: 70px;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .left-nav,
@@ -81,11 +88,26 @@ header {
 /* Content */
 .content-area {
     background: var(--gray-light);
+    margin-top: 70px;
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
 }
 
 .left-content,
 .right-content {
     width: 25%;
+    position: fixed;
+    margin-top: 70px;
+    top: 1.5rem;
+}
+
+.left-content {
+    left: 1.5rem;
+}
+
+.right-content {
+    right: 1.5rem;
 }
 
 /* Left content */
@@ -240,7 +262,12 @@ ul.func a:hover,
 .post-detail .action .action-item {
     width: 30%;
     text-align: center;
-    padding: 1rem 0;
+    padding: .5rem 0;
+}
+.post-detail .action .action-item button {
+    width: 100%;
+    text-align: center;
+    background-color: white;
 }
 
 /* Right content */
@@ -297,27 +324,77 @@ ul.func a:hover,
 }
 
 .invite-friend .action {
-    margin-left: calc(.5rem + 80px);
+    display: flex;
+    justify-content: center;
 }
 
 .invite-friend .action button {
     min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
+    display: inline-block;
+    text-align: center;
 }
 
 .invite-friend .action button.accept {
     background-color: var(--primary-1);
     color: var(--light);
+    margin: .4rem;
 }
 
 .invite-friend .action button.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
+    margin: .4rem;
 }
+
+/* notifycation */
+.right-nav .notifycation .dropdown-menu {
+    padding: 1rem;
+    border-radius: var(--border-radius-2);
+    min-width: 25rem;
+}
+
+.notifycation .action {
+    display: flex;
+    justify-content: center;
+}
+
+.notifycation .action a {
+    min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
+    display: inline-block;
+    text-align: center;
+}
+
+.notifycation .action a.accept {
+    background-color: var(--primary-1);
+    color: var(--light);
+    border-radius: 8px !important;
+    margin: .5rem;
+}
+
+.notifycation .action a.reject {
+    margin: .5rem;
+    background-color: var(--bg-light-3);
+    color: var(--dark);
+    border-radius: 8px !important;
+
+}
+.notifycation .item {
+    padding: .5rem;
+
+}
+.notifycation .item:hover{
+    background-color: var(--color-dark-1);
+}
+
 
 /* Contact */
 .contact .title {
     color: var(--color-light-4);
-    font-weight: 600;
+    font-weight: 550;
     font-size: 1.2rem;
     margin-bottom: 1rem;
 }
@@ -520,12 +597,13 @@ ul.func a:hover,
 
 .profile-area {
     background-color: var(--bg-light-1);
+    margin-top: 70px;
 }
 
 .profile-detail {
     background-color: var(--light);
     border-radius: 50px 50px 0 0;
-    padding: 0 2rem;
+    /* padding: 0 2rem; */
     /* box-shadow: var(--shadow-2); */
 }
 
@@ -545,6 +623,13 @@ ul.func a:hover,
     font-weight: 600;
 }
 
+.profile-detail .info .multi-user {
+    position: absolute;
+    right: 100px;
+    top: 60%;
+    transform: translateY(-50%);
+}
+
 .profile-detail .action {
     padding-bottom: 4px;
 }
@@ -561,6 +646,11 @@ ul.func a:hover,
     border-radius: var(--border-radius-2);
     position: relative;
     background-color: transparent;
+}
+/* update profile  */
+.profile-detail  .update-profile button:hover{
+    background-color: var(--primary-1);
+    color: var(--light);
 }
 
 /* Profile page posts */
@@ -669,7 +759,7 @@ ul.func a:hover,
     background-color: var(--bg-light-1);
 }
 
-.friend-card .friend-tab-detail {
+.friend-card .friend-tab-detail, .friend-card .friend-page-tab-detail {
     padding: 1rem;
 }
 
@@ -695,16 +785,18 @@ ul.func a:hover,
     margin-left: 1rem;
 }
 
-.friend-card .invite-list-item button {
+.friend-card .invite-list-item a {
     min-width: 120px;
+    padding: .6rem 1.2rem;
+    border-radius: 8px !important;
 }
 
-.friend-card .invite-list-item button.accept {
+.friend-card .invite-list-item a.accept {
     background-color: var(--primary-1);
     color: var(--light);
 }
 
-.friend-card .invite-list-item button.reject {
+.friend-card .invite-list-item a.reject {
     background-color: var(--bg-light-3);
     color: var(--dark);
 }
@@ -725,18 +817,23 @@ ul.func a:hover,
 
 /* Comment  */
 .comment-form {
-    border-top: 1px solid var(--border-color-1) !important;
-    padding: 1rem 0;
+    padding: .5rem 0;
     margin: 0 1rem;
 }
-.post-comment input.content {
+.post-comment input.content, .post-reply-comment input.content {
     width: calc(100% - 100px);
 }
 
 .comment-content {
-    border: none !important;
+    border: none;
     margin: .25rem;
     padding: .5rem;
+}
+
+.comment-content input {
+    line-height: 1.25rem;
+    padding: .375rem 1rem;
+    height: 40px;
 }
 
 .comment-content .author {
@@ -745,9 +842,21 @@ ul.func a:hover,
     border-radius: 25px; 
     margin-left: 1rem;
     padding: .5rem 1rem;
+    min-width: 150px;
 }
 
 .comment-content .author .name {
     margin-bottom: .5rem;
     display: block;
+}
+
+.comment-content .reply {
+    margin-left: 1.5rem;
+    margin-top: .25rem;
+    font-size: .875rem;
+    height: 16px;
+}
+
+.comment-content .reply:hover {
+    text-decoration: underline;
 }

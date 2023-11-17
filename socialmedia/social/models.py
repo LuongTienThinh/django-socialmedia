@@ -1,6 +1,6 @@
 from django.db import models
 from authentication.models import User
-from posts.models import Post
+from posts.models import Post, Comment, Reply
 
 class Friendship(models.Model):
     user1 = models.ForeignKey(User, related_name='friendships1', on_delete=models.CASCADE)
@@ -55,6 +55,10 @@ class GroupPost(models.Model):
     def __str__(self):
         return f"{self.author} - {self.group}"
     
+    def total_likes(self):
+        return self.likes.count()
+
+
 class MessageGroup(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE) 
@@ -74,4 +78,27 @@ class JoinRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.user} to join {self.group}"
+
+# block user
+class Block(models.Model):
+    blocker = models.ForeignKey(User, related_name='blocker', on_delete=models.CASCADE)
+    blocked_user = models.ForeignKey(User, related_name='blocked_user', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked_user')
+
+
+class GroupComment(models.Model):
+    content = models.TextField()
+    post = models.ForeignKey(GroupPost, related_name='group_comments', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='group_comments', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self) :
+        return f'{self.post} | {self.content}'
     
+class GroupReply(models.Model):
+    content = models.TextField()
+    comment = models.ForeignKey(GroupComment, related_name='group_replies', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+

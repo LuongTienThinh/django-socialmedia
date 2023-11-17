@@ -1,24 +1,34 @@
 {% extends 'base_generic.html' %}
+
 {% load static %}
+{% load filter_option %}
 
 {% block content %}
 <div class="content-area">
     <div class="left-content">
         <ul class="func">
             <li>
-                <a href="" class="user">
-                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                    <span>{{ user.username }}</span>
-                </a>
+                {% for profile in profiles %}               
+                    {% if user.id == profile.user.id %}
+                        <a href="{% url 'profiles:profile' profile.user.id   %}" class="user">
+                        {% if profile.profile_pic %}
+                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                        {% else %}
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                        {% endif %}
+                        <span>{{ user.username }}</span>
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </li>
             <li>
-                <a href="" class="func-item">
+                <a href="{% url 'friend' %}" class="func-item">
                     <i class="fa-solid fa-user-group"></i>
                     <span>Bạn bè</span>
                 </a>
             </li>
             <li>
-                <a href="" class="func-item">
+                <a href="{% url 'group' %}" class="func-item">
                     <i class="fa-solid fa-people-group"></i>
                     <span>Nhóm</span>
                 </a>
@@ -31,7 +41,11 @@
                 {% for user in user_groups %}        
                 <li>
                     <a href="{% url 'social:group_posts' user.group.id %}" class="shortcut-item">
-                        <img src="{{ user.group.image.url }}" class="card-img" alt="avatar">
+                        <img src="{% if user.group.image %}
+                            {{ user.group.image.url  }}
+                        {% else %} 
+                            https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTOUne_eIRCBwSUtJl_MCxx3pFRv0tXerBhw&usqp=CAU
+                        {% endif %} " class="card-img" alt="avatar">
                         <span>{{ user.group }}</span>
                     </a>
                 </li>                
@@ -46,7 +60,12 @@
                 {% for group in groups_not_joined %}        
                 <li>
                     <a href="{% url 'social:group_posts' group.id %}" class="shortcut-item">
-                        <img src="{{ group.image.url  }}" class="card-img" alt="avatar">
+                        <img src="{% if group.image %}
+                            {{ group.image.url  }}
+                        {% else %} 
+                            https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTOUne_eIRCBwSUtJl_MCxx3pFRv0tXerBhw&usqp=CAU
+                        {% endif %} "
+                        class="card-img" alt="avatar">
                         <span>{{ group.name }}</span>
                     </a>
                 </li>                
@@ -58,8 +77,16 @@
     <div class="main-content">
         <div class="card upload-post mt-0">
             <div class="card-top d-flex align-items-center justify-content-between">
-                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#uploadPostModal" id="modalUploadPost">
+                {% for profile in profiles %}               
+                        {% if user.id == profile.user.id %}
+                            {% if profile.profile_pic %}
+                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                            {% else %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                            {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal1" id="modalUploadPost">
                     <input type="text" placeholder="Bạn đang nghĩ gì?">
                 </a>
                 {% block modal-upload-post %}
@@ -113,6 +140,7 @@
                                                 <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
                                             </li>
                                         </ul>
+
                                     </div>
                                     <button type="submit" class="btn btn-primary btn-upload">Đăng bài</button>
                                 </div>
@@ -140,258 +168,170 @@
                 </div>
             </div>
         </div>
-        <div class="card post-detail">
-            <div class="card-top d-flex align-items-center">
-                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                <div class="author ms-2">
-                    <a href="#" class="name">{{ user.username }}</a>
-                    <div class="upload-time">1 giờ</div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="post-body mb-3">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, blanditiis inventore, provident nihil aut sunt nemo beatae unde voluptates qui officiis, veritatis distinctio pariatur ratione. Excepturi sequi iste quae facilis?
-                    Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae, maxime expedita? Tempore, eos commodi eligendi at ab tenetur. Dolorem quis cupiditate architecto, labore ea maxime doloremque? Provident debitis possimus corrupti.
-                </div>
-                <div class="file-upload">
-                    <img style="width: 100%;" src="https://scontent.fsgn5-8.fna.fbcdn.net/v/t45.1600-4/382435571_6479424322482_220636444178786056_n.jpg?stp=cp0_dst-jpg_p526x296_q75_spS444&_nc_cat=109&ccb=1-7&_nc_sid=9aa348&_nc_eui2=AeEiEg_Za19pxExJHFLbfYXBgm_kmvxXDvuCb-Sa_FcO-zSv5GjSNnZQQ2qM6RzrKhr18cxN_xJjVuzZL3pHv33c&_nc_ohc=FuG68Qb8ASgAX-d4rAZ&_nc_oc=AQk2r6qhoWkr_NTBt1m6-fX189DrRqveWS_m_RJxl1dCPcEcW187CefN57q6RDzEMO0&_nc_ht=scontent.fsgn5-8.fna&_nc_e2o=s&oh=00_AfA3UGFZNkjkU8wxMgyde-Ag3jbadDNq6GU5860KowiLOA&oe=653DB6F3" alt="">
-                </div>
-            </div>
-            <div class="count d-flex justify-content-between align-items-center">
-                <div class="react">
-                    <i class="fa-solid fa-thumbs-up"></i>
-                    <span>1.2k</span>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="comment">
-                        <span>15</span>
-                        <i class="fa-solid fa-message"></i>
-                    </div>
-                    <div class="share ms-3">
-                        <span>8</span>
-                        <i class="fa-solid fa-share"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="action d-flex justify-content-between align-items-center border-top">
-                <a href="#" class="action-item react">
-                    <i class="fa-solid fa-thumbs-up"></i>
-                    <span>Thích</span>
-                </a>
-                <a href="#" class="action-item comment">
-                    <i class="fa-solid fa-message"></i>
-                    <span>Bình luận</span>
-                </a>
-                <a href="#" class="action-item share">
-                    <i class="fa-solid fa-share"></i>
-                    <span>Share</span>
-                </a>
-            </div>
-        </div>
-        <div class="card post-detail">
-            <div class="card-top d-flex align-items-center">
-                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                <div class="author ms-2">
-                    <a href="#" class="name">{{ user.username }}</a>
-                    <div class="upload-time">1 giờ</div>
-                </div>
-
-            </div>
-            <div class="card-body">
-                <div class="post-body mb-3">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, blanditiis inventore, provident nihil aut sunt nemo beatae unde voluptates qui officiis, veritatis distinctio pariatur ratione. Excepturi sequi iste quae facilis?
-                    Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae, maxime expedita? Tempore, eos commodi eligendi at ab tenetur. Dolorem quis cupiditate architecto, labore ea maxime doloremque? Provident debitis possimus corrupti.
-                </div>
-                <div class="file-upload">
-                    <video style="width: 100%;" controls>
-                        <source src="{% static 'video/vd1.mp4' %}" type="video/mp4">
-                    </video>
-                </div>
-            </div>
-            <div class="count d-flex justify-content-between align-items-center">
-                <div class="react">
-                    <i class="fa-solid fa-thumbs-up"></i>
-                    <span>1.2k</span>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="comment">
-                        <span>15</span>
-                        <i class="fa-solid fa-message"></i>
-                    </div>
-                    <div class="share ms-3">
-                        <span>8</span>
-                        <i class="fa-solid fa-share"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="action d-flex justify-content-between align-items-center border-top">
-                <a href="#" class="action-item react">
-                    <i class="fa-solid fa-thumbs-up"></i>
-                    <span>Thích</span>
-                </a>
-                <a href="#" class="action-item comment">
-                    <i class="fa-solid fa-message"></i>
-                    <span>Bình luận</span>
-                </a>
-                <a href="#" class="action-item share">
-                    <i class="fa-solid fa-share"></i>
-                    <span>Share</span>
-                </a>
-            </div>
-        </div>
+        
         {% for post in post_list %}
-            <div class="card post-detail">
-                <div class="card-top d-flex align-items-center">
-                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                    <div class="author ms-2">
-                        <a href="#" class="name">{{ post.user }}</a>
-                        <div class="upload-time">{{ post.created_at|timesince }} ago</div>
-                    </div>
-                    {% if post.user == user %}
-                    <div class="author-action ms-auto">
-                        <div class="dropdown">
-                            <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                <li>                             
-                                    <a href="{% url 'delete_post' post.id %}" class="dropdown-item logout">
-                                        <i class="fa-solid fa-trash"></i>
-                                        <span>Xóa bài viết</span>
-                                    </a>                                 
-                                </li>
-                                <li>
-                                    <a href="#" class="dropdown-item logout">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                        <span>Chỉnh sửa bài viết</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <div class="post-body mb-3">
-                        {{ post.title }} <br><br>
-                        <span id="content">{{ post.content }}</span>
-                    </div>
-
-                    <script>
-                        var spanElement = document.getElementById("content");
-
-                        var urlRegex = /(http:\/\/|https:\/\/|ftp:\/\/)/;
-
-                        if (urlRegex.test(spanElement.textContent)) {
-                            var linkElement = document.createElement("a");
-                            linkElement.href = spanElement.textContent;
-                            linkElement.textContent = spanElement.textContent; 
-                            linkElement.style.textDecoration = "underline"; 
-
-                            spanElement.parentNode.replaceChild(linkElement, spanElement);
-                        } else {
-                            var paragraphElement = document.createElement("p");
-                            paragraphElement.textContent = spanElement.textContent;
-
-                            spanElement.parentNode.replaceChild(paragraphElement, spanElement);
-                        }
-                    </script>
-
-                    {% if post.video %}
-                        <div class="file-upload">
-                            <video style="width: 100%;" controls>
-                                <source src="{{ post.video.url }}" type="video/mp4">
-                            </video>
-                        </div>
-                    {% endif %}
-                    {% if post.image %}
-                        <div class="file-upload">                            
-                            <img style="width: 100%;" src="{{ post.image.url }}" alt="">
-                        </div>
-                    {% endif %}
-                    
-                </div>
-                <div class="count d-flex justify-content-between align-items-center">
-                    <form>
-                        {% csrf_token %}
-                        <div class="react">
-                            {% if user in post.likes.all %}
-                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
+        <div class="card post-detail">
+            <div class="card-top d-flex align-items-center">
+                {% for profile in profiles %}               
+                    {% if post.user.id == profile.user.id %}
+                        {% if profile.profile_pic %}
+                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
                             {% else %}
-                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
                             {% endif %}
-
-                            <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
-                        </div>
-                    </form>
-
-                    
-                    <div class="d-flex align-items-center">
-                        <div class="comment">
-                            <span>{{ post.total_comment }}</span>
-                            <i class="fa-solid fa-message"></i>
-                        </div>
-                        <div class="share ms-3">
-                            <span>{{ post.share_count }}</span>
-                            <i class="fa-solid fa-share"></i>
-                        </div>
+                    {% endif %}
+                {% endfor %}
+                <div class="author ms-2">
+                    <a href="{% url 'profiles:profile' post.user.id   %}" class="name">{{ post.user }}</a>
+                    <div class="upload-time">
+                        {% with time_since=post.created_at|timesince %}
+                            {% with values=time_since|split_timesince:", " %}
+                                {{values}}
+                            {% endwith %}
+                        {% endwith %}
                     </div>
                 </div>
-                <div class="action d-flex justify-content-between align-items-center border-top border-bottom">
-                    <!-- like -->
-                    <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
-                        <i class="fa-solid fa-thumbs-up"></i>
-                        <span>Thích</span>
-                    </a>                    
-                    
-                     <!-- comment button-->
-                    <a href="#commentpost{{post.id}}"  class="action-item comment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-                        <i class="fa-solid fa-message"></i>
-                        <span>Bình luận</span>
-                    </a>
-                    
-                    <!-- share -->
-                    <a class="action-item share">
-                        <form action="{% url 'share_post' post.id %}" method="post">
-                            {% csrf_token %}
-                            <button class="action-item share">                                
-                                <span><i class="fa-solid fa-share"></i> Share</span>
-                            </button>
-                        </form> 
-                    </a>
+                {% if post.user == user %}
+                <div class="author-action ms-auto">
+                    <div class="dropdown">
+                        <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                            <li>                             
+                                <a href="{% url 'delete_post' post.id %}" class="dropdown-item logout">
+                                    <i class="fa-solid fa-trash"></i>
+                                    <span>Xóa bài viết</span>
+                                </a>                                 
+                            </li>
+                            <li>
+                                <!-- Chỉnh sửa bài viết -->
+                                <a  class="dropdown-item logout" data-bs-toggle="modal" data-bs-target="#exampleModal">    
+                                    <i class="fa-solid fa-pen-to-square"></i>                                     
+                                    <span>Chỉnh sửa bài viết</span>
+                                </a>                                    
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <!-- comment form -->
-                <div class="collapse comment-form" id="commentpost{{post.id}}">
-                    <div class="form-group">
-                        <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment" data-post-id="{{ post.id }}"> 
-                            {% csrf_token %}
-                            <div class="d-flex justify-content-between px-2">
-                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
-                                <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
-                                <button class="btn btn-send d-flex align-items-center justify-content-center"><i class="fa-solid fa-paper-plane fa-beat"></i></button>
-                            </div>
-                        </form>        
-                      </div>
-                  </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="post-body mb-3">
+                    {% if post.title %}<div class="title mb-4">{{ post.title }}</div>{% endif %}
+                    {% if post.content %}
+                    <span class="content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? {{ post.content }}
+                        <a href="" id="show-more-{{loop.index0}}" class="show-more text-info text-decoration-underline">Xem thêm</a>
+                        <a href="" class="hidden-less text-info text-decoration-underline" style="display: none;">Ẩn bớt</a>
+                    </span>
+                    {% endif %}
+                </div>
 
-                <!-- View All comment -->
-                <div class="comment-root">
-                    {% for comment in post.comments.all %}
-                    <div class="comment-content border">
-                        <div class="d-flex align-items-start">
-                            <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                {% if post.video %}
+                    <div class="file-upload">
+                        <video style="width: 100%;" controls>
+                            <source src="{{ post.video.url }}" type="video/mp4">
+                        </video>
+                    </div>
+                {% endif %}
+                {% if post.image %}
+                    <div class="file-upload">                            
+                        <img style="width: 100%;" src="{{ post.image.url }}" alt="">
+                    </div>
+                {% endif %}
+                
+            </div>
+            <div class="count d-flex justify-content-between align-items-center">
+                <form>
+                    {% csrf_token %}
+                    <div class="react">
+                        {% if user in post.likes.all %}
+                            <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
+                        {% else %}
+                            <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                        {% endif %}
+
+                        <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
+                    </div>
+                </form>
+
+                
+                <div class="d-flex align-items-center">
+                    <div class="comment">
+                        <span>{{ post.total_comment }}</span>
+                        <i class="fa-solid fa-message"></i>
+                    </div>
+                    <div class="share ms-3">
+                        <span>{{ post.share_count }}</span>
+                        <i class="fa-solid fa-share"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="action d-flex justify-content-between align-items-center border-top {% if post.total_comment > 0 %}border-bottom{% endif %}">
+                <!-- like -->
+                <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
+                    <i class="fa-solid fa-thumbs-up"></i>
+                    <span>Thích</span>
+                </a>                    
+                
+                <!-- comment button-->
+                <a href="#commentpost{{post.id}}"  class="action-item comment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <i class="fa-solid fa-message"></i>
+                    <span>Bình luận</span>
+                </a>
+                
+                <!-- share -->
+                <a class="action-item share">
+                    <form action="{% url 'share_post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <button class="action-item share">                                
+                            <span><i class="fa-solid fa-share"></i> Share</span>
+                        </button>
+                    </form> 
+                </a>
+            </div>
+            <!-- comment form -->
+            <div class="collapse comment-form {% if post.total_comment == 0 %}border-top{% endif %} border-bottom" id="commentpost{{post.id}}">
+                <div class="form-group">
+                    <form method="post" action="{% url 'add_comment' post.id %}" class="post-comment" > 
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            {% for profile in profiles %}               
+                                {% if user.id == profile.user.id %}
+                                    {% if profile.profile_pic %}
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                        {% else %}
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
+                            <button type="submit" class="btn btn-send d-flex align-items-center justify-content-center"><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                        </div>
+                    </form>        
+                </div>
+            </div>
+
+            <!-- View All comment -->
+            <div class="comment-root">
+                {% for comment in post.comments.all|slice:":1" %}
+                <div class="comment-content">
+                    <div class="d-flex align-items-start">
+                        {% for profile in profiles %}               
+                            {% if comment.user.id == profile.user.id %}
+                                {% if profile.profile_pic %}
+                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                    {% else %}
+                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                    {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <div>
                             <div class="author">
-                                <a href="#" class="name">{{ comment.user.username }}</a>
+                                <a href="{% url 'profiles:profile' comment.user.id %}" class="name">{{ comment.user.username }}</a>
                                 <!-- comment view -->
                                 <p class="">
                                     {{ comment.content }}
-                                    {% if user == comment.user %}
-                                        <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button text-danger">(delete) </a>-
-                                        <a href="#comment{{comment.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
-                                    {% endif %}
-                                        <a href="#reply{{comment.id}}" class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false">(reply)</a>
-
                                     <!-- edit comment form -->
                                     <div class="collapse" id="comment{{comment.id}}">
                                         <hr>   
@@ -399,7 +339,15 @@
                                             <form method="post" action="{% url 'edit_comment' comment.id %}">
                                                 {% csrf_token %}
                                                 <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
+                                                    {% for profile in profiles %}               
+                                                        {% if comment.user.id == profile.user.id %}
+                                                            {% if profile.profile_pic %}
+                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                {% else %}
+                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                {% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
                                                     <input name="content" class="ms-2 w-100 rounded-pill" value="{{comment.content}}" required id="id_body">
                                                     <input type="hidden" name="parent_id" value="None">
                                                     <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
@@ -408,16 +356,192 @@
                                         </div>
                                     </div>
                                 </p>
-                            </div>    
+                            </div>
+                            <div class="reply">
+                                <a href="#reply{{comment.id}}" class="action-item" data-bs-toggle="collapse" role="button" aria-expanded="false">Phản hồi</a>
+                            </div>
+                        </div>
+                        {% if user == comment.user %}
+                        <div class="dropdown align-self-center ms-2" style="margin-bottom: 16px;">
+                            <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-ellipsis"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                <li>
+                                    <a href="#comment{{comment.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                        <span>Chỉnh sửa bình luận</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button dropdown-item">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>Xóa bình luận</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+
+                <!-- view all reply comment -->
+                {% for reply in comment.replies.all %}
+                    <div class="ms-5 comment-content border-start">
+                        <div class="d-flex align-items-center">
+                            {% for profile in profiles %}               
+                                {% if reply.user.id == profile.user.id %}
+                                    {% if profile.profile_pic %}
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                        {% else %}
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="author">
+                                <a href="{% url 'profiles:profile' reply.user.id   %}" class="name">{{ reply.user.username }}</a>
+                                <!-- comment view -->
+                                <p class="">
+                                    {{ reply.content }}
+                                    <!-- edit comment form -->
+                                    <div class="collapse" id="comment{{reply.id}}">
+                                        <hr>   
+                                        <div class="form-group">
+                                            <form method="post" action="{% url 'edit_reply' reply.id %}"> 
+                                                {% csrf_token %}
+                                                <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                    {% for profile in profiles %}               
+                                                        {% if user.id == profile.user.id %}
+                                                            {% if profile.profile_pic %}
+                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                {% else %}
+                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                {% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
+                                                    <input type="hidden" name="parent_id" value="None">                          
+                                                    <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                </div>
+                                            </form>        
+                                        </div>
+                                    </div>
+                                </p>
+                            </div>
+                            {% if user == reply.user %}
+                            <div class="dropdown align-self-center ms-2">
+                                <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                    <li>
+                                        <a href="#comment{{reply.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Chỉnh sửa bình luận</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                            <i class="fa-solid fa-trash"></i>
+                                            <span>Xóa bình luận</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            <button id="more_post" class="btn btn-link" onclick="toggleContent()">
+                Xem thêm
+            </button>
+            <div class="collapse" id="more_post">
+                {% for comment in post.comments.all|slice:":1" %}
+                    <div class="comment-content">
+                        <div class="d-flex align-items-start">
+                            {% for profile in profiles %}               
+                                {% if comment.user.id == profile.user.id %}
+                                    {% if profile.profile_pic %}
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                        {% else %}
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <div>
+                                <div class="author">
+                                    <a href="{% url 'profiles:profile' comment.user.id %}" class="name">{{ comment.user.username }}</a>
+                                    <!-- comment view -->
+                                    <p class="">
+                                        {{ comment.content }}
+                                        <!-- edit comment form -->
+                                        <div class="collapse" id="comment{{comment.id}}">
+                                            <hr>   
+                                            <div class="form-group">
+                                                <form method="post" action="{% url 'edit_comment' comment.id %}">
+                                                    {% csrf_token %}
+                                                    <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                        {% for profile in profiles %}               
+                                                            {% if comment.user.id == profile.user.id %}
+                                                                {% if profile.profile_pic %}
+                                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                    {% else %}
+                                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                    {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        <input name="content" class="ms-2 w-100 rounded-pill" value="{{comment.content}}" required id="id_body">
+                                                        <input type="hidden" name="parent_id" value="None">
+                                                        <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </p>
+                                </div>
+                                <div class="reply">
+                                    <a href="#reply{{comment.id}}" class="action-item" data-bs-toggle="collapse" role="button" aria-expanded="false">Phản hồi</a>
+                                </div>
+                            </div>
+                            {% if user == comment.user %}
+                            <div class="dropdown align-self-center ms-2" style="margin-bottom: 16px;">
+                                <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                    <li>
+                                        <a href="#comment{{comment.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Chỉnh sửa bình luận</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button dropdown-item">
+                                            <i class="fa-solid fa-trash"></i>
+                                            <span>Xóa bình luận</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
                         </div>
                         <!-- reply comment form -->
-                        <div class="collapse" id="reply{{comment.id}}">
-                            <hr>   
+                        <div class="collapse p-2 mt-2 border-top border-bottom" id="reply{{comment.id}}">
                             <div class="form-group">
                                 <form method="post" action="{% url 'add_reply' comment.id %}" class="post-reply-comment"> 
                                     {% csrf_token %}
-                                    <div class="d-flex justify-content-between px-2">
-                                        <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
+                                    <div class="d-flex justify-content-center align-items-center px-2">
+                                        {% for profile in profiles %}               
+                                            {% if user.id == profile.user.id %}
+                                                {% if profile.profile_pic %}
+                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                    {% else %}
+                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                    {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
                                         <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
                                         <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
                                     </div>
@@ -425,20 +549,25 @@
                             </div>
                         </div>
                     </div>
-                        <!-- view all reply comment -->
-                        {% for reply in comment.replies.all %}
-                        <div class="ms-5 comment-content border">
+
+                    <!-- view all reply comment -->
+                    {% for reply in comment.replies.all %}
+                        <div class="ms-5 comment-content border-start">
                             <div class="d-flex align-items-center">
-                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top" alt="avatar">
+                                {% for profile in profiles %}               
+                                    {% if reply.user.id == profile.user.id %}
+                                        {% if profile.profile_pic %}
+                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                            {% else %}
+                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                            {% endif %}
+                                    {% endif %}
+                                {% endfor %}
                                 <div class="author">
-                                    <a href="#" class="name">{{ reply.user.username }}</a>
+                                    <a href="{% url 'profiles:profile' reply.user.id   %}" class="name">{{ reply.user.username }}</a>
                                     <!-- comment view -->
                                     <p class="">
                                         {{ reply.content }}
-                                        {% if user == reply.user %}
-                                        <a href="{% url 'delete_reply' reply.id %}" class="text-danger">(delete) </a>-
-                                        <a href="#comment{{reply.id}}"  class="action-item text-info" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">(edit)</a> <br> 
-
                                         <!-- edit comment form -->
                                         <div class="collapse" id="comment{{reply.id}}">
                                             <hr>   
@@ -446,7 +575,15 @@
                                                 <form method="post" action="{% url 'edit_reply' reply.id %}"> 
                                                     {% csrf_token %}
                                                     <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                                        <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img-top me-1" alt="avatar">
+                                                        {% for profile in profiles %}               
+                                                            {% if user.id == profile.user.id %}
+                                                                {% if profile.profile_pic %}
+                                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                    {% else %}
+                                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                    {% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
                                                         <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
                                                         <input type="hidden" name="parent_id" value="None">                          
                                                         <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
@@ -454,66 +591,228 @@
                                                 </form>        
                                             </div>
                                         </div>
-                                        {% endif %}
                                     </p>
                                 </div>
+                                {% if user == reply.user %}
+                                <div class="dropdown align-self-center ms-2">
+                                    <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                        <li>
+                                            <a href="#comment{{reply.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                                <span>Chỉnh sửa bình luận</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                                <i class="fa-solid fa-trash"></i>
+                                                <span>Xóa bình luận</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
-                        {% endfor %}
-                        <div class="comment-content border comment-add mt-1 mb-1"></div>
                     {% endfor %}
-                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-    </div>
-    <div class="right-content">
-        <div class="invite-friend">
-            <div class="title">Lời mời kết bạn</div>
-            {% if invite_friends.first %}
-            <div class="item rounded">
-                <div class="represent mb-2">
-                    <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_ohc=VTT51jsf8n4AX8b7IUm&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfDair0x-_SGJPKMWp9M3TmeRBK_c0fNf4D4q7rMl2aZTA&oe=6561D2B8" class="card-img" alt="avatar">
-                    <div class="detail">
-                        <div class="d-flex justify-content-between">
-                            <div class="name">{{invite_friends.first.user1}}</div>
-                            <div class="time">{{invite_friends.first.created_at|timesince}}</div>
-                        </div>
-                        <div class="mutual d-flex align-items-center mt-2">
-                            <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
-                            <span class="ms-2">1 bạn chung</span>
+        </div>
+        </div>
+            <!-- Modal Chỉnh Sửa Bài Viết -->
+            {% for post_edit in post_forms %}
+                {% if post.id == post_edit.post.id %}
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">            
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <div></div>
+                                <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Chỉnh sửa bài viết {{user.username}}</h1>
+                                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{% url 'edit_post' post.id %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body custom-scrollbar w-100">
+                                    {{ post_edit.form.as_p }}
+                                </div>                                        
+                                <div class="modal-footer justify-content-lg-center">                                          
+                                    <button type="submit" value="Save" class="btn btn-primary btn-upload">Lưu</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-                <div class="action">
-                    <a href="{% url 'social:accept_friend_request' pk=invite_friends.first.id %}" class="accept">Xác nhận</a>
-                    <a href="{% url 'social:reject_friend_request' pk=invite_friends.first.id %}" class="reject">Xóa</a>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+   
+    <div class="right-content">
+        <div class="invite-friend">
+            <div class="title">Lời mời kết bạn</div>        
+            {% if invite_friends %}
+            <div class="container">               
+                {% for invite in invite_friends|slice:":1" %}
+                <div class="item rounded">
+                    <div class="represent mb-2">
+                        {% for profile in profiles %}   
+                                {% if invite.user1.id == profile.user.id %}             
+                                  <img src="{% if profile.profile_pic %}
+                                      {{ profile.profile_pic.url  }}
+                                  {% else %} 
+                                      https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                  {% endif %} "
+                                  class="card-img" alt="avatar">
+                                {% endif %}
+                        {% endfor %}
+
+                        <div class="detail">
+                            <div class="d-flex justify-content-between">
+                                <div class="name">
+                                    <a href="{% url 'profiles:profile' invite.user1.id   %}" class="user-item">                                
+                                        {{ invite.user1 }}
+                                    </a>                                
+                                </div>
+                                <div class="time">
+                                    {% with time_since=invite.created_at|timesince %}
+                                        {% with values=time_since|split_timesince:", " %}
+                                            {{values}}
+                                        {% endwith %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            <div class="mutual d-flex align-items-center mt-2">
+                                <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
+                                <span class="ms-2">1 bạn chung</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action">
+                        <form action="{% url 'social:accept_friend_request' pk=invite.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="accept">Xác nhận</button>
+                        </form>
+
+                        <form action="{% url 'social:reject_friend_request' pk=invite.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="reject">Từ chối</button>
+                        </form>
+                    </div>
                 </div>
+                {% endfor %}
+            
+                <!-- Nút mở rộng -->
+                
+                <!-- Nội dung ẩn bớt -->
+                <div class="collapse" id="more">
+                    <!-- ... Nội dung cần ẩn bớt ... -->
+                    {% for invite in invite_friends|slice:"1:5" %}
+                    <div class="item rounded">
+                        <div class="represent mb-2">
+                            <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_ohc=VTT51jsf8n4AX8b7IUm&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfDair0x-_SGJPKMWp9M3TmeRBK_c0fNf4D4q7rMl2aZTA&oe=6561D2B8" class="card-img" alt="avatar">
+                            <div class="detail">
+                                <div class="d-flex justify-content-between">
+                                    <div class="name">{{invite.user1}}</div>
+                                    <div class="time">
+                                        {% with time_since=invite.created_at|timesince %}
+                                            {% with values=time_since|split_timesince:", " %}
+                                                {{values}}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <div class="mutual d-flex align-items-center mt-2">
+                                    <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
+                                    <span class="ms-2">1 bạn chung</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action">
+                            <form action="{% url 'social:accept_friend_request' pk=invite.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="accept">Xác nhận</button>
+                            </form>
+    
+                            <form action="{% url 'social:reject_friend_request' pk=invite.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="reject">Từ chối</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button id="expandBtn" class="btn btn-link" onclick="toggleContent()">
+                    Xem thêm
+                </button>
             </div>
+            {% else %}
+                <p class="text-center" >Hiện chưa có lời mời kết bạn nào</p>
             {% endif %}
+
+            <script>
+                function toggleContent() {
+                    var collapseElement = document.getElementById('more');
+                    var expandBtn = document.getElementById('expandBtn');
+            
+                    if (collapseElement.classList.contains('show')) {
+                        // Nếu nội dung đang hiển thị, ẩn đi và đổi văn bản nút
+                        collapseElement.classList.remove('show');
+                        expandBtn.innerText = 'Xem thêm';
+                    } else {
+                        // Nếu nội dung đang ẩn, hiện lên và đổi văn bản nút
+                        collapseElement.classList.add('show');
+                        expandBtn.innerText = 'Ẩn bớt';
+                    }
+                }
+            </script>
+            
         </div>
         <hr>
         <div class="contact">
             <div class="title">Người liên hệ</div>
-            <ul class="list-user">
-                <li>
-                    <a href="" class="user-item">
-                        <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_ohc=VTT51jsf8n4AX8b7IUm&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfDair0x-_SGJPKMWp9M3TmeRBK_c0fNf4D4q7rMl2aZTA&oe=6561D2B8" class="card-img" alt="avatar">
-                        <span>Đức Thắng</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="user-item">
-                        <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
-                        <span>{{ user.username }}</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="" class="user-item">
-                        <img src="https://scontent.fsgn5-15.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_ohc=VTT51jsf8n4AX8b7IUm&_nc_ht=scontent.fsgn5-15.fna&oh=00_AfDair0x-_SGJPKMWp9M3TmeRBK_c0fNf4D4q7rMl2aZTA&oe=6561D2B8" class="card-img" alt="avatar">
-                        <span>Gia Duy</span>
-                    </a>
-                </li>
-            </ul>
+                <ul class="list-user">
+                    {% for friend in friends %}    
+                        {% for profile in profiles %}   
+                            {% if friend.id == profile.user.id %}             
+                                <li>
+                                    <a href="{% url 'profiles:profile' profile.user.id   %}" class="user-item">
+                                        <img src="{% if profile.profile_pic %}
+                                            {{ profile.profile_pic.url  }}
+                                        {% else %} 
+                                            https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                        {% endif %} "
+                                        class="card-img" alt="avatar">
+                                        <span>{{ friend.username }}</span>
+                                    </a>
+                                </li>                   
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+                <hr>
+                <div class="title">Những người bạn có thể biết</div>
+                <ul class="list-user">
+                    {% for friend in suggest_friends %}    
+                        {% for profile in profiles %}   
+                            {% if friend.id == profile.user.id %}             
+                                <li>
+                                    <a href="{% url 'profiles:profile' profile.user.id   %}" class="user-item">
+                                        <img src="{% if profile.profile_pic %}
+                                            {{ profile.profile_pic.url  }}
+                                        {% else %} 
+                                            https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                        {% endif %} "
+                                        class="card-img" alt="avatar">
+                                        <span>{{ friend.username }}</span>
+                                    </a>
+                                </li>                   
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+
         </div>
     </div>
 </div>
