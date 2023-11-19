@@ -345,8 +345,10 @@
                 </div>
                 <div class="card-body">
                   <div class="post-body mb-3">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, blanditiis inventore, provident nihil aut sunt nemo beatae unde voluptates qui officiis, veritatis distinctio pariatur ratione. Excepturi sequi iste quae facilis?
-                    Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae, maxime expedita? Tempore, eos commodi eligendi at ab tenetur. Dolorem quis cupiditate architecto, labore ea maxime doloremque? Provident debitis possimus corrupti.
+                    <span class="content">
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, blanditiis inventore, provident nihil aut sunt nemo beatae unde voluptates qui officiis, veritatis distinctio pariatur ratione. Excepturi sequi iste quae facilis?
+                      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae, maxime expedita? Tempore, eos commodi eligendi at ab tenetur. Dolorem quis cupiditate architecto, labore ea maxime doloremque? Provident debitis possimus corrupti.
+                    </span>
                   </div>
                   <div class="file-upload">
                     <img class="w-100" src="https://images.unsplash.com/photo-1699119846325-9f8429f36e42?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwzfHx8ZW58MHx8fHx8" alt="">
@@ -530,9 +532,9 @@
                           <div class="author ms-2">
                             <a href="#" class="name">{{ post.post.user.username }}</a>
                             <div class="upload-time">
-                              {% with time_since=post.created_at|timesince %}
+                              {% with time_since=post.post.created_at|timesince %}
                                 {% with values=time_since|split_timesince:", " %}
-                                  {{values}}
+                                  {{ values }}
                                 {% endwith %}
                               {% endwith %}
                             </div>

@@ -249,6 +249,7 @@ ul.func a:hover,
 
 .post-detail .card-body {
     padding: .5rem 1rem;
+    line-height: 1.5rem;
 }
 
 .post-detail .card-body .file-upload {
@@ -887,4 +888,124 @@ ul.func a:hover,
 
 .comment-content .reply:hover {
     text-decoration: underline;
+}
+
+.message-modal {
+    position: fixed;
+    inset: calc(100% - 400px) .5rem 0 .5rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    visibility: hidden;
+}
+
+.message-modal .chatbox {
+    position: relative;
+    border-radius: 15px 15px 0 0;
+    box-shadow: var(--shadow-2);
+    background-color: var(--light);
+    z-index: 1100;
+    visibility: visible;
+    width: 320px;
+    height: 100%;
+}
+
+.message-modal .chatbox + .chatbox {
+    margin-left: 2rem;
+}
+
+.message-modal .chatbox-top {
+    height: 15%;
+    padding: .25rem .5rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chatbox-top .chat-user .avatar {
+    height: 70%;
+    border-radius: 50% !important;
+    background-color: transparent;
+}
+
+.chatbox-top .chat-button button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 50% !important;
+}
+
+.chatbox-top .chat-button button:hover {
+    background-color: var(--bg-light-3);
+}
+
+.message-modal .chatbox-body {
+    height: 70%;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    overflow: auto;
+    width: 100%;
+}
+
+.chatbox-body span.message {
+    background-color: var(--bg-light-3);
+    padding: .5rem .75rem;
+    font-size: .875rem;
+    display: block;
+    margin: .25rem 0;
+    max-width: 180px;
+    word-wrap: break-word;
+    text-align: left;
+    line-height: 1.2rem;
+}
+
+.chatbox-body span.left-message {
+    border-radius: 0 1rem 1rem 0;
+    align-self: flex-start;
+}
+
+.chatbox-body span.right-message {
+    border-radius: 1rem 0 0 1rem;
+    align-self: flex-end;
+    background-color: var(--primary-1);
+    color: var(--color-dark-1);
+}
+
+.message-modal .chatbox-bottom {
+    height: 15%;
+    padding: .25rem .5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.chatbox-bottom form {
+    width: 80%;
+    margin: 0 .5rem;
+}
+
+.chatbox-bottom .input-text {
+    border-radius: 2rem !important;
+    width: 100%;
+    padding: .5rem 1rem;
+    height: 35px;
+    font-size: .875rem;
+    line-height: normal;
+    overflow: hidden;
+}
+
+.chatbox-bottom button {
+    padding: .5rem .75rem;
+    background-color: transparent;
+}
+
+.chatbox-bottom button:hover {
+    background-color: var(--bg-light-3);
 }
