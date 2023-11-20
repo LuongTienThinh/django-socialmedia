@@ -12,3 +12,10 @@ class User(AbstractUser):
         related_query_name="user",
     )
 
+class OTP(models.Model):
+    code = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, related_name='otps', on_delete=models.CASCADE)
+    
+    def getCode(self):
+        return self.code

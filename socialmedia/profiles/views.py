@@ -3,7 +3,6 @@ from .models import Profile
 from .forms import ProfileForm
 from posts.forms import PostForm
 from social.models import Friendship  
-from django.db.models import Q
 from authentication.models import User
 from posts.models import Post, Share
 from django.views.generic import DetailView, CreateView, View

@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     # daphne
     'daphne' ,
     'channels' , 
-
     "django.contrib.staticfiles",
 ]
 
@@ -166,3 +165,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = '/auth/login/' 
+
+# Send email
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = 'testing@example.com'

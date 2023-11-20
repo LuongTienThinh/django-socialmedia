@@ -89,6 +89,7 @@ header {
 .content-area {
     background: var(--gray-light);
     margin-top: 70px;
+    min-height: calc(100vh - 70px);
     display: flex;
     justify-content: center;
     padding: 1.5rem;
