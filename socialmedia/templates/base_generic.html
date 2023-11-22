@@ -38,11 +38,39 @@
 
     {% endblock %}
 
+    <div class="message-modal" id="message-modal">
+
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
     <script>
+        // Link in post
+        const linkInPost = () => {
+            var spanElement = document.querySelectorAll(".card-body .post-body .content");
+            var urlRegex = /(http:\/\/|https:\/\/|ftp:\/\/)\S+/g;
+    
+            spanElement && spanElement.forEach((e, i) => {
+                let content = e.innerHTML;
+                if (urlRegex.test(e.textContent)) {
+                    const listUrl = e.textContent.match(urlRegex);
+                    listUrl.forEach((f, j) => {
+                        var linkElement = document.createElement("a");
+                        linkElement.href = f;
+                        linkElement.textContent = f;
+                        linkElement.target = "_blank";
+                        linkElement.style.textDecoration = "underline";
+                        linkElement.style.color = "var(--primary-1)";
+                        content = content.replace(f, linkElement.outerHTML);
+                    })
+                }
+                e.innerHTML = content;
+            })
+        }
+        linkInPost();
+
         // Dropdown
-        const dropdownItem = document.querySelectorAll('.dropdown-item');
+        const dropdownItem = document.querySelectorAll('.status .dropdown-item');
         dropdownItem && dropdownItem.forEach(e => e.addEventListener('click', () => {
             document.getElementById('dropdown-upload-post').innerHTML = e.innerHTML;
         }));
@@ -104,6 +132,147 @@
         accordion('.action-item', '.profile-page');
         accordion('.friend-tab-item', '.friend-tab-detail');
         accordion('.friend-page-tab-item', '.friend-page-tab-detail');
+
+        // More and hide post content
+        const postContent = document.querySelectorAll('.card-body .post-body .content');
+        const content = postContent && Array.from(postContent).map(e => e.innerText);
+        const maxLength = 200;
+
+        let showMores = [], hiddenLesses = [];
+
+        postContent && postContent.forEach((e, i) => {
+            if (e.innerText.length > maxLength) {
+
+                e.innerHTML = e.innerText.substring(0, maxLength) + `...`;
+
+                const showMore = document.createElement("a");
+                showMore.textContent = 'Xem thêm';
+                showMore.id = `show-more-${i}`;
+                showMore.classList.add('show-more', 'text-info', 'text-decoration-underline');
+                showMores.push(showMore);
+                e.parentNode.appendChild(showMore);
+                
+                const hiddenLess = document.createElement("a");
+                hiddenLess.textContent = 'Ẩn bớt';
+                hiddenLess.id = `hidden-less-${i}`;
+                hiddenLess.classList.add('hidden-less', 'text-info', 'text-decoration-underline');
+                hiddenLesses.push(hiddenLess);
+            }
+        });
+
+        showMores.forEach(e => {
+            const pos = e.id.split('-').reverse()[0];
+            e.addEventListener('click', () => {
+                postContent[pos].innerHTML = content[pos];
+                showMores[pos].remove();
+                postContent[pos].parentNode.appendChild(hiddenLesses[pos]);
+                linkInPost();
+            });
+        });
+
+        hiddenLesses.forEach(e => {
+            const pos = e.id.split('-').reverse()[0];
+            e.addEventListener('click', () => {
+                postContent[pos].innerHTML = content[pos].substring(0, maxLength) + `...`;
+                hiddenLesses[pos].remove();
+                postContent[pos].parentNode.appendChild(showMores[pos]);
+            });
+        });
+
+        // Chatbox - contact list user
+        const messageModal = document.getElementById('message-modal');
+        const chatbox = (index) => {
+            return `
+                <div class="chatbox border" id="chatbox-${index}">
+                    <div class="chatbox-top border-bottom" id="chatbox-top-${index}">
+                        <div class="chat-user h-100 d-flex align-items-center">
+                            <a href="#" class="h-100 d-flex align-items-center">
+                                <img class="avatar" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" alt="">
+                            </a>
+                            <span class="ms-2">Lương Tiến Thịnh</span>
+                        </div>
+                        <div class="chat-button">
+                            <button class="chatbox-minimize" id="chatbox-minimize-${index}">
+                                <i class="fa-solid fa-minus"></i>
+                            </button>
+                            <button class="chatbox-close" id="chatbox-close-${index}">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chatbox-body p-2 w-100" id="chatbox-body-${index}">
+                        <span class="message left-message">Xin chào</span>
+                        <span class="message right-message">Lorem ipsum dolor sit amet consectetur adipisicing Lorem ipsum dolor sit amet consectetur adipisicing</span>
+                        <span class="message right-message">Lorem ipsum</span>
+                    </div>
+                    <div class="chatbox-bottom border-top" id="chatbox-bottom-${index}">
+                        <button>
+                            <i class="fa-solid fa-images text-danger"></i>
+                        </button>
+                        <form method="post">
+                            <input class="input-text" placeholder="Aa">    
+                        </form>
+                        <button>
+                            <i class="fa-solid fa-paper-plane text-primary"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        const chatboxBtn = () => {
+            const chatboxMinimizes = document.querySelectorAll('.chatbox-minimize');
+            const chatboxCloses = document.querySelectorAll('.chatbox-close');
+    
+            chatboxMinimizes.forEach((e, i) => {
+                e.addEventListener('click', () => {
+                    console.log('weewew');
+                    const pos = e.id.split('-').reverse()[0];
+    
+                    const chatbox = document.getElementById(`chatbox-${pos}`);
+                    const chatboxTop = document.getElementById(`chatbox-top-${pos}`);
+                    const chatboxBody = document.getElementById(`chatbox-body-${pos}`);
+                    const chatboxBottom = document.getElementById(`chatbox-bottom-${pos}`);
+    
+                    if (chatboxBody.style.display == 'none' && chatboxBottom.style.display == 'none') {
+                        chatboxBody.style.display = 'flex';
+                        chatboxBottom.style.display = 'flex';
+                        chatbox.style.height = '100%';
+                        chatboxTop.style.height = '15%';
+                    } else {
+                        chatboxBody.style.display = 'none';
+                        chatboxBottom.style.display = 'none';
+                        chatbox.style.height = '15%';
+                        chatboxTop.style.height = '100%';
+                    }
+                });
+            });
+    
+            chatboxCloses.forEach((e, i) => {
+                e.addEventListener('click', () => {
+                    const pos = e.id.split('-').reverse()[0];
+                    const chatbox = document.getElementById(`chatbox-${pos}`).style.display = 'none';
+                    listChatboxs.splice(i, 1);
+                    messageModal.innerHTML = '';
+                    console.log(listChatboxs);
+                    listChatboxs.forEach(e => messageModal.innerHTML += e);
+                });
+            });
+        }
+
+        const listContactUsers = document.querySelectorAll('.contact-list .user-item');
+        const listChatboxs = [];
+        listContactUsers.forEach((e, i) => {
+            e.addEventListener('click', () => {
+                listChatboxs.unshift(chatbox(i++));
+                if (listChatboxs.length >= 3) {
+                    listChatboxs.splice(3);
+                }
+                messageModal.innerHTML = '';
+                listChatboxs.forEach(e => messageModal.innerHTML += e);
+                chatboxBtn();
+            });
+        });
 
     </script>
     

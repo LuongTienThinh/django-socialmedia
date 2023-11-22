@@ -236,8 +236,6 @@ $(document).ready(function() {
             }
         });
     });
-
-
 });
 
 

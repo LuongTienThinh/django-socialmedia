@@ -86,11 +86,11 @@
                             {% endif %}
                     {% endif %}
                 {% endfor %}
-                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#exampleModal1" id="modalUploadPost">
+                <a href="{% url 'upload_post' %}" class="text" type="button" data-bs-toggle="modal" data-bs-target="#uploadPostModal" id="modalUploadPost">
                     <input type="text" placeholder="Bạn đang nghĩ gì?">
                 </a>
                 {% block modal-upload-post %}
-                <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="uploadPostModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -125,25 +125,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="modal-footer justify-content-between">
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fa-solid fa-images"></i>
-                                            <span>Đính kèm</span>
+                                <div class="modal-footer justify-content-evenly">
+                                    <div class="dropdown" style="width: 35%;">
+                                        <button class="btn-success w-100" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Đính kèm
                                         </button>
-                                        <ul class="dropdown-menu">                                         
-                                            <a type="file" class="btn-add-file">
-                                                <i class="fa-solid fa-images">
-                                                    <span>Ảnh</span>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <label for="image">Hình ảnh</label>
                                                 <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
-                                                </i>
-                                            </a>
-                                            <a type="file" class="btn-add-file">
-                                                <i class="fa-solid fa-images">
-                                                    <span>video</span>
+                                            </li>
+                                            <li>
+                                                <label for="video">Video</label>
                                                 <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="id_video">
-                                                </i>
-                                            </a>
+                                            </li>
                                         </ul>
 
                                     </div>
@@ -223,36 +218,12 @@
             </div>
             <div class="card-body">
                 <div class="post-body mb-3">
-                    {% if post.title %}
-                        {{ post.title }} 
-                        <br><br>
-                    {% endif %}
-                    <span id="content">                            
-                        {% if post.content %}
-                            {{ post.content }} 
-                        {% endif %}
+                    {% if post.title %}<div class="title mb-4">{{ post.title }}</div>{% endif %}
+                    {% if post.content %}
+                    <span class="content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur cupiditate tempora accusamus molestiae odio dicta, in fugit debitis sunt consequatur aut laborum aliquam ea ab veritatis sed nam numquam? Adipisci? {{ post.content }}
                     </span>
+                    {% endif %}
                 </div>
-
-                <script>
-                    var spanElement = document.getElementById("content");
-
-                    var urlRegex = /(http:\/\/|https:\/\/|ftp:\/\/)/;
-
-                    if (urlRegex.test(spanElement.textContent)) {
-                        var linkElement = document.createElement("a");
-                        linkElement.href = spanElement.textContent;
-                        linkElement.textContent = spanElement.textContent; 
-                        linkElement.style.textDecoration = "underline"; 
-
-                        spanElement.parentNode.replaceChild(linkElement, spanElement);
-                    } else {
-                        var paragraphElement = document.createElement("p");
-                        paragraphElement.textContent = spanElement.textContent;
-
-                        spanElement.parentNode.replaceChild(paragraphElement, spanElement);
-                    }
-                </script>
 
                 {% if post.video %}
                     <div class="file-upload">
@@ -668,7 +639,7 @@
                     {% endfor %}
                 </div>
                     {% if  post.comments.all|length > 1 %}
-                        <button id="btnMoreComment{{post.id}}" class="btn btn-link" onclick="toggleComment( {{post.id}} )">
+                        <button id="btnMoreComment{{post.id}}" class="btn btn-link" onclick="toggleComment( '{{post.id}}' )">
                             Xem thêm
                         </button>
                     {% endif %}
@@ -798,6 +769,27 @@
                                     <img src="https://images.unsplash.com/photo-1698668768739-7dfa1a00a8f0?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D" class="card-img" alt="avatar">
                                     <span class="ms-2">1 bạn chung</span>
                                 </div>
+                                {% if user == reply.user %}
+                                <div class="dropdown align-self-center ms-2">
+                                    <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                        <li>
+                                            <a href="#comment{{reply.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                                <span>Chỉnh sửa bình luận</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url 'delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                                <i class="fa-solid fa-trash"></i>
+                                                <span>Xóa bình luận</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="action">
@@ -823,10 +815,7 @@
             {% endif %}
 
             <script>
-                
-              
-                function toggleContent() {                   
-
+                function toggleContent() {
                     var collapseElement = document.getElementById('more');
                     var expandBtn = document.getElementById('expandBtn');
             
@@ -838,15 +827,15 @@
                         // Nếu nội dung đang ẩn, hiện lên và đổi văn bản nút
                         collapseElement.classList.add('show');
                         expandBtn.innerText = 'Ẩn bớt';
-                    }                    
-                }            
+                    }
+                }
             </script>
             
         </div>
         <hr>
         <div class="contact">
             <div class="title">Người liên hệ</div>
-                <ul class="list-user">
+                <ul class="list-user contact-list">
                     {% for friend in friends %}    
                         {% for profile in profiles %}   
                             {% if friend.id == profile.user.id %}             

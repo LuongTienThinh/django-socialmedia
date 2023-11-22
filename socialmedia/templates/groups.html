@@ -227,29 +227,9 @@
                 </div>
                 <div class="card-body">
                     <div class="post-body mb-3">
-                        {{ post.title }} <br><br>
-                        <span id="content">{{ post.content }}</span>
+                        {% if post.title %}<div class="title mb-4">{{ post.title }}</div>{% endif %}
+                        {% if post.content %}<span class="content">{{ post.content }}</span>{% endif %}
                     </div>
-
-                    <script>
-                        var spanElement = document.getElementById("content");
-
-                        var urlRegex = /(http:\/\/|https:\/\/|ftp:\/\/)/;
-
-                        if (urlRegex.test(spanElement.textContent)) {
-                            var linkElement = document.createElement("a");
-                            linkElement.href = spanElement.textContent;
-                            linkElement.textContent = spanElement.textContent; 
-                            linkElement.style.textDecoration = "underline"; 
-
-                            spanElement.parentNode.replaceChild(linkElement, spanElement);
-                        } else {
-                            var paragraphElement = document.createElement("p");
-                            paragraphElement.textContent = spanElement.textContent;
-
-                            spanElement.parentNode.replaceChild(paragraphElement, spanElement);
-                        }
-                    </script>
 
                     {% if post.video %}
                         <div class="file-upload">
@@ -272,7 +252,7 @@
                             {% if user in post.likes.all %}
                                 <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
                             {% else %}
-                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}"  data-post-id="{{ post.id }}"></i>
+                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
                             {% endif %}
 
                             <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
