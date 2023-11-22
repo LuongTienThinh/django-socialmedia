@@ -4,6 +4,7 @@ from authentication.models import User
 from profiles.models import Profile
 from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship, Block
 from social.forms import GroupPostForm
+from chat.models import ChatMessage
 from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -63,6 +64,7 @@ def home1(request):
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
         ).distinct()
+    
     profiles = Profile.objects.all()
 
     suggest_friends = User.objects.exclude(
@@ -71,6 +73,16 @@ def home1(request):
     ).exclude(pk=request.user.id).exclude(
     id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
     )
+    list_user = User.objects.all()
+    message_list =[]
+    for user_chat in list_user:
+        message = ChatMessage.objects.filter(
+            Q(sender=request.user, receiver__username=user_chat) | Q(sender__username=user_chat, receiver=request.user)
+        ).order_by("-id").distinct()[:10]
+        if message :
+            message_list += message
+        print(message_list)
+    a = ""
 
     context = {
         'messages': messages,
@@ -83,9 +95,13 @@ def home1(request):
         'friends':friends,        
         'profiles':profiles,        
         'suggest_friends':suggest_friends,        
-        'blocked_users':blocked_users,        
+        'blocked_users':blocked_users, 
+        'list_user':list_user,        
+        'message_list':message_list,    
+   
     }
     return render(request, 'index.html', context)
+
 
 @login_required(login_url='/auth/login/')
 def friend(request):
@@ -422,3 +438,4 @@ def search(request):
     }
 
     return render(request, 'search_results.html', context)
+

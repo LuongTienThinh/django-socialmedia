@@ -18,4 +18,5 @@ urlpatterns = [
     path('delete-post/<int:post_id>/', DeletePost.as_view(), name='delete_post'),
     path('edit-post/<int:post_id>/', EditPostView.as_view(), name='edit_post'),
     path('search/', search, name='search'),
+    
 ]
