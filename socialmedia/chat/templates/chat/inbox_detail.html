@@ -1,0 +1,215 @@
+<div class="chat_container">
+<ul>
+    {% for m in message_list%}
+    {{m.receiver.username}}
+        {% if request.user == m.sender%}
+        <li>
+            <a href="{%url 'inbox_detail' username=m.receiver.username %}">
+                <div class="message-avatar"><i class="status-icon status-online"></i><img src="{{m.receiver.profile.profile_pic.url}}" alt=""></div>
+
+                <div class="message-by">
+                    <div class="message-by-headline">
+                        <h5>{{m.receiver.username}}</h5>
+                        <span style="font-size: 10px;">{{m.date|timesince}} ago</span>
+                    </div>
+                    <p>{{m.message}}</p>
+                </div>
+            </a>
+        </li>
+
+        {%endif%}
+
+        {% if request.user == m.receiver%}
+        <li>
+            <a href="{%url 'inbox_detail' username=m.sender.username %}">
+                <div class="message-avatar"><i class="status-icon status-online"></i><img src="{{m.sender.profile.profile_pic.url}}" alt=""></div>
+
+                <div class="message-by">
+                    <div class="message-by-headline">
+                        <h5>{{m.sender.username}}</h5>
+                        <span style="font-size: 10px;">{{m.date|timesince}} ago</span>
+                    </div>
+                    <p>{{m.message}}</p>
+                </div>
+            </a>
+
+        </li>
+        {%endif%}
+        {%empty%}
+        <li>
+            <a href="#">
+                <div class="message-by">
+                    <div class="message-by-headline">
+                        <h5>No messages yet</h5>
+                        
+                    </div>
+                    
+                </div>
+            </a>
+        </li>
+    {% endfor %}
+
+    
+    
+</ul>
+<div class="message-content-scrolbar" data-simplebar>
+
+    <!-- Message Content Inner -->
+    <div class="message-content-inner chat_container">
+        <!-- Time Sign -->
+        <div class="message-time-sign">
+            <span>28 June, 2020</span>
+        </div>
+        {%for m in message_detail%}
+        {%if m.sender == request.user%}
+        <div class="message-bubble me">
+            <div class="message-bubble-inner">
+                <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
+                <div class="message-text">
+                    <p>{{m.message}}</p>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        
+        {%else%}
+
+        <div class="message-bubble">
+            <div class="message-bubble-inner">
+                <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
+                <div class="message-text">
+                    <p>{{m.message}}</p>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        {%endif%}
+        {%endfor%}
+        <div id="chat-messages"></div>
+    </div>
+
+</div>
+<div class="message-reply">
+    <textarea id="chat-input" cols="20" rows="20" placeholder="Write Message"></textarea>
+    <button id="send-btn" class="button ripple-effect" >Send</button>
+</div>  
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(function() {
+        var receiver = null;
+        var receiver_id = "{{ receiver.username }}"; 
+        var logged_in = "{{ request.user.username }}"; 
+        const pathname = window.location.pathname;
+
+        const parts = pathname.split('/');
+        const username = parts[parts.length - 2];
+
+        if (receiver_id === logged_in) {
+            receiver = receiver_id;
+        } else {
+            receiver = receiver_id;
+        }
+
+        var socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + receiver + '/');
+
+        socket.onopen = function() {
+            console.log('WebSocket connection established.');
+        }
+
+        socket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            var message = data.message;
+            var sender = data.sender;
+            var profileImage = data.profile_image;
+            var receiver = data.receiver;
+
+            if (sender === "{{sender}}") {
+                    var chatMessage = '<div class="message-bubble me">';
+                    chatMessage += '<div class="message-bubble-inner">';
+                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                    chatMessage += '<div class="message-text">';
+                    chatMessage += '<p>' + message + '</p>';
+                    chatMessage += '</div>';
+                    chatMessage += '</div>';
+                    chatMessage += '<div class="clearfix"></div>';
+                    chatMessage += '</div>';
+                    // Append the chat message to the main div
+                    $('#chat-messages').append(chatMessage);
+                    // Get the chat container
+                    var chatContainer = document.querySelector('.chat_container');
+                    // Automatically scroll to the bottom of the message after sending.
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else {
+                var chatMessage = '<div class="message-bubble">';
+                    chatMessage += '<div class="message-bubble-inner">';
+                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                    chatMessage += '<div class="message-text">';
+                    chatMessage += '<p>' + message + '</p>';
+                    chatMessage += '</div>';
+                    chatMessage += '</div>';
+                    chatMessage += '<div class="clearfix"></div>';
+                    chatMessage += '</div>';
+                    $('#chat-messages').append(chatMessage);
+
+                    var chatContainer = document.querySelector('.chat_container');
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    console.log("No");
+            }
+        }
+
+        socket.onclose = function() {
+            console.log('WebSocket connection closed.');
+        }
+
+        $('#send-btn').on('click', function() {
+            var input = $('#chat-input');
+            var message = input.val();
+            var sender = "{{request.user.username}}"; 
+            var data = {               
+                'message': message,
+                'sender': sender,
+                'receiver': username,
+            };
+            socket.send(JSON.stringify(data));
+            input.val('');
+            var sendButton = $('#send-btn');
+            sendButton.prop('disabled', true);
+            $(".chat_container").scrollTop(100000000000);
+        });
+
+    });
+
+
+   
+
+
+    $(document).ready(function() {
+      $(".chat_container").scrollTop(100000000000);
+    });
+
+</script>
+
+<script>
+    $(document).ready(function() {
+         var chatInputValue = $('#chat-input');
+         var sendButton = $('#send-btn');
+
+         // Disable the button initially
+         sendButton.prop('disabled', true);
+
+         // Check input field on keyup event
+         chatInputValue.on('keyup', function() {
+             var inputText = $(this).val();
+
+             // Enable/disable button based on input field value
+             if (inputText.trim() !== '') {
+                 sendButton.prop('disabled', false);
+             } else {
+                 sendButton.prop('disabled', true);
+             }
+         });
+     })
+ </script>
+
+

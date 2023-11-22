@@ -57,6 +57,10 @@ class GroupPost(models.Model):
     
     def total_likes(self):
         return self.likes.count()
+    
+    def total_comment(self):
+        return GroupComment.objects.filter(post=self).count() + GroupReply.objects.filter(comment__post=self).count()
+    
 
 
 class MessageGroup(models.Model):

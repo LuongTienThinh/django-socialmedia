@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, UpdateView, View
+from django.views.generic import CreateView, UpdateView, View, DeleteView
 from django.urls import reverse_lazy
 from profiles.models import Profile
 from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  MessageGroup, Block, GroupComment, GroupReply
@@ -56,6 +56,10 @@ def Group_Posts(request, group_id):
         # Thêm biểu mẫu của bài viết hiện tại vào danh sách
         post_forms.append({'post': current_post, 'form': form})
 
+    # current_group = get_object_or_404(GroupPost, id=group_id)
+    group_form = GroupForm(instance=group)
+
+
     profiles = Profile.objects.all()
 
     #danh sách bạn bè
@@ -71,7 +75,9 @@ def Group_Posts(request, group_id):
     suggest_friends = User.objects.exclude(
         Q(friendships1__user2=request.user, friendships1__status='friends') |
         Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id)
+    ).exclude(pk=request.user.id).exclude(
+    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+    )
 
     context = {
         'group': group,
@@ -82,6 +88,7 @@ def Group_Posts(request, group_id):
         'status':status,
         'messages':messages,
         'post_forms':post_forms,
+        'group_form':group_form,
         'profiles':profiles,
         'friends':friends,
         'invite_friends':invite_friends,
@@ -217,6 +224,33 @@ class CreateGroup(CreateView):
             return redirect('social:group_posts', group_id=group.id)  # Chuyển hướng đến trang bài viết của nhóm vừa tạo
 
         return render(request, self.template_name, {'form': form})
+    
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class DeleteGroup(View):
+    def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        if request.user.id == group.creator.id:
+            group.delete()
+        return redirect('group')  # Điều hướng sau khi xóa
+
+    def get(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        if request.user.id == group.creator.id:
+            group.delete()
+        return redirect('group')
+
+@method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
+class EditGroup(View):
+     def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        form = GroupForm(request.POST, request.FILES, instance=group)
+
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('group',{'form': form, 'group': group})
+     
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class CreateGroupPostView(CreateView):
@@ -316,6 +350,27 @@ class LeaveGroupView(CreateView):
 
         return redirect('social:group_posts', group_id=group_id) 
 
+# like
+@login_required(login_url='/auth/login/')
+def Like_Post(request, post_id):
+    post = get_object_or_404(GroupPost, pk=post_id)
+    liked = False
+    
+    # Kiểm tra xem người dùng hiện tại đã thích bài viết chưa.
+    if request.user.is_authenticated:
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)  # Nếu đã thích, loại bỏ thích.
+        else:
+            post.likes.add(request.user)  # Nếu chưa thích, thêm thích.
+            liked = True
+    
+    response_data = {
+        'liked': liked,
+        'total_likes': post.likes.count()
+    }
+    
+    return JsonResponse(response_data)
+
 # comment group
 # Comment
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
@@ -355,13 +410,7 @@ class DeleteCommentView(View):
         return JsonResponse(response_data)
         
     def get(self, request, comment_id):
-        comment = GroupComment.objects.get(pk=comment_id)
-
-        if request.user == comment.user:
-            comment.delete()
-
-            response_data = {'message': 'Comment deleted successfully'}
-        return JsonResponse(response_data)
+        return JsonResponse({'error': 'Only POST method is allowed'})
     
 
 # edit comment
@@ -375,17 +424,12 @@ class EditCommentView(View):
 
             if form.is_valid():
                 form.save()
-        #         response_data = {
-        #         'comment_id': comment.id,
-        #         'content': comment.content,
-        #         'user': comment.user.username,
-        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        #     }
-        #     return JsonResponse(response_data)
-        # return JsonResponse({'message': 'Permission denied'}, status=403)
+ 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         else:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        
+
 # Reply
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class DeleteReplyView(View):

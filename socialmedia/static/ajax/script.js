@@ -46,12 +46,200 @@ $(document).ready(function() {
             }
         });
     });
+
+    $('.like-button').click(function(e) {
+        e.preventDefault();
+        var post_id = $(this).data('post-id');
+        var like_button = $(this);
+        var likeCountSpan = $('#like-count-' + post_id);
+        var likeCountIcon = $('#like-icon-' + post_id);
+        $.ajax({
+            type: 'POST',
+            url: '/social/like/' + post_id + '/',
+            data: {
+                csrfmiddlewaretoken: csrftoken  // Đặt CSRF token trong dữ liệu yêu cầu
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Cập nhật biểu tượng like và số lượng like
+                if (response.liked) {
+                    like_button.css('color', '#0866ff');
+                    likeCountIcon.css('color', '#0866ff');
+                    likeCountSpan.text(response.total_likes)
+                } else {
+                    likeCountSpan.text(response.total_likes)
+                    like_button.css('color', '');                                            
+                    likeCountIcon.css('color', '');                                            
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+    $('.like-button').click(function(e) {
+        e.preventDefault();
+        var post_id = $(this).data('post-id');
+        var group_id = $(this).data('group-id');
+        var like_button = $(this);
+        var likeCountSpan = $('#like-count-' + post_id);
+        var likeCountIcon = $('#like-icon-' + post_id);
+        $.ajax({
+            type: 'POST',
+            url: '/social/group/' + group_id + '/like/' + post_id + '/',
+            data: {
+                csrfmiddlewaretoken: csrftoken  // Đặt CSRF token trong dữ liệu yêu cầu
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Cập nhật biểu tượng like và số lượng like
+                if (response.liked) {
+                    like_button.css('color', '#0866ff');
+                    likeCountIcon.css('color', '#0866ff');
+                    likeCountSpan.text(response.total_likes)
+                } else {
+                    likeCountSpan.text(response.total_likes)
+                    like_button.css('color', '');                                            
+                    likeCountIcon.css('color', '');                                            
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
 });
 
 
 // add comment
 $(document).ready(function() {
     var csrftoken = getCookie('csrftoken');
+
+    
+    // delete comment
+    $('.delete-comment-button').on('click', function(event) {
+        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
+
+        var commentId = $(this).data('comment-id');
+        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
+
+        $.ajax({
+            type: 'POST',
+            url: `/delete_comment/${commentId}/`,
+            data: {
+                csrfmiddlewaretoken: csrftoken
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Xử lý phản hồi từ máy chủ (nếu cần)
+
+                // Xóa giao diện bình luận ngay lập tức
+                commentContainer.remove();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+    $('.delete-reply-button').on('click', function(event) {
+        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
+
+        var commentId = $(this).data('reply-id');
+        var commentContainer = $(this).closest('.reply-content');  // Tìm phần tử chứa bình luận
+
+        $.ajax({
+            type: 'POST',
+            url: `/delete_reply/${commentId}/`,
+            data: {
+                csrfmiddlewaretoken: csrftoken
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Xử lý phản hồi từ máy chủ (nếu cần)
+
+                // Xóa giao diện bình luận ngay lập tức
+                commentContainer.remove();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+   
+    // delete groups post comment
+    $('.delete-comment-button').on('click', function(event) {
+        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
+
+        var commentId = $(this).data('comment-id');
+        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
+            $.ajax({
+                type: 'POST',
+                url: `/delete_comment/${commentId}/`,
+                data: {
+                    csrfmiddlewaretoken: csrftoken
+                },
+                dataType: 'json',
+                success: function(response) {
+                    // Xử lý phản hồi từ máy chủ (nếu cần)
+    
+                    // Xóa giao diện bình luận ngay lập tức
+                    commentContainer.remove();
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+
+        $.ajax({
+            type: 'POST',
+            url: `/social/delete_comment/${commentId}/`,
+            data: {
+                csrfmiddlewaretoken: csrftoken
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Xử lý phản hồi từ máy chủ (nếu cần)
+
+                // Xóa giao diện bình luận ngay lập tức
+                commentContainer.remove();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    );
+    $('.delete-reply-button').on('click', function(event) {
+        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
+
+        var commentId = $(this).data('reply-id');
+        var commentContainer = $(this).closest('.reply-content');  // Tìm phần tử chứa bình luận
+
+        $.ajax({
+            type: 'POST',
+            url: `/social/delete_reply/${commentId}/`,
+            data: {
+                csrfmiddlewaretoken: csrftoken
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Xử lý phản hồi từ máy chủ (nếu cần)
+
+                // Xóa giao diện bình luận ngay lập tức
+                commentContainer.remove();
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+
+});
+
 
     // $('.post-comment').on('submit', function(event) {
     //     event.preventDefault();
@@ -127,175 +315,3 @@ $(document).ready(function() {
     //     });
     // });
     
-    
-    // delete comment
-    $('.delete-comment-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('comment-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-
-        $.ajax({
-            type: 'POST',
-            url: `/delete_comment/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-
-    $('.delete-reply-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('reply-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-
-        $.ajax({
-            type: 'POST',
-            url: `/delete_reply/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-   
-    // delete groups post comment
-    $('.delete-comment-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('comment-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-            $.ajax({
-                type: 'POST',
-                url: `/delete_comment/${commentId}/`,
-                data: {
-                    csrfmiddlewaretoken: csrftoken
-                },
-                dataType: 'json',
-                success: function(response) {
-                    // Xử lý phản hồi từ máy chủ (nếu cần)
-    
-                    // Xóa giao diện bình luận ngay lập tức
-                    commentContainer.remove();
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
-
-        $.ajax({
-            type: 'POST',
-            url: `/social/delete_comment/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    }
-
-    );
-    $('.delete-reply-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('reply-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-
-        $.ajax({
-            type: 'POST',
-            url: `/social/delete_reply/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-
-
-    // delete each grouppost comment
-    $('.delete-comment-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('comment-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-        console.log(commentId)
-        $.ajax({
-            type: 'POST',
-            url: `/delete_comment/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-    $('.delete-reply-button').on('click', function(event) {
-        event.preventDefault(); // Ngăn chặn chuyển hướng mặc định
-
-        var commentId = $(this).data('reply-id');
-        var commentContainer = $(this).closest('.comment-content');  // Tìm phần tử chứa bình luận
-
-        $.ajax({
-            type: 'POST',
-            url: `/delete_reply/${commentId}/`,
-            data: {
-                csrfmiddlewaretoken: csrftoken
-            },
-            dataType: 'json',
-            success: function(response) {
-                // Xử lý phản hồi từ máy chủ (nếu cần)
-
-                // Xóa giao diện bình luận ngay lập tức
-                commentContainer.remove();
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    });
-});

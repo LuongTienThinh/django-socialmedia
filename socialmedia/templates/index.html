@@ -341,7 +341,8 @@
 
             <!-- View All comment -->
             <div class="comment-root">
-                {% for comment in post.comments.all|slice:":1" %}
+            {% if post.comments.all %}
+            {% for comment in post.comments.all|slice:":1" %}
                 <div class="comment-content">
                     <div class="d-flex align-items-start">
                         {% for profile in profiles %}               
@@ -410,12 +411,32 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+                    <!-- reply comment form -->
+                    <div class="collapse p-2 mt-2 border-top border-bottom" id="reply{{comment.id}}">
+                        <div class="form-group">
+                            <form method="post" action="{% url 'add_reply' comment.id %}" class="post-reply-comment"> 
+                                {% csrf_token %}
+                                <div class="d-flex justify-content-center align-items-center px-2">
+                                    {% for profile in profiles %}               
+                                        {% if user.id == profile.user.id %}
+                                            {% if profile.profile_pic %}
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                {% else %}
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
+                                    <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                </div>
+                            </form>        
+                        </div>
+                    </div>
                 </div>
 
                 <!-- view all reply comment -->
                 {% for reply in comment.replies.all %}
-                    <div class="ms-5 comment-content border-start">
+                    <div class="ms-5 reply-content comment-content border-start">
                         <div class="d-flex align-items-center">
                             {% for profile in profiles %}               
                                 {% if reply.user.id == profile.user.id %}
@@ -469,7 +490,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{% url 'delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                        <a href="{% url 'delete_reply' reply.id %}" data-reply-id="{{ reply.id }}" class="delete-reply-button dropdown-item">
                                             <i class="fa-solid fa-trash"></i>
                                             <span>Xóa bình luận</span>
                                         </a>
@@ -481,87 +502,107 @@
                     </div>
                 {% endfor %}
             {% endfor %}
-            <button id="more_post" class="btn btn-link" onclick="toggleContent()">
-                Xem thêm
-            </button>
-            <div class="collapse" id="more_post">
-                {% for comment in post.comments.all|slice:":1" %}
-                    <div class="comment-content">
-                        <div class="d-flex align-items-start">
-                            {% for profile in profiles %}               
-                                {% if comment.user.id == profile.user.id %}
-                                    {% if profile.profile_pic %}
-                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
-                                        {% else %}
-                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+            
+                <div class="collapse" id="moreComment{{post.id}}">
+                    {% for comment in post.comments.all %}
+                        {% if forloop.counter > 1 %}
+                            <div class="comment-content">
+                                <div class="d-flex align-items-start">
+                                    {% for profile in profiles %}               
+                                        {% if comment.user.id == profile.user.id %}
+                                            {% if profile.profile_pic %}
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                {% else %}
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                {% endif %}
                                         {% endif %}
-                                {% endif %}
-                            {% endfor %}
-                            <div>
-                                <div class="author">
-                                    <a href="{% url 'profiles:profile' comment.user.id %}" class="name">{{ comment.user.username }}</a>
-                                    <!-- comment view -->
-                                    <p class="">
-                                        {{ comment.content }}
-                                        <!-- edit comment form -->
-                                        <div class="collapse" id="comment{{comment.id}}">
-                                            <hr>   
-                                            <div class="form-group">
-                                                <form method="post" action="{% url 'edit_comment' comment.id %}">
-                                                    {% csrf_token %}
-                                                    <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                                        {% for profile in profiles %}               
-                                                            {% if comment.user.id == profile.user.id %}
-                                                                {% if profile.profile_pic %}
-                                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
-                                                                    {% else %}
-                                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                    {% endfor %}
+                                    <div>
+                                        <div class="author">
+                                            <a href="{% url 'profiles:profile' comment.user.id %}" class="name">{{ comment.user.username }}</a>
+                                            <!-- comment view -->
+                                            <p class="">
+                                                {{ comment.content }}
+                                                <!-- edit comment form -->
+                                                <div class="collapse" id="comment{{comment.id}}">
+                                                    <hr>   
+                                                    <div class="form-group">
+                                                        <form method="post" action="{% url 'edit_comment' comment.id %}">
+                                                            {% csrf_token %}
+                                                            <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                                {% for profile in profiles %}               
+                                                                    {% if comment.user.id == profile.user.id %}
+                                                                        {% if profile.profile_pic %}
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                            {% else %}
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                            {% endif %}
                                                                     {% endif %}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        <input name="content" class="ms-2 w-100 rounded-pill" value="{{comment.content}}" required id="id_body">
-                                                        <input type="hidden" name="parent_id" value="None">
-                                                        <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                                {% endfor %}
+                                                                <input name="content" class="ms-2 w-100 rounded-pill" value="{{comment.content}}" required id="id_body">
+                                                                <input type="hidden" name="parent_id" value="None">
+                                                                <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                            </div>
+                                                        </form>
                                                     </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                            </p>
                                         </div>
-                                    </p>
+                                        <div class="reply">
+                                            <a href="#reply{{comment.id}}" class="action-item" data-bs-toggle="collapse" role="button" aria-expanded="false">Phản hồi</a>
+                                        </div>
+                                    </div>
+                                    {% if user == comment.user %}
+                                    <div class="dropdown align-self-center ms-2" style="margin-bottom: 16px;">
+                                        <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa-solid fa-ellipsis"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                            <li>
+                                                <a href="#comment{{comment.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                    <span>Chỉnh sửa bình luận</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button dropdown-item">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                    <span>Xóa bình luận</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                <div class="reply">
-                                    <a href="#reply{{comment.id}}" class="action-item" data-bs-toggle="collapse" role="button" aria-expanded="false">Phản hồi</a>
+                                <!-- reply comment form -->
+                                <div class="collapse p-2 mt-2 border-top border-bottom" id="reply{{comment.id}}">
+                                    <div class="form-group">
+                                        <form method="post" action="{% url 'add_reply' comment.id %}" class="post-reply-comment"> 
+                                            {% csrf_token %}
+                                            <div class="d-flex justify-content-center align-items-center px-2">
+                                                {% for profile in profiles %}               
+                                                    {% if user.id == profile.user.id %}
+                                                        {% if profile.profile_pic %}
+                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                            {% else %}
+                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                            {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
+                                                <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                            </div>
+                                        </form>        
+                                    </div>
                                 </div>
                             </div>
-                            {% if user == comment.user %}
-                            <div class="dropdown align-self-center ms-2" style="margin-bottom: 16px;">
-                                <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa-solid fa-ellipsis"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
-                                    <li>
-                                        <a href="#comment{{comment.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                            <span>Chỉnh sửa bình luận</span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{% url 'delete_comment' comment.id %}" data-comment-id="{{ comment.id }}" class="delete-comment-button dropdown-item">
-                                            <i class="fa-solid fa-trash"></i>
-                                            <span>Xóa bình luận</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <!-- reply comment form -->
-                        <div class="collapse p-2 mt-2 border-top border-bottom" id="reply{{comment.id}}">
-                            <div class="form-group">
-                                <form method="post" action="{% url 'add_reply' comment.id %}" class="post-reply-comment"> 
-                                    {% csrf_token %}
-                                    <div class="d-flex justify-content-center align-items-center px-2">
+
+                            <!-- view all reply comment -->
+                            {% for reply in comment.replies.all %}
+                                <div class="ms-5 reply-content comment-content border-start">
+                                    <div class="d-flex align-items-center">
                                         {% for profile in profiles %}               
-                                            {% if user.id == profile.user.id %}
+                                            {% if reply.user.id == profile.user.id %}
                                                 {% if profile.profile_pic %}
                                                         <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
                                                     {% else %}
@@ -569,84 +610,89 @@
                                                     {% endif %}
                                             {% endif %}
                                         {% endfor %}
-                                        <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" required id="id_body">
-                                        <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
-                                    </div>
-                                </form>        
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- view all reply comment -->
-                    {% for reply in comment.replies.all %}
-                        <div class="ms-5 comment-content border-start">
-                            <div class="d-flex align-items-center">
-                                {% for profile in profiles %}               
-                                    {% if reply.user.id == profile.user.id %}
-                                        {% if profile.profile_pic %}
-                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
-                                            {% else %}
-                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
-                                            {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                                <div class="author">
-                                    <a href="{% url 'profiles:profile' reply.user.id   %}" class="name">{{ reply.user.username }}</a>
-                                    <!-- comment view -->
-                                    <p class="">
-                                        {{ reply.content }}
-                                        <!-- edit comment form -->
-                                        <div class="collapse" id="comment{{reply.id}}">
-                                            <hr>   
-                                            <div class="form-group">
-                                                <form method="post" action="{% url 'edit_reply' reply.id %}"> 
-                                                    {% csrf_token %}
-                                                    <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
-                                                        {% for profile in profiles %}               
-                                                            {% if user.id == profile.user.id %}
-                                                                {% if profile.profile_pic %}
-                                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
-                                                                    {% else %}
-                                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        <div class="author">
+                                            <a href="{% url 'profiles:profile' reply.user.id   %}" class="name">{{ reply.user.username }}</a>
+                                            <!-- comment view -->
+                                            <p class="">
+                                                {{ reply.content }}
+                                                <!-- edit comment form -->
+                                                <div class="collapse" id="comment{{reply.id}}">
+                                                    <hr>   
+                                                    <div class="form-group">
+                                                        <form method="post" action="{% url 'edit_reply' reply.id %}"> 
+                                                            {% csrf_token %}
+                                                            <div style="display: flex; text-align: center;" class="ms-2 mb-3" >
+                                                                {% for profile in profiles %}               
+                                                                    {% if user.id == profile.user.id %}
+                                                                        {% if profile.profile_pic %}
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                            {% else %}
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                            {% endif %}
                                                                     {% endif %}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
-                                                        <input type="hidden" name="parent_id" value="None">                          
-                                                        <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                                {% endfor %}
+                                                                <input name="content" class="w-100 rounded-pill"  value="{{reply.content}}" required id="id_body">
+                                                                <input type="hidden" name="parent_id" value="None">                          
+                                                                <button class="btn "><i class="fa-solid fa-paper-plane fa-beat"></i></button>
+                                                            </div>
+                                                        </form>        
                                                     </div>
-                                                </form>        
-                                            </div>
+                                                </div>
+                                            </p>
                                         </div>
-                                    </p>
+                                        {% if user == reply.user %}
+                                        <div class="dropdown align-self-center ms-2">
+                                            <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fa-solid fa-ellipsis"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                                                <li>
+                                                    <a href="#comment{{reply.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                        <span>Chỉnh sửa bình luận</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="{% url 'delete_reply' reply.id %}" data-reply-id="{{ reply.id }}" class="delete-reply-button dropdown-item">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                        <span>Xóa bình luận</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% if user == reply.user %}
-                                <div class="dropdown align-self-center ms-2">
-                                    <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-ellipsis"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
-                                        <li>
-                                            <a href="#comment{{reply.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                                <span>Chỉnh sửa bình luận</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{% url 'delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
-                                                <i class="fa-solid fa-trash"></i>
-                                                <span>Xóa bình luận</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
+                            {% endfor %}
+                        {% endif %}
                     {% endfor %}
-                {% endfor %}
+                </div>
+                    {% if  post.comments.all|length > 1 %}
+                        <button id="btnMoreComment{{post.id}}" class="btn btn-link" onclick="toggleComment( {{post.id}} )">
+                            Xem thêm
+                        </button>
+                    {% endif %}
+                {% else %}
+                <p class="text-center">Hiện chưa có bình luận</p>
+                {% endif %}
             </div>
-        </div>
+            <script>
+                  function toggleComment(postId) {
+                    var commentCollapseElement = document.querySelector('#moreComment' + postId);
+                    var morePostBtn = document.querySelector('#btnMoreComment' + postId);
+
+                    if (commentCollapseElement.classList.contains('show')) {
+                        // Nếu nội dung đang hiển thị, ẩn đi và đổi văn bản nút
+                        commentCollapseElement.classList.remove('show');
+                        morePostBtn.innerText = 'Xem thêm';
+                    } else {
+                        // Nếu nội dung đang ẩn, hiện lên và đổi văn bản nút
+                        commentCollapseElement.classList.add('show');
+                        morePostBtn.innerText = 'Ẩn bớt';
+                    }
+                }
+
+            </script>
         </div>
             <!-- Modal Chỉnh Sửa Bài Viết -->
             {% for post_edit in post_forms %}
@@ -730,8 +776,6 @@
                 </div>
                 {% endfor %}
             
-                <!-- Nút mở rộng -->
-                
                 <!-- Nội dung ẩn bớt -->
                 <div class="collapse" id="more">
                     <!-- ... Nội dung cần ẩn bớt ... -->
@@ -779,7 +823,10 @@
             {% endif %}
 
             <script>
-                function toggleContent() {
+                
+              
+                function toggleContent() {                   
+
                     var collapseElement = document.getElementById('more');
                     var expandBtn = document.getElementById('expandBtn');
             
@@ -791,8 +838,8 @@
                         // Nếu nội dung đang ẩn, hiện lên và đổi văn bản nút
                         collapseElement.classList.add('show');
                         expandBtn.innerText = 'Ẩn bớt';
-                    }
-                }
+                    }                    
+                }            
             </script>
             
         </div>

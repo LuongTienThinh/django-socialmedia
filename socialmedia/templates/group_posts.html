@@ -10,7 +10,7 @@
                 <li>
                 {% for profile in profiles %}               
                     {% if user.id == profile.user.id %}
-                        <a href="{% url 'profiles:profile' profile.user.id   %}" class="user">
+                        <a href="{% url 'profiles:profile' profile.user.id  %}" class="user">
                         {% if profile.profile_pic %}
                             <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
                         {% else %}
@@ -77,6 +77,27 @@
         </div>
         <div class="main-content">
             <div class="card p-5">
+                {% if user == group.creator %}
+                    <div class="dropdown align-self-start ms-2" style="margin-bottom: 16px;">
+                        <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                            <li>
+                                <a href="#"  class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editGroupModal{{group.id}}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Chỉnh sửa nhóm</span>    
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'social:delete_group'  group.id %}"   class="delete-group-button dropdown-item">
+                                    <i class="fa-solid fa-trash"></i>
+                                    <span>Xóa nhóm </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
                 <div class="button-noty d-flex justify-content-end">
                     {% if not is_member  or status == 'rejected' %}                        
                         <button class="accept" style="width: fit-content; background-color: #0866ff;"> 
@@ -88,10 +109,10 @@
                         </button>
                     {% elif is_member and status == 'approved' %}
                         <div class="dropdown status">
-                            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdown-upload-post">
+                            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="dropdown-join">
                                 Đã tham gia
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" aria-labelledby="dropdown-join">
                                 <li><a href="{% url 'social:leave-group' group.id %}" class="dropdown-item">Rời nhóm</a></li>
                             </ul>
                         </div>
@@ -218,7 +239,7 @@
                 </div>
             </div>
             
-            {% for post in posts %}            
+            {% for post in posts %}      
                 <div class="card post-detail">
                     <div class="pt-2 ps-3 group me-4 text-decoration-underline fs-6 fw-bold">                            
                         <a href="#" class="name">{{ post.group }}</a>
@@ -261,7 +282,7 @@
                                     </li>
                                     <li>
                                         <!-- Chỉnh sửa bài viết -->
-                                        <a  class="dropdown-item logout" data-bs-toggle="modal" data-bs-target="#editModal">    
+                                        <a  class="dropdown-item " data-bs-toggle="modal" data-bs-target="#editModal">    
                                             <i class="fa-solid fa-pen-to-square"></i>                                     
                                             <span>Chỉnh sửa bài viết</span>
                                         </a>
@@ -316,9 +337,9 @@
                             {% csrf_token %}
                             <div class="react">
                                 {% if user in post.likes.all %}
-                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
+                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;"    data-post-id="{{ post.id }}"></i>
                                 {% else %}
-                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                                    <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}"     data-post-id="{{ post.id }}"></i>
                                 {% endif %}
     
                                 <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
@@ -339,7 +360,7 @@
                     </div>
                     <div class="action d-flex justify-content-between align-items-center border-top {% if post.total_comment > 0 %}border-bottom{% endif %} p-2">
                         <!-- like -->
-                        <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %} data-post-id="{{ post.id }}">
+                        <a href="#" class="action-item react like-button" {% if user in post.likes.all %} style="color: #0866ff;"{% endif %}   data-post-id="{{ post.id }}">
                             <i class="fa-solid fa-thumbs-up"></i>
                             <span>Thích</span>
                         </a>                    
@@ -357,9 +378,9 @@
                         </a>
                     </div>
                     <!-- comment form -->
-                    <div class="collapse comment-form" id="commentpost{{post.id}}">
+                    <div class="collapse comment-form  {% if post.total_comment == 0 %}border-top{% endif %} border-bottom" id="commentpost{{post.id}}">
                         <div class="form-group">
-                            <form method="post" action="{% url 'social:add_comment' post.id %}" class="post-comment" data-post-id="{{ post.id }}"> 
+                            <form method="post" action="{% url 'social:add_comment' post.id %}" class="post-comment"  data-post-id="{{ post.id }}"> 
                                 {% csrf_token %}
                                 <div class="d-flex justify-content-between align-items-center px-2">
                                     {% for profile in profiles %}               
@@ -436,11 +457,11 @@
                                             <li>
                                                 <a href="#comment{{comment.id}}"  class="action-item dropdown-item" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
                                                     <i class="fa-solid fa-pen-to-square"></i>
-                                                    <span>Chỉnh sửa bình luận</span>
+                                                    <span>Chỉnh sửa bình luận</span>    
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{% url 'social:delete_comment'  comment_id=comment.id %}" data-comment-id="{{ comment.id }}"  class="delete-comment-button dropdown-item">
+                                                <a href="{% url 'social:delete_comment'  comment_id=comment.id %}"   data-comment-id="{{ comment.id }}"  class="delete-comment-button dropdown-item">
                                                     <i class="fa-solid fa-trash"></i>
                                                     <span>Xóa bình luận </span>
                                                 </a>
@@ -474,7 +495,7 @@
         
                             <!-- view all reply comment -->
                             {% for reply in comment.group_replies.all %}
-                                <div class="ms-5 comment-content border-start">
+                                <div class="ms-5 reply-content comment-content border-start">
                                     <div class="d-flex align-items-center">
                                         {% for profile in profiles %}               
                                             {% if reply.user.id == profile.user.id %}
@@ -528,7 +549,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{% url 'social:delete_reply_post'  reply.post.group.id reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                                    <a href="{% url 'social:delete_reply'  reply.id %}" data-reply-id="{{ reply.id }}" class="delete-reply-button dropdown-item">
                                                         <i class="fa-solid fa-trash"></i>
                                                         <span>Xóa bình luận</span>
                                                     </a>
@@ -542,6 +563,8 @@
                         {% endfor %}
                     </div>
                 </div>
+               
+
                 <!-- Modal Chỉnh Sửa Bài Viết -->
                 {% for post_edit in post_forms %}
                     {% if post.id == post_edit.post.id %}
@@ -568,6 +591,29 @@
                     {% endif %}
                 {% endfor %}
             {% endfor %}
+             <!-- Model chỉnh sửa Group -->
+                
+             <div class="modal fade" id="editGroupModal{{group.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">            
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div></div>
+                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Chỉnh sửa nhóm {{group.name}}</h1>
+                            <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{% url 'social:edit_group' group.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="modal-body custom-scrollbar w-100">
+                                {{ group_form.as_p }}
+                            </div>                                        
+                            <div class="modal-footer justify-content-lg-center">                                          
+                                <button type="submit" value="Save" class="btn btn-primary btn-upload text-center"> Lưu</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+           
         </div>
         <div class="right-content">
             <div class="invite-friend">

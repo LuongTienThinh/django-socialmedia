@@ -272,7 +272,7 @@
                             {% if user in post.likes.all %}
                                 <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" style="color: #0866ff;" data-post-id="{{ post.id }}"></i>
                             {% else %}
-                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}" data-post-id="{{ post.id }}"></i>
+                                <i class="fa-solid fa-thumbs-up like-button" id="like-icon-{{ post.id }}"  data-post-id="{{ post.id }}"></i>
                             {% endif %}
 
                             <span class="like-count" id="like-count-{{ post.id }}">{{ post.total_likes }}</span>
@@ -425,7 +425,7 @@
     
                         <!-- view all reply comment -->
                         {% for reply in comment.group_replies.all %}
-                            <div class="ms-5 comment-content border-start">
+                            <div class="ms-5 reply-content comment-content border-start">
                                 <div class="d-flex align-items-center">
                                     {% for profile in profiles %}               
                                         {% if reply.user.id == profile.user.id %}
@@ -479,7 +479,7 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="{% url 'social:delete_reply' reply.id %}" data-comment-id="{{ reply.id }}" class="delete-comment-button dropdown-item">
+                                                <a href="{% url 'social:delete_reply' reply.id %}" data-reply-id="{{ reply.id }}" class="delete-reply-button dropdown-item">
                                                     <i class="fa-solid fa-trash"></i>
                                                     <span>Xóa bình luận</span>
                                                 </a>

@@ -17,11 +17,19 @@ class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ['name', 'description', 'image']
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            'description': forms.Textarea(attrs={'class':'form-control'}),           
+        }
 
 class GroupPostForm(forms.ModelForm):
     class Meta:
         model = GroupPost
         fields = ('title', 'content', 'image', 'video', )
+        widgets = {
+            'title': forms.Textarea(attrs={'class':'form-control'}),
+            'content': forms.Textarea(attrs={'class':'form-control'}),           
+        }
 
 class GroupCommentForm(forms.ModelForm):
     class Meta:

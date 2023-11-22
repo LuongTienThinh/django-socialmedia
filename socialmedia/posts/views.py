@@ -68,7 +68,9 @@ def home1(request):
     suggest_friends = User.objects.exclude(
         Q(friendships1__user2=request.user, friendships1__status='friends') |
         Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id)
+    ).exclude(pk=request.user.id).exclude(
+    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+    )
 
     context = {
         'messages': messages,
@@ -163,7 +165,9 @@ def group(request):
     suggest_friends = User.objects.exclude(
         Q(friendships1__user2=request.user, friendships1__status='friends') |
         Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id)
+    ).exclude(pk=request.user.id).exclude(
+    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+    )
 
 
     return render(request, 'groups.html', {'messages': messages,'friends':friends, 'post_list':post_list, 'group_list':group_list, 'group_post':group_post, 'groups_not_joined':groups_not_joined ,'user_groups':user_groups, 'post_forms':post_forms, 'profiles':profiles, 'invite_friends':invite_friends, 'suggest_friends':suggest_friends})
