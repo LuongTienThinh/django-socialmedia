@@ -4,14 +4,14 @@
 
 <div class="login-area">
   <div class="wrapper text-center">
-    <div class="title text-uppercase text-center">login</div>
+    <div class="title text-uppercase text-center">Đăng nhập</div>
     <hr>
     <form class="form-login d-flex flex-column justify-content-center align-items-center" method="post">
       {% csrf_token %}
       <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username" placeholder="Tên đăng nhập">
       <input type="password" name="password" autocomplete="current-password" required="" id="id_password" placeholder="Mật khẩu">
       <button type="submit" class="btn-login">Đăng nhập</button>
-      <a class="forgot-password text-primary" href="">Quên mật khẩu?</a>
+      <a class="forgot-password text-primary" href="{% url 'forgot_password' %}">Quên mật khẩu?</a>
     </form>
     <hr>
     <a href="{% url 'register' %}" class="btn-register">Tạo tài khoản mới</a>

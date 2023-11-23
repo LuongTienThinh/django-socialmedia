@@ -840,7 +840,7 @@
                         {% for profile in profiles %}   
                             {% if friend.id == profile.user.id %}             
                                 <li>
-                                    <a href="{% url 'profiles:profile' profile.user.id   %}" class="user-item">
+                                    <a href="#" class="user-item">
                                         <img src="{% if profile.profile_pic %}
                                             {{ profile.profile_pic.url  }}
                                         {% else %} 

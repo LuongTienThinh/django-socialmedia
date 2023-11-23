@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User
+from .models import User, OTP
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser')
@@ -8,3 +8,4 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
 admin.site.register(User, UserAdmin)
+admin.site.register(OTP)
