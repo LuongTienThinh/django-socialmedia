@@ -23,18 +23,22 @@ class Post(models.Model):
         return Share.objects.filter(post=self).count()
 
 class Comment(models.Model):
-    content = models.TextField()
+    content = models.TextField(blank=True)
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='comments/images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self) :
-        return f'{self.post} | {self.content}'
+        return f'{self.user} | {self.content}'
     
 class Reply(models.Model):
     content = models.TextField()
     comment = models.ForeignKey(Comment, related_name='replies', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) :
+        return f'{self.comment} | {self.comment.post}'
     
 
 class Share(models.Model):

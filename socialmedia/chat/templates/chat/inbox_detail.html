@@ -1,57 +1,5 @@
 <div class="chat_container">
-<ul>
-    {% for m in message_list%}
-    {{m.receiver.username}}
-        {% if request.user == m.sender%}
-        <li>
-            <a href="{%url 'inbox_detail' username=m.receiver.username %}">
-                <div class="message-avatar"><i class="status-icon status-online"></i><img src="{{m.receiver.profile.profile_pic.url}}" alt=""></div>
 
-                <div class="message-by">
-                    <div class="message-by-headline">
-                        <h5>{{m.receiver.username}}</h5>
-                        <span style="font-size: 10px;">{{m.date|timesince}} ago</span>
-                    </div>
-                    <p>{{m.message}}</p>
-                </div>
-            </a>
-        </li>
-
-        {%endif%}
-
-        {% if request.user == m.receiver%}
-        <li>
-            <a href="{%url 'inbox_detail' username=m.sender.username %}">
-                <div class="message-avatar"><i class="status-icon status-online"></i><img src="{{m.sender.profile.profile_pic.url}}" alt=""></div>
-
-                <div class="message-by">
-                    <div class="message-by-headline">
-                        <h5>{{m.sender.username}}</h5>
-                        <span style="font-size: 10px;">{{m.date|timesince}} ago</span>
-                    </div>
-                    <p>{{m.message}}</p>
-                </div>
-            </a>
-
-        </li>
-        {%endif%}
-        {%empty%}
-        <li>
-            <a href="#">
-                <div class="message-by">
-                    <div class="message-by-headline">
-                        <h5>No messages yet</h5>
-                        
-                    </div>
-                    
-                </div>
-            </a>
-        </li>
-    {% endfor %}
-
-    
-    
-</ul>
 <div class="message-content-scrolbar" data-simplebar>
 
     <!-- Message Content Inner -->
@@ -60,13 +8,15 @@
         <div class="message-time-sign">
             <span>28 June, 2020</span>
         </div>
-        {%for m in message_detail%}
+        {%for m in message_list%}
         {%if m.sender == request.user%}
         <div class="message-bubble me">
             <div class="message-bubble-inner">
-                <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
                 <div class="message-text">
-                    <p>{{m.message}}</p>
+                    <p>{{m.message}} - {{ m.sender.username }}</p>
+                    {% if m.image %}
+                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
+                    {% endif %}
                 </div>
             </div>
             <div class="clearfix"></div>
@@ -76,9 +26,11 @@
 
         <div class="message-bubble">
             <div class="message-bubble-inner">
-                <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
                 <div class="message-text">
-                    <p>{{m.message}}</p>
+                    <p>{{m.message}} - {{ m.sender.username }}</p>
+                    {% if m.image %}
+                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
+                    {% endif %}
                 </div>
             </div>
             <div class="clearfix"></div>
@@ -91,26 +43,21 @@
 </div>
 <div class="message-reply">
     <textarea id="chat-input" cols="20" rows="20" placeholder="Write Message"></textarea>
+    <input type="file" name="image" accept="image/*" id="file-input">
     <button id="send-btn" class="button ripple-effect" >Send</button>
 </div>  
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     $(function() {
-        var receiver = null;
-        var receiver_id = "{{ receiver.username }}"; 
-        var logged_in = "{{ request.user.username }}"; 
+        
+        var receiver = "{{ receiver.username }}"
         const pathname = window.location.pathname;
 
         const parts = pathname.split('/');
         const username = parts[parts.length - 2];
 
-        if (receiver_id === logged_in) {
-            receiver = receiver_id;
-        } else {
-            receiver = receiver_id;
-        }
-
+       
         var socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + receiver + '/');
 
         socket.onopen = function() {
@@ -120,16 +67,18 @@
         socket.onmessage = function(event) {
             var data = JSON.parse(event.data);
             var message = data.message;
-            var sender = data.sender;
-            var profileImage = data.profile_image;
             var receiver = data.receiver;
+            var sender = data.sender;
+            var image = data.image;
+            var profileImage = data.profile_image;
 
             if (sender === "{{sender}}") {
                     var chatMessage = '<div class="message-bubble me">';
                     chatMessage += '<div class="message-bubble-inner">';
-                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
                     chatMessage += '<div class="message-text">';
                     chatMessage += '<p>' + message + '</p>';
+                    chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
                     chatMessage += '</div>';
                     chatMessage += '</div>';
                     chatMessage += '<div class="clearfix"></div>';
@@ -143,9 +92,10 @@
             } else {
                 var chatMessage = '<div class="message-bubble">';
                     chatMessage += '<div class="message-bubble-inner">';
-                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
                     chatMessage += '<div class="message-text">';
                     chatMessage += '<p>' + message + '</p>';
+                    chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
                     chatMessage += '</div>';
                     chatMessage += '</div>';
                     chatMessage += '<div class="clearfix"></div>';
@@ -165,13 +115,35 @@
         $('#send-btn').on('click', function() {
             var input = $('#chat-input');
             var message = input.val();
+            var receiver = "{{ receiver.username }}"
             var sender = "{{request.user.username}}"; 
-            var data = {               
-                'message': message,
-                'sender': sender,
-                'receiver': username,
-            };
-            socket.send(JSON.stringify(data));
+            var fileInput = document.getElementById('file-input');
+            var file = fileInput.files[0];
+console.log(username);
+            if (file) {
+                var reader = new FileReader();    
+                reader.readAsDataURL(file);
+                reader.onloadend = function() {
+                    var imageData = reader.result;
+                    var data = {               
+                        'message': message,
+                        'sender': sender,
+                        'receiver': receiver,
+                        'image': imageData, // Thêm dữ liệu hình ảnh dưới dạng chuỗi Base64
+                    };
+                    socket.send(JSON.stringify(data));
+                };
+
+            } else {
+                var data = {               
+                    'message': message,
+                    'sender': sender,
+                    'receiver': receiver,
+                    'image': null, // Đặt giá trị image là null nếu không có hình ảnh
+                };
+                socket.send(JSON.stringify(data));
+            }
+            
             input.val('');
             var sendButton = $('#send-btn');
             sendButton.prop('disabled', true);

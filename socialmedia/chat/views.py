@@ -71,9 +71,9 @@ def inbox_detail(request, username):
 
 @login_required
 def inbox_group_detail(request, roomname):
-    room_id = ChatRoom.objects.get(room__name = roomname)
+    room = ChatRoom.objects.get(name = roomname)
     message_list = RoomMessage.objects.filter(
-        Q(room__id = room_id.id)
+        Q(room__id = room.id)
     ).order_by("-id")[:10]
 
     sender = request.user
@@ -81,8 +81,8 @@ def inbox_group_detail(request, roomname):
     context = {     
         "sender":sender,
         "message_list":message_list,
-         
-    }
+        "room": room,         
+    }    
     return render(request, 'chat/inbox_group.html', context)
 
 

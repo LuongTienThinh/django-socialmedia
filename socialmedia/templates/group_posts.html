@@ -77,12 +77,18 @@
         </div>
         <div class="main-content">
             <div class="card p-5">
-                {% if user == group.creator %}
-                    <div class="dropdown align-self-start ms-2" style="margin-bottom: 16px;">
+                <div class="dropdown align-self-start ms-2" style="margin-bottom: 16px;">
                         <button class="btn" type="button" id="dropdownCommentAction" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-ellipsis"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCommentAction">
+                            <li>                                
+                                <button style="width:100% ;" type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#listMemberModal">
+                                    <i class="fa-solid fa-people-group"></i>
+                                    <span>Thành viên nhóm</span>    
+                                  </button>
+                            </li>
+                            {% if user == group.creator %}
                             <li>
                                 <a href="#"  class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editGroupModal{{group.id}}">
                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -95,9 +101,47 @@
                                     <span>Xóa nhóm </span>
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
+                </div>
+                {% block members %}
+                    <!-- model block_user-->
+                    <div class="modal fade" id="listMemberModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Danh sách thành viên</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                            <ul >
+                                {% for member in members %}
+                                <li  >
+                                    <a href="{% url 'profiles:profile' member.id   %}" class="user-item text-center">
+                                    {% for profile in profiles %}   
+                                        {% if member.id == profile.user.id %}             
+                                            <img src="{% if profile.profile_pic %}
+                                                {{ profile.profile_pic.url  }}
+                                            {% else %} 
+                                                https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                            {% endif %} "
+                                            class="card-img" style="width: 40px; height: 40px;" alt="avatar">
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span >{{ member.username }} {% if member == group.creator %} (Quản trị viên) {% endif %}</span>
+                                </a>                   
+                            
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>                
+                            </div>
+                        </div>
+                        </div>
                     </div>
-                {% endif %}
+                {% endblock %}
                 <div class="button-noty d-flex justify-content-end">
                     {% if not is_member  or status == 'rejected' %}                        
                         <button class="accept" style="width: fit-content; background-color: #0866ff;"> 
@@ -218,7 +262,7 @@
                             </div>
                         </div>
                     </div>
-                    {% endblock %}
+                {% endblock %}
                 </div>
                 <hr class="my-0 mx-3">
                 <div class="card-body">
@@ -353,7 +397,7 @@
                                 <i class="fa-solid fa-message"></i>
                             </div>
                             <div class="share ms-3">
-                                <span>8</span>
+                                <span>0</span>
                                 <i class="fa-solid fa-share"></i>
                             </div>
                         </div>

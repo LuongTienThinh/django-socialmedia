@@ -37,6 +37,9 @@ class LoginView(LoginView):
 # đổi mật khẩu
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class CustomPasswordChangeView(PasswordChangeView):
-    form_class = ChangePasswordForm
+    form_class = ChangePasswordForm    
     template_name = 'authentication/password_reset.html' 
+    success_url = reverse_lazy('home')
+    
 
+    

@@ -109,7 +109,7 @@
                     {% endif %}
                       <li>
                         {% if user.id == object.user.id %}
-                          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#blockModal">
                             <i class="fa-solid fa-users"></i>  Người dùng đã chặn
                           </button>
                           {% endif %}
@@ -130,7 +130,7 @@
 
         </div>
         <!-- model block_user-->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
@@ -199,7 +199,7 @@
                   <li>Sở thích</li>
                   <li>Nơi ở</li>
                   {% if object.user.followers %}
-                  <li>Có {{ object.user.followers.count }} người theo dõi</li>
+                  <li>Có {{ object.user.following.count }} người theo dõi</li>
                   {% endif %}
                 </ul>
               </div>
@@ -291,8 +291,8 @@
                                 </button>
                                 <ul class="dropdown-menu">                                         
                                     <a type="file" class="btn-add-file">
-                                        <i class="fa-solid fa-images">
-                                            <span>Ảnh</span>
+                                      <i class="fa-solid fa-images">
+                                          <span>Ảnh</span>
                                         <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
                                         </i>
                                     </a>
@@ -388,98 +388,99 @@
               <!-- user's post -->
 
               {% for post in post_list %}
-                <div class="card post-detail">
-                  <div class="card-top d-flex align-items-center">
-                    {% if object.profile_pic %}
-                      <img src="{{ object.profile_pic.url }}" style="width: 50px; height: 50px;"  class="rounded-pill" alt="">
-                    {% else %}
-                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
-                    {% endif %}
-                    <div class="author ms-2">
-                      <a href="#" class="name">{{ post.user }}</a>
-                      <div class="upload-time">
-                        {% with time_since=post.created_at|timesince %}
-                          {% with values=time_since|split_timesince:", " %}
-                            {{values}}
+                {% if post.created_at %}
+                  <div class="card post-detail">
+                    <div class="card-top d-flex align-items-center">
+                      {% if object.profile_pic %}
+                        <img src="{{ object.profile_pic.url }}" style="width: 50px; height: 50px;"  class="rounded-pill" alt="">
+                      {% else %}
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 90px; height:90px" alt="">
+                      {% endif %}
+                      <div class="author ms-2">
+                        <a href="#" class="name">{{ post.user }}</a>
+                        <div class="upload-time">
+                          {% with time_since=post.created_at|timesince %}
+                            {% with values=time_since|split_timesince:", " %}
+                              {{values}}
+                            {% endwith %}
                           {% endwith %}
-                        {% endwith %}
+                        </div>
                       </div>
+                      {% if post.user == user %}
+                          <div class="author-action ms-auto">
+                              <div class="dropdown">
+                                  <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                                  </button>
+                                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                      <li>                             
+                                          <a href="{% url 'profiles:delete_post' post.id %}" class="dropdown-item logout">
+                                              <i class="fa-solid fa-trash"></i>
+                                              <span>Xóa bài viết</span>
+                                          </a>                                 
+                                      </li>
+                                      <li>
+                                          <!-- Chỉnh sửa bài viết -->
+                                          <a  class="dropdown-item logout" data-bs-toggle="modal" data-bs-target="#editModal">    
+                                              <i class="fa-solid fa-pen-to-square"></i>                                     
+                                              <span>Chỉnh sửa bài viết</span>
+                                          </a>                                    
+                                      </li>
+                                  </ul>
+                              </div>
+                          </div>                            
+                        {% endif %}
                     </div>
-                    {% if post.user == user %}
-                        <div class="author-action ms-auto">
-                            <div class="dropdown">
-                                <button class="btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                    <li>                             
-                                        <a href="{% url 'profiles:delete_post' post.id %}" class="dropdown-item logout">
-                                            <i class="fa-solid fa-trash"></i>
-                                            <span>Xóa bài viết</span>
-                                        </a>                                 
-                                    </li>
-                                    <li>
-                                        <!-- Chỉnh sửa bài viết -->
-                                        <a  class="dropdown-item logout" data-bs-toggle="modal" data-bs-target="#editModal">    
-                                            <i class="fa-solid fa-pen-to-square"></i>                                     
-                                            <span>Chỉnh sửa bài viết</span>
-                                        </a>                                    
-                                    </li>
-                                </ul>
+                    <div class="card-body">
+                      <div class="post-body mb-3">
+                        {% if post.title %}<div class="title mb-4">{{ post.title }}</div>{% endif %}
+                        {% if post.content %}<span class="content">{{ post.content }}</span>{% endif %}
+                      </div> 
+                      <div class="file-upload">
+                        {% if post.image %}
+                            <img style="width: 100%;" src="{{ post.image.url }}" alt="{{ post.title }}">
+                        {% endif %}
+                      </div>
+                      {% if post.video %}
+                            <div class="file-upload">
+                                <video style="width: 100%;" controls>
+                                    <source src="{{ post.video.url }}" type="video/mp4">
+                                </video>
                             </div>
-                        </div>                            
-                      {% endif %}
-                  </div>
-                  <div class="card-body">
-                    <div class="post-body mb-3">
-                      {% if post.title %}<div class="title mb-4">{{ post.title }}</div>{% endif %}
-                      {% if post.content %}<span class="content">{{ post.content }}</span>{% endif %}
-                    </div> 
-                    <div class="file-upload">
-                      {% if post.image %}
-                          <img style="width: 100%;" src="{{ post.image.url }}" alt="{{ post.title }}">
-                      {% endif %}
+                        {% endif %}
                     </div>
-                    {% if post.video %}
-                          <div class="file-upload">
-                              <video style="width: 100%;" controls>
-                                  <source src="{{ post.video.url }}" type="video/mp4">
-                              </video>
-                          </div>
-                      {% endif %}
-                  </div>
-                  <div class="count d-flex justify-content-between align-items-center">
-                    <div class="react">
-                      <i class="fa-solid fa-thumbs-up"></i>
-                      <span>1.2k</span>
+                    <div class="count d-flex justify-content-between align-items-center">
+                      <div class="react">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>1.2k</span>
+                      </div>
+                      <div class="d-flex align-items-center">
+                        <div class="comment">
+                          <span>15</span>
+                          <i class="fa-solid fa-message"></i>
+                        </div>
+                        <div class="share ms-3">
+                          <span>8</span>
+                          <i class="fa-solid fa-share"></i>
+                        </div>
+                      </div>
                     </div>
-                    <div class="d-flex align-items-center">
-                      <div class="comment">
-                        <span>15</span>
+                    <div class="action d-flex justify-content-between align-items-center border-top">
+                      <a href="#" class="action-item react">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>Like</span>
+                      </a>
+                      <a href="#" class="action-item comment">
                         <i class="fa-solid fa-message"></i>
-                      </div>
-                      <div class="share ms-3">
-                        <span>8</span>
+                        <span>Comment</span>
+                      </a>
+                      <a href="#" class="action-item share">
                         <i class="fa-solid fa-share"></i>
-                      </div>
+                        <span>Share</span>
+                      </a>
                     </div>
                   </div>
-                  <div class="action d-flex justify-content-between align-items-center border-top">
-                    <a href="#" class="action-item react">
-                      <i class="fa-solid fa-thumbs-up"></i>
-                      <span>Like</span>
-                    </a>
-                    <a href="#" class="action-item comment">
-                      <i class="fa-solid fa-message"></i>
-                      <span>Comment</span>
-                    </a>
-                    <a href="#" class="action-item share">
-                      <i class="fa-solid fa-share"></i>
-                      <span>Share</span>
-                    </a>
-                  </div>
-                </div>
-                <!-- Modal Chỉnh Sửa Bài Viết -->
+                  <!-- Modal Chỉnh Sửa Bài Viết -->
                   {% for post_edit in post_forms %}
                     {% if post.id == post_edit.post.id %}
                       <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">            
@@ -504,10 +505,8 @@
                       </div>
                     {% endif %}
                   {% endfor %}
-              {% endfor %}
-              <!-- user's share post -->
-              {% for post in shared_posts %}
-              <div class="card post-detail">
+                {% elif post.shared_at %}
+                  <div class="card post-detail">
                     <div class="share-title d-flex align-items-center">
                         <span style="font-size: 1.1rem;font-weight: 600;">
                           {% if object.profile_pic %}
@@ -651,7 +650,11 @@
                       </a>
                     </div>
                   </div>
+                {% endif %}                      
+                
+                  
               {% endfor %}
+             
             </div>
           </div>
         </div>
@@ -670,64 +673,7 @@
               </div>
               <div class="right-card align-self-center"></div>
             </div>
-            <div class="friend-card">
-              <div class="title d-flex justify-content-between align-items-center">
-                <span>Bạn bè</span>
-                <span class="fs-6">999 người bạn</span>
-              </div>
-              <ul class="accordion friend-tab d-flex align-items-center" id="friend-tab">
-                <li class="accordion-item friend-tab-item">
-                  <button class="active" type="button" data-bs-toggle="collapse" data-bs-target="#listFriend" aria-expanded="true" aria-controls="listFriend">                 
-                 Bạn bè 
-                  </button>
-                </li>
-                {% if request.user.id == object.user.id %}
-                <li class="accordion-item friend-tab-item">
-                  <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#follower" aria-expanded="false" aria-controls="inviteFriend">
-                    Người theo dõi
-                  </button>
-                </li>
-                {% endif %}
-              </ul>
-              <!-- bạn bè -->
-              <div class="accordion-collapse collapse show friend-tab-detail" id="listFriend" data-bs-parent="#friend-tab">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                  {% for friend in friends %}                  
-                    <a href="{% url 'profiles:profile' friend.id %}" class="friend-list-item d-flex align-items-center">
-                      <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
-                      <div class="name">{{ friend.username }}</div>                  
-                    </a>
-                  {% endfor %}
-                </div>
-              </div>
-              <!-- người theo dõi -->
-              <div class="accordion-collapse collapse show friend-tab-detail" id="follower" data-bs-parent="#friend-tab">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                  {% for follower in follows %}                  
-                    <a href="{% url 'profiles:profile' follower.id %}" class="friend-list-item d-flex align-items-center">
-                      <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
-                      <div class="name">{{ follower.username }}</div>                  
-                    </a>
-                  {% endfor %}
-                </div>
-              </div>
-              <div class="accordion-collapse collapse friend-tab-detail" id="inviteFriend" data-bs-parent="#friend-tab">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                  {% for friend in invite_friends %}
-                  <div class="invite-list-item d-flex justify-content-between align-items-center">
-                    <a href="" class="d-flex align-items-center p-0">
-                      <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
-                      <div class="name">{{ friend.user1 }}</div>
-                    </a>
-                    <div class="action">
-                      <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="accept">Xác nhận</a>
-                      <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="reject">Từ chối</a>
-                    </div>
-                  </div>
-                  {% endfor %}
-                </div>
-              </div>
-            </div>
+           
           </div>
         </div>
 
@@ -753,8 +699,8 @@
                 </li>
                 {% if request.user.id == object.user.id %}
                 <li class="accordion-item friend-page-tab-item">
-                  <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#inviteFriendPage" aria-expanded="false" aria-controls="inviteFriendPage">
-                    Lời mời kết bạn
+                  <button class="collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#listFollowing" aria-expanded="false" aria-controls="inviteFriendPage">
+                    Đang theo dõi
                   </button>
                 </li>
                 {% endif %}
@@ -779,23 +725,28 @@
                   {% endfor %}                   
                 </div>
               </div>
-              <!-- invited_list -->
-              <div class="accordion-collapse collapse friend-page-tab-detail" id="inviteFriendPage" data-bs-parent="#friend-page-tab">
+              
+              <!-- following_list -->
+              <div class="accordion-collapse collapse friend-page-tab-detail" id="listFollowing" data-bs-parent="#friend-page-tab">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
-                  {% for friend in invite_friends %}
-                  <div class="invite-list-item d-flex justify-content-between align-items-center">
-                    <a href="" class="d-flex align-items-center p-0">
-                      <img src="https://images.unsplash.com/photo-1698933787134-af2d451985c7?auto=format&fit=crop&q=60&w=600&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxN3x8fGVufDB8fHx8fA%3D%3D" alt="avatar">
-                      <div class="name">{{ friend.user1 }}</div>
+                  {% for follower in following %}
+                    <a href="{% url 'profiles:profile' pk=follower.follower.id %}" class="friend-list-item d-flex align-items-center">
+                        {% for profile in profiles %}   
+                            {% if follower.follower.id == profile.user.id %}             
+                              <img src="{% if profile.profile_pic %}
+                                  {{ profile.profile_pic.url  }}
+                              {% else %} 
+                                  https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                              {% endif %} "
+                              class="card-img" alt="avatar">
+                            {% endif %}
+                        {% endfor %}
+                      <div class="name">{{ follower.follower.username }}</div>                  
                     </a>
-                    <div class="action">
-                      <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="accept">Xác nhận</a>
-                      <a href="{% url 'social:reject_friend_request' pk=friend.id %}" class="reject">Từ chối</a>
-                    </div>
-                  </div>
                   {% endfor %}
                 </div>
               </div>
+
               <!-- follower list -->
               <div class="accordion-collapse collapse friend-page-tab-detail" id="listFollower" data-bs-parent="#friend-page-tab">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">

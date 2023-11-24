@@ -9,6 +9,7 @@ from posts.models import Post, Share
 from django.views.generic import DetailView, CreateView, View
 from social.models import Group, GroupMembership, MessageGroup, Friendship, Follow, Block
 from django.db.models import Q
+from itertools import chain
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -40,7 +41,13 @@ class ProfileDetailView(DetailView):
         ).distinct()
         num_friends = friends.count()
         user_post_list = Post.objects.filter(user=self.object.user).order_by('-created_at')
-        shared_posts = Share.objects.filter(user=self.object.user).order_by('shared_at')
+        shared_posts = Share.objects.filter(user=self.object.user).order_by('-shared_at')
+
+        posts = sorted(
+            chain(user_post_list, shared_posts),
+            key=lambda post: post.created_at if hasattr(post, 'created_at') else post.shared_at,
+            reverse=True
+        )
 
         profile = Profile.objects.get(user=self.object.user)
         form = ProfileForm(instance=profile)
@@ -76,20 +83,21 @@ class ProfileDetailView(DetailView):
         # danh sách người dùng bị chặn
         user_block_list = Block.objects.filter(blocker = self.request.user)
 
-        follows = Follow.objects.filter(Q(follower=self.object.user))
+        follows = Follow.objects.filter(follower=self.object.user)
+        following = Follow.objects.filter(followee=self.object.user)
         can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
         
         context['friends'] = friends
         context['num_friends'] = num_friends
-        context['post_list'] = user_post_list
+        context['post_list'] = posts
         context['form'] = form
-        context['shared_posts'] = shared_posts
         context['friendship'] = friendship
         context['post_forms'] = post_forms
         context['messages'] = messages
         context['status'] = status
         context['profiles'] = all_profiles
         context['follows'] = follows
+        context['following'] = following
         context['can_follow'] = can_follow
         context['user_block'] = user_block
         context['is_blocked'] = is_blocked

@@ -19,6 +19,8 @@ class Follow(models.Model):
     class Meta:
         unique_together = ('follower', 'followee')
 
+    def __str__(self):
+        return f"{self.followee} dang theo doi {self.follower}"
 # -- Group
 
 class Group(models.Model):

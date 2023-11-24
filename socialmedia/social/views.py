@@ -22,6 +22,8 @@ def Group_Posts(request, group_id):
     # Lấy tất cả bài viết thuộc nhóm đó
     posts = GroupPost.objects.filter(group=group)
     # danh sách người dùng tham gia nhóm
+    members = User.objects.filter(groupmembership__group=group)
+
     user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
     # danh sách nhóm đã tham gia    
     groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
@@ -85,6 +87,7 @@ def Group_Posts(request, group_id):
         'groups_joined':user_groups,
         'groups_not_joined':groups_not_joined,
         'is_member':is_member,
+        'members':members,
         'status':status,
         'messages':messages,
         'post_forms':post_forms,
@@ -111,6 +114,10 @@ class SendFriendRequestView(CreateView):
             user1=user1,
             user2=user2,
             defaults={'status': 'pending'}
+        )
+        Follow.objects.create(
+            followee = user1,
+            follower= user2
         )
         if created:
             # Yêu cầu kết bạn được tạo mới
@@ -165,25 +172,26 @@ class RejectFriendRequestView(CreateView):
         friend_request = get_object_or_404(Friendship, id=pk)
         friend_request.delete()
 
-        return redirect('profiles:profile', pk=friend_request.user2.profile.pk)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     
 
 class CancelFriendRequestView(View):
     def post(self, request, pk):
         # Tìm kiếm yêu cầu kết bạn dựa trên id
         friend_request = get_object_or_404(Friendship, id=pk)
-
+        follow = get_object_or_404(Follow,followee = friend_request.user1,
+            follower= friend_request.user2)
         # Kiểm tra xem người dùng hiện tại có liên quan đến yêu cầu kết bạn không
         if request.user == friend_request.user1 or request.user == friend_request.user2:
             # Xóa yêu cầu kết bạn
             friend_request.delete()
-
+            follow.delete()
             # Nếu yêu cầu kết bạn đã được chấp nhận, thì xóa cả đối tượng Friendship mới
             if friend_request.status == 'friends':
                 Friendship.objects.filter(user1=friend_request.user2, user2=friend_request.user1).delete()
 
         # Chuyển hướng đến trang profile hoặc nơi khác phù hợp
-        return redirect('profiles:profile', pk=request.user.profile.pk)
+        return redirect('profiles:profile', pk=friend_request.user2.id)
 
 class FollowUserView(View):
     def dispatch(self, request, *args, **kwargs):

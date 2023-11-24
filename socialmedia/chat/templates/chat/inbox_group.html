@@ -12,9 +12,12 @@
             {%if m.sender == request.user%}
             <div class="message-bubble me">
                 <div class="message-bubble-inner">
-                    <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
                     <div class="message-text">
-                        <p>{{m.message}}</p>
+                        <p>{{m.sender }}-{{m.message}}</p>
+                        
+                        {% if m.image %}
+                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
+                        {% endif %}
                     </div>
                 </div>
                 <div class="clearfix"></div>
@@ -24,34 +27,38 @@
     
             <div class="message-bubble">
                 <div class="message-bubble-inner">
-                    <div class="message-avatar"><img src="{{m.sender.profile.image.url}}" alt=""></div>
                     <div class="message-text">
-                        <p>{{m.message}}</p>
+                        <p>{{m.sender }}-{{m.message}}</p>
+                        {% if m.image %}
+                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
+                        {% endif %}
                     </div>
                 </div>
                 <div class="clearfix"></div>
             </div>
             {%endif%}
             {%endfor%}
-            <div id="chat-messages"></div>
+            <div id="chat-messages" ></div>
         </div>
     
     </div>
     <div class="message-reply">
         <textarea id="chat-input" cols="20" rows="20" placeholder="Write Message"></textarea>
+        <input type="file" name="image" accept="image/*" id="file-input">
         <button id="send-btn" class="button ripple-effect" >Send</button>
+    </div>  
     </div>  
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        $(function() {
-            var id_group = "{{id_group.id}}";
+        $(function() {       
+            var room =  "{{room.name}}"   
             const pathname = window.location.pathname;
     
             const parts = pathname.split('/');
             const group_id = parts[parts.length - 2];    
 
-            var socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + id_group + '/');
+            var socket = new WebSocket('ws://' + window.location.host + '/ws/chat-room/' + room + '/');
     
             socket.onopen = function() {
                 console.log('WebSocket connection established.');
@@ -60,15 +67,19 @@
             socket.onmessage = function(event) {
                 var data = JSON.parse(event.data);
                 var message = data.message;
-                var sender = data.sender;
+                var sender = data.sender_username;
+                var image = data.image;
                 var profileImage = data.profile_image;
     
-                if (sender === "{{sender}}") {
+                if (sender == "{{sender}}") {
                         var chatMessage = '<div class="message-bubble me">';
                         chatMessage += '<div class="message-bubble-inner">';
-                        chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                        chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
                         chatMessage += '<div class="message-text">';
                         chatMessage += '<p>' + message + '</p>';
+                        if (image){
+                            chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
+                        }
                         chatMessage += '</div>';
                         chatMessage += '</div>';
                         chatMessage += '<div class="clearfix"></div>';
@@ -82,9 +93,12 @@
                 } else {
                     var chatMessage = '<div class="message-bubble">';
                         chatMessage += '<div class="message-bubble-inner">';
-                        chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt=""></div>';
+                        chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
                         chatMessage += '<div class="message-text">';
                         chatMessage += '<p>' + message + '</p>';
+                        if(image){
+                            chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
+                        }
                         chatMessage += '</div>';
                         chatMessage += '</div>';
                         chatMessage += '<div class="clearfix"></div>';
@@ -93,7 +107,6 @@
     
                         var chatContainer = document.querySelector('.chat_container');
                         chatContainer.scrollTop = chatContainer.scrollHeight;
-                        console.log("No");
                 }
             }
     
@@ -105,13 +118,32 @@
                 var input = $('#chat-input');
                 var message = input.val();
                 var sender = "{{request.user.username}}"; 
-                var group = "{{id_group}}"
-                var data = {               
-                    'message': message,
-                    'sender': sender,
-                    'group':group,
-                };
-                socket.send(JSON.stringify(data));
+                var room = "{{room.name}}"
+                var fileInput = document.getElementById('file-input');
+                var file = fileInput.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onloadend = function() {
+                        var imageData = reader.result;
+                        var data = {               
+                            'message': message,
+                            'sender': sender,
+                            'room': room,
+                            'image': imageData, // Thêm dữ liệu hình ảnh dưới dạng chuỗi Base64
+                        };
+                        socket.send(JSON.stringify(data));
+                    };
+                } else {
+                    var data = {               
+                        'message': message,
+                        'sender': sender,
+                        'room': room,
+                        'image': null, // Thêm dữ liệu hình ảnh dưới dạng chuỗi Base64
+                    };
+                    socket.send(JSON.stringify(data));
+                }
+
                 input.val('');
                 var sendButton = $('#send-btn');
                 sendButton.prop('disabled', true);
@@ -119,11 +151,7 @@
             });
     
         });
-    
-    
-       
-    
-    
+
         $(document).ready(function() {
           $(".chat_container").scrollTop(100000000000);
         });
@@ -133,6 +161,7 @@
     <script>
         $(document).ready(function() {
              var chatInputValue = $('#chat-input');
+             var imageInputValue = $('#file-input');
              var sendButton = $('#send-btn');
     
              // Disable the button initially
@@ -149,6 +178,7 @@
                      sendButton.prop('disabled', true);
                  }
              });
+             
          })
      </script>
     

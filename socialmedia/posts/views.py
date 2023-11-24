@@ -2,7 +2,7 @@ from .models import Post, Comment, Reply, Share
 from .forms import PostForm, CommentForm, ReplyForm
 from authentication.models import User
 from profiles.models import Profile
-from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship, Block
+from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship, Block, Follow
 from social.forms import GroupPostForm
 from chat.models import ChatMessage
 from django.http import HttpResponseRedirect, JsonResponse
@@ -30,8 +30,18 @@ def home1(request):
     # Lấy danh sách những người dùng đã bị chặn bởi người dùng hiện tại
     blocked_users = Block.objects.filter(blocked_user=request.user).values_list('blocker', flat=True)
 
+    # danh sach nguoi dang theo doi
+    following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
+
+     #danh sách bạn bè
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
+    
+
     # Lấy những bài post mà người tạo không bị chặn
-    post_list = Post.objects.exclude(user__in=blocked_users).order_by('-created_at')
+    post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(user__in=blocked_users).order_by('-created_at')
 
 
     # danh sách nhóm
@@ -58,13 +68,7 @@ def home1(request):
         
         # Thêm biểu mẫu của bài viết hiện tại vào danh sách
         post_forms.append({'post': current_post, 'form': form})
-
-    #danh sách bạn bè
-    friends = User.objects.filter(
-            Q(friendships1__user2=request.user, friendships1__status='friends') |
-            Q(friendships2__user1=request.user, friendships2__status='friends')
-        ).distinct()
-    
+   
     profiles = Profile.objects.all()
 
     suggest_friends = User.objects.exclude(
@@ -73,6 +77,7 @@ def home1(request):
     ).exclude(pk=request.user.id).exclude(
     id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
     )
+
     list_user = User.objects.all()
     message_list =[]
     for user_chat in list_user:
@@ -81,8 +86,6 @@ def home1(request):
         ).order_by("-id").distinct()[:10]
         if message :
             message_list += message
-        print(message_list)
-    a = ""
 
     context = {
         'messages': messages,
@@ -246,23 +249,16 @@ class EditPostView(View):
 class AddCommentView(View):
     def post(self, request, post_id):
         post = Post.objects.get(pk=post_id)
-        form = CommentForm(request.POST) 
-        if form.is_valid():
+        form = CommentForm(request.POST, request.FILES) 
+
+        # Kiểm tra nếu cả ảnh và nội dung đều trống
+
+        if form.is_valid():            
             comment = form.save(commit=False)
             comment.post = post
             comment.user = request.user
+            
             comment.save()  
-
-            # Trả về phản hồi JSON với thông tin comment mới (nếu cần)
-        #     response_data = {
-        #         'comment_id': comment.id,
-        #         'content': comment.content,
-        #         'user': comment.user.username,
-        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        #     }
-        #     return JsonResponse(response_data)
-
-        # return JsonResponse({'error': 'Invalid form data'})
             return redirect('home')
         return redirect('home')
     
@@ -272,7 +268,7 @@ class DeleteCommentView(View):
     def post(self, request, comment_id):
         comment = Comment.objects.get(pk=comment_id)
 
-        if request.user == comment.user:
+        if request.user == comment.user or request.user == comment.post.user :
             comment.delete()
 
             response_data = {'message': 'Comment deleted successfully'}
@@ -280,7 +276,7 @@ class DeleteCommentView(View):
     def get(self, request, comment_id):
         comment = Comment.objects.get(pk=comment_id)
 
-        if request.user == comment.user:
+        if request.user == comment.user or request.user == comment.post.user :
             comment.delete()
 
             response_data = {'message': 'Comment deleted successfully'}
@@ -292,19 +288,12 @@ class EditCommentView(View):
     def post(self, request, comment_id):
         comment = get_object_or_404(Comment, pk=comment_id)
 
-        if request.user == comment.user:
+        if request.user == comment.user :
             form = CommentForm(request.POST, instance=comment)
 
             if form.is_valid():
                 form.save()
-        #         response_data = {
-        #         'comment_id': comment.id,
-        #         'content': comment.content,
-        #         'user': comment.user.username,
-        #         'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        #     }
-        #     return JsonResponse(response_data)
-        # return JsonResponse({'message': 'Permission denied'}, status=403)
+ 
             return redirect('home')
         else:
             return redirect('home')
@@ -314,7 +303,7 @@ class DeleteReplyView(View):
     def post(self, request, reply_id):
         reply = Reply.objects.get(pk=reply_id)
 
-        if request.user == reply.user:
+        if request.user == reply.user or request.user == reply.comment.post.user:
             reply.delete()
             response_data = {'message': 'Comment deleted successfully'}
         return JsonResponse(response_data)
@@ -322,7 +311,7 @@ class DeleteReplyView(View):
     def get(self, request, reply_id):
         reply = Reply.objects.get(pk=reply_id)
 
-        if request.user == reply.user:
+        if request.user == reply.user or request.user == reply.comment.post.user:
             reply.delete()
             response_data = {'message': 'Comment deleted successfully'}
         return JsonResponse(response_data)

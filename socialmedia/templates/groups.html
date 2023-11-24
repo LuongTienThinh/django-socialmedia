@@ -175,7 +175,7 @@
             {% for post in group_post %}
             <div class="card post-detail">
                 <div class="pt-2 ps-3 group me-4 text-decoration-underline fs-6 fw-bold">
-                    <a href="#" class="name">{{ post.group }}</a>
+                    <a href="{% url 'social:group_posts' post.group.id %}" class="name">{{ post.group }}</a>
                 </div>
                 <div class="card-top d-flex justify-content-start align-items-center">
                     {% for profile in profiles %}               
@@ -264,7 +264,7 @@
                             <i class="fa-solid fa-message"></i>
                         </div>
                         <div class="share ms-3">
-                            <span>8</span>
+                            <span>0</span>
                             <i class="fa-solid fa-share"></i>
                         </div>
                     </div>
