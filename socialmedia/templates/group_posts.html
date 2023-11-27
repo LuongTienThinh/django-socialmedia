@@ -12,9 +12,9 @@
                     {% if user.id == profile.user.id %}
                         <a href="{% url 'profiles:profile' profile.user.id  %}" class="user">
                         {% if profile.profile_pic %}
-                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                            <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                         {% else %}
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                         {% endif %}
                         <span>{{ user.username }}</span>
                         </a>
@@ -190,9 +190,9 @@
                     {% for profile in profiles %}               
                         {% if user.id == profile.user.id %}
                             {% if profile.profile_pic %}
-                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                                 {% else %}
-                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                 {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -216,9 +216,9 @@
                                                 {% for profile in profiles %}               
                                                     {% if user.id == profile.user.id %}
                                                         {% if profile.profile_pic %}
-                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                                                             {% else %}
-                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                             {% endif %}
                                                     {% endif %}
                                                 {% endfor %}
@@ -291,12 +291,12 @@
                     <div class="card-top d-flex align-items-center">
                         {% for profile in profiles %}
                             {% if post.author.id == profile.user.id %}
-                            <div class="d-flex  align-items-center" style="width: 50px; height:50px" >
+                            <div class="d-flex  align-items-center" style="width: 50px;" >
                                 {% if profile.profile_pic %}
     
                                     <img src="{{ profile.profile_pic.url }}" style="width: 100%" class="rounded-pill" alt="">
                                 {% else %}
-                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                 {% endif %}
                             </div>
                             {% endif %}
@@ -430,9 +430,9 @@
                                     {% for profile in profiles %}               
                                         {% if user.id == profile.user.id %}
                                             {% if profile.profile_pic %}
-                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                                                 {% else %}
-                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                 {% endif %}
                                         {% endif %}
                                     {% endfor %}
@@ -451,9 +451,9 @@
                                     {% for profile in profiles %}               
                                         {% if comment.user.id == profile.user.id %}
                                             {% if profile.profile_pic %}
-                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                 {% else %}
-                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                 {% endif %}
                                         {% endif %}
                                     {% endfor %}
@@ -473,9 +473,9 @@
                                                                 {% for profile in profiles %}               
                                                                     {% if comment.user.id == profile.user.id %}
                                                                         {% if profile.profile_pic %}
-                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                             {% else %}
-                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                             {% endif %}
                                                                     {% endif %}
                                                                 {% endfor %}
@@ -523,9 +523,9 @@
                                                 {% for profile in profiles %}               
                                                     {% if user.id == profile.user.id %}
                                                         {% if profile.profile_pic %}
-                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                             {% else %}
-                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                             {% endif %}
                                                     {% endif %}
                                                 {% endfor %}
@@ -544,9 +544,9 @@
                                         {% for profile in profiles %}               
                                             {% if reply.user.id == profile.user.id %}
                                                 {% if profile.profile_pic %}
-                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                     {% else %}
-                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                     {% endif %}
                                             {% endif %}
                                         {% endfor %}
@@ -565,9 +565,9 @@
                                                                 {% for profile in profiles %}               
                                                                     {% if user.id == profile.user.id %}
                                                                         {% if profile.profile_pic %}
-                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                             {% else %}
-                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                             {% endif %}
                                                                     {% endif %}
                                                                 {% endfor %}

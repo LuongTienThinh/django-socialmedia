@@ -12,9 +12,9 @@
                     {% if user.id == profile.user.id %}
                         <a href="{% url 'profiles:profile' profile.user.id   %}" class="user">
                         {% if profile.profile_pic %}
-                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                            <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                         {% else %}
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                         {% endif %}
                         <span>{{ user.username }}</span>
                         </a>
@@ -80,9 +80,9 @@
                 {% for profile in profiles %}               
                         {% if user.id == profile.user.id %}
                             {% if profile.profile_pic %}
-                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                             {% else %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                             {% endif %}
                     {% endif %}
                 {% endfor %}
@@ -175,9 +175,9 @@
                 {% for profile in profiles %}               
                     {% if post.user.id == profile.user.id %}
                         {% if profile.profile_pic %}
-                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                             {% else %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                             {% endif %}
                     {% endif %}
                 {% endfor %}
@@ -297,15 +297,19 @@
                             {% for profile in profiles %}               
                                 {% if user.id == profile.user.id %}
                                     {% if profile.profile_pic %}
-                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                         {% else %}
-                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                         {% endif %}
                                 {% endif %}
                             {% endfor %}
                             <input name="content" class="content rounded-pill"  placeholder="Nhập bình luận" id="id_body">
-                            <input type="file" name="image" accept="image/*" id="id_image">
-                            
+                            <div class="upload position-relative">
+                                <label for="image">
+                                    <i class="fa-solid fa-images text-success"></i>
+                                </label>
+                                <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="id_image">
+                            </div>
                             <button type="submit" class="btn btn-send d-flex align-items-center justify-content-center"><i class="fa-solid fa-paper-plane fa-beat"></i></button>
                         </div>
                     </form>        
@@ -321,9 +325,9 @@
                         {% for profile in profiles %}               
                             {% if comment.user.id == profile.user.id %}
                                 {% if profile.profile_pic %}
-                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                     {% else %}
-                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                     {% endif %}
                             {% endif %}
                         {% endfor %}
@@ -347,9 +351,9 @@
                                                     {% for profile in profiles %}               
                                                         {% if comment.user.id == profile.user.id %}
                                                             {% if profile.profile_pic %}
-                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                 {% else %}
-                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                 {% endif %}
                                                         {% endif %}
                                                     {% endfor %}
@@ -397,9 +401,9 @@
                                     {% for profile in profiles %}               
                                         {% if user.id == profile.user.id %}
                                             {% if profile.profile_pic %}
-                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                 {% else %}
-                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                 {% endif %}
                                         {% endif %}
                                     {% endfor %}
@@ -418,9 +422,9 @@
                             {% for profile in profiles %}               
                                 {% if reply.user.id == profile.user.id %}
                                     {% if profile.profile_pic %}
-                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                         {% else %}
-                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                         {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -439,9 +443,9 @@
                                                     {% for profile in profiles %}               
                                                         {% if user.id == profile.user.id %}
                                                             {% if profile.profile_pic %}
-                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                 {% else %}
-                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                 {% endif %}
                                                         {% endif %}
                                                     {% endfor %}
@@ -488,9 +492,9 @@
                                     {% for profile in profiles %}               
                                         {% if comment.user.id == profile.user.id %}
                                             {% if profile.profile_pic %}
-                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                 {% else %}
-                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                 {% endif %}
                                         {% endif %}
                                     {% endfor %}
@@ -514,9 +518,9 @@
                                                                 {% for profile in profiles %}               
                                                                     {% if comment.user.id == profile.user.id %}
                                                                         {% if profile.profile_pic %}
-                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                             {% else %}
-                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                             {% endif %}
                                                                     {% endif %}
                                                                 {% endfor %}
@@ -564,9 +568,9 @@
                                                 {% for profile in profiles %}               
                                                     {% if user.id == profile.user.id %}
                                                         {% if profile.profile_pic %}
-                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                             {% else %}
-                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                             {% endif %}
                                                     {% endif %}
                                                 {% endfor %}
@@ -585,9 +589,9 @@
                                         {% for profile in profiles %}               
                                             {% if reply.user.id == profile.user.id %}
                                                 {% if profile.profile_pic %}
-                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                        <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                     {% else %}
-                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                     {% endif %}
                                             {% endif %}
                                         {% endfor %}
@@ -606,9 +610,9 @@
                                                                 {% for profile in profiles %}               
                                                                     {% if user.id == profile.user.id %}
                                                                         {% if profile.profile_pic %}
-                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" alt="">
+                                                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px;" alt="">
                                                                             {% else %}
-                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                                                             {% endif %}
                                                                     {% endif %}
                                                                 {% endfor %}
@@ -654,8 +658,7 @@
                         </button>
                     {% endif %}
                 {% else %}
-                    <p class="text-center pt-1 me-3 ms-3 mb-3" style="border-top: 1px solid var(--bg-light-3); ">Hiện chưa có bình luận</p>
-
+                    <p class="text-center p-3" style="border-top: 1px solid var(--bg-light-3); ">Hiện chưa có bình luận</p>
                 {% endif %}
             </div>
             <script>

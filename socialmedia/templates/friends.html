@@ -12,9 +12,9 @@
                   {% for profile in profiles %}               
                         {% if friend.id == profile.user.id %}
                             {% if profile.profile_pic %}
-                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                    <img src="{{ profile.profile_pic.url }}" style="width: 50px;" class="rounded-pill" alt="">
                                 {% else %}
-                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px;" style="width: 40px; height:40px" alt="">
                                 {% endif %}
                         {% endif %}
                     {% endfor %}

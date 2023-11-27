@@ -1,10 +1,8 @@
 
-.content-chat{
+.content-chat {
     background: var(--gray-light);
-    margin-top: 46px;
-    padding-top: 1.5rem;
-    height: calc(100% - 55px);
-    width: 100%;
+    margin-top: 70px;
+    height: calc(100vh - 70px);
 }
 
 .card {
@@ -222,6 +220,10 @@
 
 .float-right {
     float: right
+}
+
+.clearfix {
+    --bs-gutter-x: none;
 }
 
 .clearfix:after {

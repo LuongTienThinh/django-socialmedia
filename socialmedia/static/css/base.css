@@ -100,3 +100,11 @@ textarea {
     background-color: var(--primary-1);
     border-radius: 5px;
 }
+
+.btn:focus {
+    box-shadow: none;
+}
+
+.fa-paper-plane {
+    color: var(--primary-1);
+}

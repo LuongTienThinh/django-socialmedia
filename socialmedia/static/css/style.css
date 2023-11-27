@@ -92,7 +92,7 @@ header {
     display: flex;
     justify-content: center;
     padding: 1.5rem;
-    height: calc(100vh - 70px);
+    min-height: calc(100vh - 70px);
 }
 
 .left-content,
@@ -874,8 +874,31 @@ ul.func a:hover,
     padding: .5rem 0;
     margin: 0 1rem;
 }
-.post-comment input.content, .post-reply-comment input.content {
+
+.post-comment input.content {
+    width: calc(100% - 150px);
+}
+
+.post-reply-comment input.content {
     width: calc(100% - 100px);
+}
+
+form.post-comment label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+
+form.post-comment .btn-add-file {
+    background-color: transparent !important;
+    opacity: 0;
+    padding: 0;
+    width: 50px;
+    cursor: pointer;
 }
 
 .comment-content {
