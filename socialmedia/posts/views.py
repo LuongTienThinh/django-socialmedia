@@ -9,101 +9,105 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
 # Create your views here.
 # trang chủ
-@login_required(login_url='/auth/login/')
+# @login_required(login_url='/auth/login/')
 def home1(request):
     # hiển thị thông báo
-    groups = Group.objects.filter(creator=request.user)
-    memberships = GroupMembership.objects.filter(
-        group__in=groups,
-        status='requested'
-    )
-    # Lấy các group_ids mà có thông báo
-    group_ids_with_messages = memberships.values_list('group', flat=True)
-    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+    if request.user.is_authenticated:
+        groups = Group.objects.filter(creator=request.user)
+        memberships = GroupMembership.objects.filter(
+            group__in=groups,
+            status='requested'
+        )
+        # Lấy các group_ids mà có thông báo
+        group_ids_with_messages = memberships.values_list('group', flat=True)
+        messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
 
-    # danh sach bài viết 
-    # Lấy danh sách những người dùng đã bị chặn bởi người dùng hiện tại
-    blocked_users = Block.objects.filter(blocked_user=request.user).values_list('blocker', flat=True)
+        # danh sach bài viết 
+        # Lấy danh sách những người dùng đã bị chặn bởi người dùng hiện tại
+        blocked_users = Block.objects.filter(blocked_user=request.user).values_list('blocker', flat=True)
 
-    # danh sach nguoi dang theo doi
-    following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
+        # danh sach nguoi dang theo doi
+        following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
 
-     #danh sách bạn bè
-    friends = User.objects.filter(
+        #danh sách bạn bè
+        friends = User.objects.filter(
+                Q(friendships1__user2=request.user, friendships1__status='friends') |
+                Q(friendships2__user1=request.user, friendships2__status='friends')
+            ).distinct()
+        
+
+        # Lấy những bài post mà người tạo không bị chặn
+        post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(user__in=blocked_users).order_by('-created_at')
+
+
+        # danh sách nhóm
+        user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
+        # danh sách nhóm đã tham gia    
+        groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
+        # danh sách nhóm bị từ chối
+        groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
+        # danh sách nhom chưa tham gia
+        groups_not_joined = Group.objects.exclude(
+        Q(id__in=groups_joined) | Q(id__in=groups_rejected)
+        )
+
+        invite_friends = Friendship.objects.filter(
+            Q(user2=request.user, status='pending')
+        ).order_by('-created_at')
+        post_forms = []
+
+        # sửa bài viết
+        form_post_list = Post.objects.all().order_by('-created_at')
+        for post in form_post_list:
+            current_post = Post.objects.get(id=post.id)
+            form = PostForm(instance=current_post)
+            
+            # Thêm biểu mẫu của bài viết hiện tại vào danh sách
+            post_forms.append({'post': current_post, 'form': form})
+    
+        profiles = Profile.objects.all()
+
+        suggest_friends = User.objects.exclude(
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
-        ).distinct()
+        ).exclude(pk=request.user.id).exclude(
+        id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        )
+
+        list_user = User.objects.all()
+        message_list =[]
+        for user_chat in list_user:
+            message = ChatMessage.objects.filter(
+                Q(sender=request.user, receiver__username=user_chat) | Q(sender__username=user_chat, receiver=request.user)
+            ).order_by("-id").distinct()[:10]
+            if message :
+                message_list += message
+
+        context = {
+            'messages': messages,
+            'post_list':post_list,
+            'user_groups':user_groups,
+            'groups_not_joined':groups_not_joined,
+            'invite_friends': invite_friends,
+            'form':form,
+            'post_forms':post_forms,
+            'friends':friends,        
+            'profiles':profiles,        
+            'suggest_friends':suggest_friends,        
+            'blocked_users':blocked_users, 
+            'list_user':list_user,        
+            'message_list':message_list,    
     
-
-    # Lấy những bài post mà người tạo không bị chặn
-    post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(user__in=blocked_users).order_by('-created_at')
-
-
-    # danh sách nhóm
-    user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
-    # danh sách nhóm đã tham gia    
-    groups_joined = GroupMembership.objects.filter(user=request.user, status='approved').values_list('group', flat=True)
-    # danh sách nhóm bị từ chối
-    groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
-    # danh sách nhom chưa tham gia
-    groups_not_joined = Group.objects.exclude(
-    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    )
-
-    invite_friends = Friendship.objects.filter(
-        Q(user2=request.user, status='pending')
-    ).order_by('-created_at')
-    post_forms = []
-
-    # sửa bài viết
-    form_post_list = Post.objects.all().order_by('-created_at')
-    for post in form_post_list:
-        current_post = Post.objects.get(id=post.id)
-        form = PostForm(instance=current_post)
-        
-        # Thêm biểu mẫu của bài viết hiện tại vào danh sách
-        post_forms.append({'post': current_post, 'form': form})
-   
-    profiles = Profile.objects.all()
-
-    suggest_friends = User.objects.exclude(
-        Q(friendships1__user2=request.user, friendships1__status='friends') |
-        Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id).exclude(
-    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
-    )
-
-    list_user = User.objects.all()
-    message_list =[]
-    for user_chat in list_user:
-        message = ChatMessage.objects.filter(
-            Q(sender=request.user, receiver__username=user_chat) | Q(sender__username=user_chat, receiver=request.user)
-        ).order_by("-id").distinct()[:10]
-        if message :
-            message_list += message
-
-    context = {
-        'messages': messages,
-        'post_list':post_list,
-        'user_groups':user_groups,
-        'groups_not_joined':groups_not_joined,
-        'invite_friends': invite_friends,
-        'form':form,
-        'post_forms':post_forms,
-        'friends':friends,        
-        'profiles':profiles,        
-        'suggest_friends':suggest_friends,        
-        'blocked_users':blocked_users, 
-        'list_user':list_user,        
-        'message_list':message_list,    
-   
-    }
-    return render(request, 'index.html', context)
+        }
+        return render(request, 'index.html', context)
+    else: 
+        return render(request, 'index.html')
 
 
 @login_required(login_url='/auth/login/')

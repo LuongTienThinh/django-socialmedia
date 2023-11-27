@@ -35,6 +35,11 @@ class ProfileDetailView(DetailView):
         else:
             status = 'none'
 
+        invite_friends = Friendship.objects.filter(
+            Q(user2=self.request.user, status='pending')
+        ).order_by('-created_at')
+        post_forms = []
+
         friends = User.objects.filter(
             Q(friendships1__user2=self.object.user, friendships1__status='friends') |
             Q(friendships2__user1=self.object.user, friendships2__status='friends')
@@ -101,6 +106,7 @@ class ProfileDetailView(DetailView):
         context['can_follow'] = can_follow
         context['user_block'] = user_block
         context['is_blocked'] = is_blocked
+        context['invite_friends'] = invite_friends
         context['user_block_list'] = user_block_list
         context['fs'] = fs
         return context  

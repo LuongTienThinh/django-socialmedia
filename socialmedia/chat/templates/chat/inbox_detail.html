@@ -1,111 +1,247 @@
-<div class="chat_container">
+{% extends 'base_generic.html' %}
+{% load static %}
+{% block content %}
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 
-<div class="message-content-scrolbar" data-simplebar>
 
-    <!-- Message Content Inner -->
-    <div class="message-content-inner chat_container">
-        <!-- Time Sign -->
-        <div class="message-time-sign">
-            <span>28 June, 2020</span>
-        </div>
-        {%for m in message_list%}
-        {%if m.sender == request.user%}
-        <div class="message-bubble me">
-            <div class="message-bubble-inner">
-                <div class="message-text">
-                    <p>{{m.message}} - {{ m.sender.username }}</p>
-                    {% if m.image %}
-                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
-                    {% endif %}
+<div class="container content-chat" >
+    <div class="row clearfix">
+        <div class="col-lg-12">
+            <div class="card chat-app">
+                <div id="plist" class="people-list ">
+                    <div class="input-group ">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Search...">
+                    </div>
+                    <div class="list-user overflow-auto scroll-smooth">
+                        <div class="d-block">
+                            <ul class="list-unstyled chat-list mt-2 mb-0">
+                                {% for user_item in combined_list %}
+                                    {% if user_item.type == "user"  %}
+                                    <a href="{% url 'inbox_detail' user_item.object.username %}">
+                                        <li class="clearfix "  {% if user_item.object.username == receiver.username %} id="active" {% endif %}>
+                                            {% for profile in profiles %}   
+                                                {% if user_item.object == profile.user %}             
+                                                    <img src="{% if profile.profile_pic %}
+                                                        {{ profile.profile_pic.url  }}
+                                                    {% else %} 
+                                                        https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                    {% endif %}" 
+                                                    alt="avatar" style="width: 50px; " >
+                                                {% endif %}
+                                            {% endfor %}
+                                            <div class="about">
+                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.username}}</div>
+                                            </div>
+                                        </li>
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'inbox_room_detail' user_item.object.name %}">
+                                        <li class="clearfix ">                                            
+                                            {% if user_item.object.image %}             
+                                                <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
+                                            {% else %}
+                                                <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
+                                            {% endif %}
+                                            <div class="about">
+                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.name}}</div>
+                                            </div>
+                                        </li>
+                                    </a>
+                                    {% endif %}
+                                {% endfor %}                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                    <div class="chat">
+                        <div class="chat-header clearfix">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                        {% for profile in profiles %}   
+                                                {% if receiver == profile.user %}             
+                                                    <img src="{% if profile.profile_pic %}
+                                                        {{ profile.profile_pic.url  }}
+                                                    {% else %} 
+                                                        https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                    {% endif %}"
+                                                    alt="avatar">
+                                                {% endif %}
+                                        {% endfor %}
+                                    </a>
+                                    <div class="chat-about">
+                                        <h6 class="m-b-0">{{ receiver.username }}</h6>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 hidden-sm text-end">
+                                    <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-history overflow-auto scroll-smooth">
+                            <div class="d-block">
+                                <ul class="m-b-0" id="chat-messages">
+                                    {% for message in message_list %}
+                                        {% if message.sender == request.user %}
+                                            <li class="clearfix">
+                                                <div class="message-data text-end">
+                                                    <span class="message-data-time">{{message.date}}</span>
+                                                    {% for profile in profiles %}   
+                                                        {% if message.sender == profile.user %}             
+                                                            <img src="{% if profile.profile_pic %}
+                                                                {{ profile.profile_pic.url  }}
+                                                            {% else %} 
+                                                                https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                            {% endif %}"
+                                                            alt="avatar">
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="message other-message float-right"> 
+                                                    {{message.message}} 
+                                                    {% if message.image %}
+                                                    <br>
+                                                    <img src="{{ message.image.url }}" alt="" style="width: 300px;">
+                                                    {% endif %} 
+                                                    {% if message.video %}
+                                                    <br>
+                                                    <video controls style="width: 300px;"><source src="{{ message.video.url }}" type="video/mp4"> </video></div>
+                                                    {% endif %}
+                                                </div>
+                                            </li>
+                                        {% else %}
+                                            <li class="clearfix">
+                                                <div class="message-data text-start">
+                                                    {% for profile in profiles %}   
+                                                        {% if message.sender == profile.user %}             
+                                                            <img src="{% if profile.profile_pic %}
+                                                                {{ profile.profile_pic.url  }}
+                                                            {% else %} 
+                                                                https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                            {% endif %}"
+                                                            alt="avatar">
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="message-data-time">{{message.date}}</span>
+                                                </div>
+                                                <div class="message my-message"> 
+                                                    {{message.message}}                                         
+                                                    {% if message.image %}
+                                                    <br>
+                                                    <img src="{{ message.image.url }}" alt="" style="width: 300px;">
+                                                    {% endif %}
+                                                    {% if message.video %}
+                                                    <br>
+                                                    <video controls style="width: 300px;"><source src="{{ message.video.url }}" type="video/mp4"> </video>
+                                                    {% endif %}
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}                                
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chat-message clearfix ">
+                            <div class="input-group mb-0">
+                                <div class="input-group-prepend" style="display: flex; ">
+                                    <button class="input-group-text" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 5px; padding: 1rem;">
+                                        <i class="fa fa-image"></i>
+                                    </button>
+                                    <input type="text" class="form-control" id="chat-input" placeholder="Enter text here...">      
+                                    <ul class="dropdown-menu dropdown-menu-start  w-25" aria-labelledby="dropdownMenuButton" style="width: fit-content;">
+                                        <label for="image">image</label>
+                                        <input type="file" name="image"  accept="image/*" id="file-image">
+                                        <label for="video">video</label>
+                                        <input type="file" name="video"  accept="video/*" id="file-video">   
+                                    </ul>                            
+                                    <button class="input-group-text" style="margin: 5px; padding: 1rem;" id="send-btn">
+                                    <i class="fa fa-send"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
-            <div class="clearfix"></div>
         </div>
-        
-        {%else%}
-
-        <div class="message-bubble">
-            <div class="message-bubble-inner">
-                <div class="message-text">
-                    <p>{{m.message}} - {{ m.sender.username }}</p>
-                    {% if m.image %}
-                        <img src="{{m.image.url}}" alt="" style="width: 100px;">
-                    {% endif %}
-                </div>
-            </div>
-            <div class="clearfix"></div>
-        </div>
-        {%endif%}
-        {%endfor%}
-        <div id="chat-messages"></div>
     </div>
-
 </div>
-<div class="message-reply">
-    <textarea id="chat-input" cols="20" rows="20" placeholder="Write Message"></textarea>
-    <input type="file" name="image" accept="image/*" id="file-input">
-    <button id="send-btn" class="button ripple-effect" >Send</button>
-</div>  
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     $(function() {
         
-        var receiver = "{{ receiver.username }}"
-        const pathname = window.location.pathname;
+        var receiver = null;
+        var receiver_id = "{{ receiver.username }}"; 
+        var logged_in = "{{ request.user.username }}"; 
 
+        const pathname = window.location.pathname;
         const parts = pathname.split('/');
         const username = parts[parts.length - 2];
 
-       
-        var socket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + receiver + '/');
+        if (receiver_id === logged_in) {
+            receiver = receiver_id;
+        } else {
+            receiver = receiver_id;
+        }
+
+        var socket = new WebSocket('ws://' + window.location.host + '/ws/chat-private/' + receiver + '/');
+        console.log(socket);
 
         socket.onopen = function() {
             console.log('WebSocket connection established.');
         }
 
         socket.onmessage = function(event) {
-            var data = JSON.parse(event.data);
+            var data = JSON.parse(event.data);           
             var message = data.message;
             var receiver = data.receiver;
             var sender = data.sender;
             var image = data.image;
+            var video = data.video;
             var profileImage = data.profile_image;
+            if  (sender === "{{sender}}") {
+                var chatMessage = '<li class="clearfix">';
+                    chatMessage += ' <div class="message-data text-end">';
+                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage +='</div>'
+                    chatMessage +='<div class="message other-message float-right">' + message 
+                    if(image){
+                        chatMessage += '<img src="' + image + '" alt="" style="width: 300px;"></div>';
+                    }
+                    if(video){
+                        chatMessage += '<video controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video></div>' ;                            
+                    }    
+                    chatMessage +='</li>'
 
-            if (sender === "{{sender}}") {
-                    var chatMessage = '<div class="message-bubble me">';
-                    chatMessage += '<div class="message-bubble-inner">';
-                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
-                    chatMessage += '<div class="message-text">';
-                    chatMessage += '<p>' + message + '</p>';
-                    chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
-                    chatMessage += '</div>';
-                    chatMessage += '</div>';
-                    chatMessage += '<div class="clearfix"></div>';
-                    chatMessage += '</div>';
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
-                    // Get the chat container
-                    var chatContainer = document.querySelector('.chat_container');
-                    // Automatically scroll to the bottom of the message after sending.
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-            } else {
-                var chatMessage = '<div class="message-bubble">';
-                    chatMessage += '<div class="message-bubble-inner">';
-                    chatMessage += '<div class="message-avatar"><img src="' + profileImage + '" alt="" style="width: 50px;"></div>';
-                    chatMessage += '<div class="message-text">';
-                    chatMessage += '<p>' + message + '</p>';
-                    chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
-                    chatMessage += '</div>';
-                    chatMessage += '</div>';
-                    chatMessage += '<div class="clearfix"></div>';
-                    chatMessage += '</div>';
-                    $('#chat-messages').append(chatMessage);
+                    
+                    
 
-                    var chatContainer = document.querySelector('.chat_container');
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                    console.log("No");
+            } else{
+                var chatMessage = '<li class="clearfix">';
+                    chatMessage += ' <div class="message-data text-start">';
+                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage +='</div>'
+                    chatMessage +='<div class="message my-message ">' + message + '</div>'
+                    if(image){
+                        chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
+                    }
+                    if(video){
+                        chatMessage += '<video controls><source src='+ video + ' type="video/mp4"> </video>' ;                            
+                    }    
+                    chatMessage +='</li>'
+
+                    // Append the chat message to the main div
+                    $('#chat-messages').append(chatMessage);
             }
+           
         }
 
         socket.onclose = function() {
@@ -117,19 +253,21 @@
             var message = input.val();
             var receiver = "{{ receiver.username }}"
             var sender = "{{request.user.username}}"; 
-            var fileInput = document.getElementById('file-input');
-            var file = fileInput.files[0];
-console.log(username);
+            var fileImage = document.getElementById('file-image');
+            var fileVideo = document.getElementById('file-video');
+            var file = fileImage.files[0] || fileVideo.files[0];
             if (file) {
                 var reader = new FileReader();    
                 reader.readAsDataURL(file);
                 reader.onloadend = function() {
-                    var imageData = reader.result;
+                    var fileData = reader.result;
+                    var fileType = file.type;
                     var data = {               
                         'message': message,
                         'sender': sender,
-                        'receiver': receiver,
-                        'image': imageData, // Thêm dữ liệu hình ảnh dưới dạng chuỗi Base64
+                        'receiver': receiver,                        
+                        'fileData': fileData, // Dữ liệu của hình ảnh hoặc video dưới dạng chuỗi Base64
+                        'fileType': fileType,
                     };
                     socket.send(JSON.stringify(data));
                 };
@@ -139,46 +277,30 @@ console.log(username);
                     'message': message,
                     'sender': sender,
                     'receiver': receiver,
-                    'image': null, // Đặt giá trị image là null nếu không có hình ảnh
+                    'fileData': null, // Đặt giá trị fileData là null nếu không có file nào được chọn
+                    'fileType': null,
                 };
                 socket.send(JSON.stringify(data));
             }
             
             input.val('');
-            var sendButton = $('#send-btn');
-            sendButton.prop('disabled', true);
-            $(".chat_container").scrollTop(100000000000);
-        });
-
-    });
-
-
-    $(document).ready(function() {
-      $(".chat_container").scrollTop(100000000000);
-    });
+            $('#file-image').val('');
+            $('#file-video').val('');
+        
+            var sendButton = $('#send-btn');       
+            $(".chat-history").scrollTop(100000000000);
+                });
+        
+            });   
+           
+        $(document).ready(function() {
+            $(".chat-history").scrollTop(100000000000);
+        });     
+    
+    
+            
+  
 
 </script>
 
-<script>
-    $(document).ready(function() {
-         var chatInputValue = $('#chat-input');
-         var sendButton = $('#send-btn');
-
-         // Disable the button initially
-         sendButton.prop('disabled', true);
-
-         // Check input field on keyup event
-         chatInputValue.on('keyup', function() {
-             var inputText = $(this).val();
-
-             // Enable/disable button based on input field value
-             if (inputText.trim() !== '') {
-                 sendButton.prop('disabled', false);
-             } else {
-                 sendButton.prop('disabled', true);
-             }
-         });
-     })
- </script>
-
-
+{% endblock %}

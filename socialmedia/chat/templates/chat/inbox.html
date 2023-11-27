@@ -1,0 +1,133 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+{% block content %}
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+
+<div class="container content-chat" >
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card chat-app">
+            <div id="plist" class="people-list ">
+                <div class="input-group ">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Search...">
+                </div>
+                <div class="list-user overflow-auto scroll-smooth">
+                    <div class="d-block">
+                        <ul class="list-unstyled chat-list mt-2 mb-0">
+                            {% for user_item in combined_list %}
+                                {% if user_item.type == "user"  %}
+                                <a href="{% url 'inbox_detail' user_item.object.username %}">
+                                    <li class="clearfix "  {% if user_item.object.username == receiver.username %} id="active" {% endif %}>
+                                        {% for profile in profiles %}   
+                                            {% if user_item.object == profile.user %}             
+                                                <img src="{% if profile.profile_pic %}
+                                                    {{ profile.profile_pic.url  }}
+                                                {% else %} 
+                                                    https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                {% endif %}" 
+                                                alt="avatar" style="width: 50px; " >
+                                            {% endif %}
+                                        {% endfor %}
+                                        <div class="about">
+                                            <div class="name" style="text-transform: capitalize;">{{user_item.object.username}}</div>
+                                        </div>
+                                    </li>
+                                </a>
+                                {% else %}
+                                <a href="{% url 'inbox_room_detail' user_item.object.name %}">
+                                    <li class="clearfix ">                                            
+                                        {% if user_item.object.image %}             
+                                            <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
+                                        {% else %}
+                                            <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
+                                        {% endif %}
+                                        <div class="about">
+                                            <div class="name" style="text-transform: capitalize;">{{user_item.object.name}}</div>
+                                        </div>
+                                    </li>
+                                </a>
+                                {% endif %}
+                            {% endfor %}                                
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="chat">
+                <div class="chat-header clearfix">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
+                            </a>
+                            <div class="chat-about">
+                                <h6 class="m-b-0">Aiden Chavez</h6>
+                                <small>Last seen: 2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 hidden-sm text-end">
+                            <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
+                            <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
+                            <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
+                            <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-history overflow-auto scroll-smooth">
+                    <div class="d-block">
+                    <ul class="m-b-0">
+                        <li class="clearfix">
+                            <div class="message-data text-end">
+                                <span class="message-data-time">10:10 AM, Today</span>
+                                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
+                            </div>
+                            <div class="message other-message float-right"> Hi Aiden, how are you? How is the project coming along? </div>
+                        </li>
+                        <li class="clearfix">
+                            <div class="message-data text-start">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <span class="message-data-time">10:12 AM, Today</span>
+                            </div>
+                            <div class="message my-message">Are we meeting today?</div>                                    
+                        </li>                               
+                        <li class="clearfix">
+                            <div class="message-data text-start">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <span class="message-data-time">10:12 AM, Today</span>
+                            </div>
+                            <div class="message my-message">Are we meeting today?</div>                                    
+                        </li>                               
+                        <li class="clearfix">
+                            <div class="message-data text-start">
+                                <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="avatar">
+                                <span class="message-data-time">10:12 AM, Today</span>
+                            </div>
+                            <div class="message my-message">Are we meeting today?</div>                                    
+                        </li>                               
+                        
+                    </ul>
+                </div>
+            </div>
+                <div class="chat-message clearfix">
+                    <div class="input-group mb-0">
+                        <div class="input-group-prepend" style="display: flex;">
+                            <button class="input-group-text" style="margin: 5px; padding: 1rem;">
+                                <i class="fa fa-image"></i>
+                            </button>
+                            <input type="text" class="form-control" id="chat-input" placeholder="Enter text here...">                                    
+                            <button class="input-group-text" style="margin: 5px; padding: 1rem;" id="send-btn">
+                               <i class="fa fa-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}

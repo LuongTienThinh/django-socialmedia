@@ -92,6 +92,7 @@ header {
     display: flex;
     justify-content: center;
     padding: 1.5rem;
+    height: calc(100vh - 70px);
 }
 
 .left-content,
@@ -533,7 +534,6 @@ ul.func a:hover,
     left: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
-    z-index: 10;
     width: 100%;
     text-align: center;
 }
@@ -572,7 +572,7 @@ ul.func a:hover,
 }
 
 .form-login > input, .form-login .btn-login, 
-.form-register > input {
+.form-register > input, .otp-area > input, .new-password > input {
     margin-bottom: 1rem;
     min-width: 400px;
     padding: .8rem 1rem;
@@ -585,7 +585,23 @@ ul.func a:hover,
     border-radius: var(--border-radius-1);
 }
 
-.form-login > input, .form-register > input {
+.form-register .help-text {
+    margin-bottom: 1rem;
+    width: 600px;
+    display: flex;
+    justify-content: center;
+}
+
+.form-register .help-text ul {
+    list-style: circle;
+    width: 450px;
+}
+
+.form-register .help-text ul li {
+    margin: .75rem 0;
+}
+
+.form-login > input, .form-register > input, .otp-area > input, .new-password > input {
     background-color: transparent;
     border: 1px solid var(--border-color-1) !important;
 }
@@ -620,6 +636,15 @@ ul.func a:hover,
     border-radius: var(--border-radius-1);
     font-weight: 600;
     width: 40%;
+}
+
+.check-invalid {
+    margin-top: -.75rem; 
+    align-self: flex-start; 
+    font-size: .875rem; 
+    margin-bottom: 1rem; 
+    color: red; 
+    margin-left: .5rem;
 }
 
 /* Profile */

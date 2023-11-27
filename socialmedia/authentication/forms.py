@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
-from .models import User
+from .models import User, OTP
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
@@ -23,3 +23,9 @@ class ChangePasswordForm(PasswordChangeForm):
     class Meta:
         model = User
         fields = ['old_password','new_password1','new_password2']
+
+class ForgotPasswordForm(forms.ModelForm):
+    otp = forms.CharField(max_length=6, label='OTP', required=False)
+    class Meta:
+        model = User
+        fields = ['email', 'otp']

@@ -6,10 +6,28 @@ import json
 from django.db.models import OuterRef, Subquery, Q
 from .models import ChatMessage, ChatRoom, RoomMessage
 from authentication.models import User
-
+from profiles.models import Profile
  
 def index(request):
-  return render(request, 'chat/chat.html')
+    all_profiles = Profile.objects.all()
+
+    chat_users = ChatMessage.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+    list_user = list(set([chat.sender if chat.sender != request.user else chat.receiver for chat in chat_users]))
+    list_room = ChatRoom.objects.filter(members=request.user)
+    combined_list = []
+
+    # Thêm các người dùng vào danh sách kết hợp và đánh dấu chúng là người dùng
+    for user in list_user:
+        combined_list.append({'object': user, 'type': 'user'})
+
+    # Thêm các phòng chat vào danh sách kết hợp và đánh dấu chúng là phòng chat
+    for room in list_room:
+        combined_list.append({'object': room, 'type': 'room'})
+    context = {            
+            "combined_list":combined_list,
+            "profiles":all_profiles,
+        }
+    return render(request, 'chat/inbox.html', context)
 
 @login_required
 def room(request, room_name):
@@ -45,26 +63,46 @@ def inbox(request):
 
 @login_required
 def inbox_detail(request, username):
-    user_id = request.user   
-    message_list = ChatMessage.objects.filter(
-        Q(sender=user_id, receiver__username=username) | Q(sender__username=username, receiver=user_id)
-    ).order_by("-id")[:10]
 
-    user = request.user
     sender = request.user
     receiver = User.objects.get(username=username)
-    receiver_details = User.objects.get(username=username)
-    
+    message_list = ChatMessage.objects.filter(
+        Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+    ).order_by("date")
+
     messages_detail = ChatMessage.objects.filter(
         Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
     ).order_by("date")
 
+    chat_users = ChatMessage.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+    list_user = list(set([chat.sender if chat.sender != request.user else chat.receiver for chat in chat_users]))
+
+    list_room = ChatRoom.objects.filter(members=request.user)
+    combined_list = []
+
+    # Thêm các người dùng vào danh sách kết hợp và đánh dấu chúng là người dùng
+    for user in list_user:
+        combined_list.append({'object': user, 'type': 'user'})
+
+    # Thêm các phòng chat vào danh sách kết hợp và đánh dấu chúng là phòng chat
+    for room in list_room:
+        combined_list.append({'object': room, 'type': 'room'})
+
+
+    all_profiles = Profile.objects.all()
+
+    if messages_detail:
+        r = messages_detail.first()
+        receiver = User.objects.get(username=r.receiver)
+    else:
+        receiver = User.objects.get(username=username)
+
     context = {
-        'message_detail': messages_detail,     
         "receiver":receiver,
         "sender":sender,
-        "receiver_details":receiver_details,
         "message_list":message_list,
+        "combined_list":combined_list,    
+        "profiles":all_profiles,
     }
     return render(request, 'chat/inbox_detail.html', context)
 
@@ -77,11 +115,31 @@ def inbox_group_detail(request, roomname):
     ).order_by("-id")[:10]
 
     sender = request.user
+   
+    all_profiles = Profile.objects.all()
+
+    chat_users = ChatMessage.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
+    list_user = list(set([chat.sender if chat.sender != request.user else chat.receiver for chat in chat_users]))
+    list_room = ChatRoom.objects.filter(members=request.user)
+    combined_list = []
+
+    # Thêm các người dùng vào danh sách kết hợp và đánh dấu chúng là người dùng
+    for user in list_user:
+        combined_list.append({'object': user, 'type': 'user'})
+
+    # Thêm các phòng chat vào danh sách kết hợp và đánh dấu chúng là phòng chat
+    for room in list_room:
+        combined_list.append({'object': room, 'type': 'room'})
+
     
     context = {     
         "sender":sender,
         "message_list":message_list,
-        "room": room,         
+        "room": room,    
+        "list_user":list_user,
+        "list_room":list_room,
+        "profiles":all_profiles,     
+        "combined_list":combined_list,     
     }    
     return render(request, 'chat/inbox_group.html', context)
 

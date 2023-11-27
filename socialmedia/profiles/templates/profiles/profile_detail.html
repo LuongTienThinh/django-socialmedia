@@ -37,7 +37,7 @@
                 {% if user.is_authenticated and user.id == object.user.id %}
                 <button class="button p-2" data-bs-toggle="modal" data-bs-target="#profileModal"  >
                     Chỉnh Sửa Trang Cá Nhân
-                  </button>
+                </button>
                   {% endif %}
                 <!-- model -->
                 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
@@ -62,8 +62,12 @@
               </div> 
 
               {% if not user_block  %}
-              <div class="multi-user me-5">            
+              <div class="multi-user me-5">                            
                 {% if request.user.id != object.user.id %}
+                <form action="{% url 'inbox_detail' object.user.username %}" method="post" style="margin-bottom: 1rem;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-primary"><i class="fa-solid fa-comment-dots"></i> Nhắn tin</button>
+                </form>
                   {% if status == 'friends' %}              
                     {% if friendship.user1.id == request.user.id %}
                     <form action="{% url 'social:cancel_friend_request' pk=fs.first.id %}" method="post">
@@ -77,10 +81,36 @@
                       <button type="submit">Thêm bạn bè</button>
                     </form>
                   {% elif status == 'pending' %}
-                    <form action="{% url 'social:reject_friend_request' pk=fs.first.id %}" method="post">
-                      {% csrf_token %}
-                      <button type="submit">Hủy yêu cầu</button>
-                    </form>
+                    {% if object.user == fs.user2 %}
+                      <form action="{% url 'social:reject_friend_request' fs.first.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Hủy yêu cầu</button>
+                      </form>
+                    {% else %}
+                      {% if invite_friends %}
+                        {% for invite in invite_friends %}
+                          {% if invite.user1.id == object.user.id %}
+                            <button class="btn btn-primary " type="button" id="dropdownInvteButton" data-bs-toggle="dropdown" aria-expanded="false">
+                              Phản hồi
+                            </button>
+                          {% endif %}
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownInvteButton">
+                            <li class="w-100 text-center">
+                              <form action="{% url 'social:accept_friend_request' pk=invite.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="accept btn-primary">Xác nhận</button>
+                              </form>
+                            </li>
+                            <li class="w-100 text-center p-2" >
+                              <form action="{% url 'social:reject_friend_request' pk=invite.id %}" method="post">
+                                  {% csrf_token %}
+                                  <button type="submit" class="reject" >Từ chối</button>
+                              </form>
+                            </li>
+                          </ul>
+                        {% endfor %}
+                      {% endif %}
+                    {% endif %}
                   {% endif %}
                   
                 {% endif %}

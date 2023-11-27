@@ -26,7 +26,7 @@
         
         <div class="right-nav d-flex justify-content-end align-items-center">
             <a href="#" class="menu"><i class="fa-solid fa-bars"></i></a>
-            <a href="#" class="message"><i class="fa-solid fa-comment-dots"></i></a>
+            <a href="{% url 'inbox' %}" class="message"><i class="fa-solid fa-comment-dots"></i></a>
 
             <!-- notifycation -->
             <div class="dropdown account notifycation">
@@ -96,9 +96,14 @@
                                 {{ user.username }}
                             </div>
                         </a>
+                        {% else %}
+                        <div class="username">
+                            Bạn chưa đăng nhập
+                        </div>
                         {% endif %}
                     </li>
                     <li><hr></li>
+                    {% if user.is_authenticated %}
                     <li>
                         <a href="{% url 'change_password' %}" class="dropdown-item change-password">
                             <i class="fa-solid fa-rotate"></i>
@@ -111,6 +116,14 @@
                             <span>Đăng xuất</span>
                         </a>
                     </li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'login' %}" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
