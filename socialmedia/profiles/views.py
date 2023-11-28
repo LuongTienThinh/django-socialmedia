@@ -10,7 +10,7 @@ from django.views.generic import DetailView, CreateView, View
 from social.models import Group, GroupMembership, MessageGroup, Friendship, Follow, Block
 from django.db.models import Q
 from itertools import chain
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
@@ -55,7 +55,7 @@ class ProfileDetailView(DetailView):
         )
 
         profile = Profile.objects.get(user=self.object.user)
-        form = ProfileForm(instance=profile)
+        formprofile = ProfileForm(instance=profile)
 
         all_profiles = Profile.objects.all()
 
@@ -95,7 +95,7 @@ class ProfileDetailView(DetailView):
         context['friends'] = friends
         context['num_friends'] = num_friends
         context['post_list'] = posts
-        context['form'] = form
+        context['formprofile'] = formprofile
         context['friendship'] = friendship
         context['post_forms'] = post_forms
         context['messages'] = messages
@@ -172,14 +172,14 @@ class ProfileCreateView(CreateView):
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class ProfileUpdateView(View):
-    template_name = 'profiles/profile_update.html'
+    template_name = 'profiles/profile_detail.html'
 
     def post(self, request, pk):
         profile = get_object_or_404(Profile, pk=pk)
         form = ProfileForm(request.POST, request.FILES, instance=profile)
 
         if form.is_valid():
-            updated_profile = form.save()
-            return redirect('profiles:profile', pk=request.user.id)
+            form.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
-        return render(request, self.template_name, {'form': form})
+        return redirect('profiles:profile', pk=request.user.id)

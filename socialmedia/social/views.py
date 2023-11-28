@@ -515,10 +515,11 @@ class AddReplyView(View):
 def block_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
 
-    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+    if not Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).exists():
+        Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
 
-    # Xóa mối quan hệ theo dõi nếu có
-    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
+        # Xóa mối quan hệ theo dõi nếu có
+        Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
 
     # Kiểm tra xem đã có trong danh sách chặn chưa
     if not Block.objects.filter(blocker=request.user, blocked_user=blocked_user).exists():
@@ -529,10 +530,11 @@ def block_user(request, user_id):
 @login_required
 def unblock_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
-    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+    if not Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).exists():
+        Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
 
-    # Xóa mối quan hệ theo dõi nếu có+
-    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
+        # Xóa mối quan hệ theo dõi nếu có+
+        Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
 
     # Kiểm tra xem đã chặn chưa
     try:

@@ -170,7 +170,7 @@
                                         {% if message.sender == request.user %}
                                             <li class="clearfix">
                                                 <div class="message-data text-end">
-                                                    <span class="message-data-time">{{message.date}}</span>
+                                                    <span class="message-data-time">{{message.sender}}</span>
                                                     {% for profile in profiles %}   
                                                         {% if message.sender == profile.user %}             
                                                             <img src="{% if profile.profile_pic %}
@@ -207,7 +207,7 @@
                                                             alt="avatar">
                                                         {% endif %}
                                                     {% endfor %}
-                                                    <span class="message-data-time">{{message.date}}</span>
+                                                    <span class="message-data-time">{{message.sender}}</span>
                                                 </div>
                                                 <div class="message my-message"> 
                                                     {{message.message}}                                         
@@ -282,12 +282,14 @@
             var receiver = data.receiver;
             var sender = data.sender;
             var image = data.image;
+            var date = data.date
             var video = data.video;
             var profileImage = data.profile_image;
             if  (sender === "{{sender}}") {
                 var chatMessage = '<li class="clearfix">';
                     chatMessage += ' <div class="message-data text-end">';
-                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage += '<span class="message-data-time " >' + sender +'</span>'
+                    chatMessage +=  '<img src="' + profileImage + '" alt=""">'
                     chatMessage +='</div>'
                     chatMessage +='<div class="message other-message float-right">' + message 
                     if(image){
@@ -308,7 +310,8 @@
             } else{
                 var chatMessage = '<li class="clearfix">';
                     chatMessage += ' <div class="message-data text-start">';
-                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage += '<span class="message-data-time " >' + sender +'</span>'
+                    chatMessage +=  '<img src="' + profileImage + '" alt=""">'
                     chatMessage +='</div>'
                     chatMessage +='<div class="message my-message ">' + message + '</div>'
                     if(image){

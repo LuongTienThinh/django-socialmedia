@@ -5,7 +5,7 @@ from profiles.models import Profile
 from social.models import Group, GroupPost, GroupMembership, MessageGroup, Friendship, Block, Follow
 from social.forms import GroupPostForm
 from chat.models import ChatMessage
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View
@@ -82,7 +82,7 @@ def home1(request):
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
         ).exclude(pk=request.user.id).exclude(
-        id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        id__in=Block.objects.filter(Q(blocker=request.user)|Q(blocked_user=request.user))
         )
 
         list_user = User.objects.all()
@@ -421,7 +421,17 @@ class SharePostView(View):
         user=user
         )
         return redirect('profiles:profile', pk=request.user.id)
-    
+
+class DeleteSharePost(View):
+    def get(self, request, share_id):
+        share = get_object_or_404(Share, id=share_id)
+        if share.user == request.user:  # Kiểm tra xem người dùng hiện tại có quyền xóa không
+            share.delete()
+            return redirect('profiles:profile', pk=request.user.id) # Điều hướng sau khi xóa
+        else:
+            # Xử lí khi người dùng không có quyền xóa
+            return HttpResponse("Bạn không có quyền xóa bản ghi này.")
+
 def search(request):
     query = request.GET.get('q', '')
     
