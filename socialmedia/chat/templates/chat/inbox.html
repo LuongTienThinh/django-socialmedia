@@ -9,15 +9,18 @@
     <div class="col-lg-12">
         <div class="chat-app">
             <div id="plist" class="people-list ">
-                <div class="input-group ">
-                    <input type="text" class="form-control" placeholder="Search...">
+                <div class="input-group">                    
+                    <a href="" class="func-item w-100 p-3" data-bs-toggle="modal" data-bs-target="#example"> 
+                        <i class="fa-solid fa-add"></i>
+                        <span>Tạo Phòng chat</span>
+                    </a>                    
                 </div>
                 <div class="list-user overflow-auto scroll-smooth">
                     <div class="d-block">
                         <ul class="list-unstyled chat-list mt-2 mb-0">
                             {% for user_item in combined_list %}
                                 {% if user_item.type == "user"  %}
-                                <a href="{% url 'inbox_detail' user_item.object.username %}">
+                                <a href="{% url 'inbox_detail' user_item.object.id %}">
                                     <li class="clearfix "  {% if user_item.object.username == receiver.username %} id="active" {% endif %}>
                                         {% for profile in profiles %}   
                                             {% if user_item.object == profile.user %}             
@@ -30,12 +33,12 @@
                                             {% endif %}
                                         {% endfor %}
                                         <div class="about">
-                                            <div class="name" style="text-transform: capitalize;">{{user_item.object.username}}</div>
+                                            <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.username}}</div>
                                         </div>
                                     </li>
                                 </a>
                                 {% else %}
-                                <a href="{% url 'inbox_room_detail' user_item.object.name %}">
+                                <a href="{% url 'inbox_room_detail' user_item.object.id %}">
                                     <li class="clearfix ">                                            
                                         {% if user_item.object.image %}             
                                             <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
@@ -43,7 +46,7 @@
                                             <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
                                         {% endif %}
                                         <div class="about">
-                                            <div class="name" style="text-transform: capitalize;">{{user_item.object.name}}</div>
+                                            <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.name}}</div>
                                         </div>
                                     </li>
                                 </a>
@@ -53,6 +56,54 @@
                     </div>
                 </div>
             </div>
+        {% block room %}
+        <div class="modal fade" id="example" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo phòng chat</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'create_room' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div href="" class="user">
+                            <a href="" class="d-flex align-items-center justify-content-center">
+                                {% for profile in profiles %}               
+                                    {% if user.id == profile.user.id %}
+                                        {% if profile.profile_pic %}
+                                                <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                            {% else %}
+                                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                            {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </a>
+                            <div class="author">
+                                <div>Người tạo: {{ user.username }}</div>                                       
+                            </div>
+                        </div>
+                        <div class="post-body mt-4">
+                            <h3 class="post-title w-100 rounded">
+                                <input class=" w-100 rounded form-control" type="text" name="name" required id="id_name" placeholder="Nhập tên phòng">
+                            </h3>
+                            
+                        </div>
+                    </div>                               
+                    <div class="modal-footer d-flex justify-content-lg-center">                                    
+                        <div class="p-2 rounded" style="position: relative; display: inline-block; width: 15%; background-color: var(--bg-light-3);">
+                            <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image" style="align-self: center;opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer;">
+                            <div id="file-icon" class="text-center">                             
+                                Ảnh
+                            </div>
+                        </div>             
+                        <button type="submit" class="btn btn-primary btn-upload">Tạo phòng</button>
+                    </div>
+                </form>
+            </div>
+            </div>
+        </div>
+        {% endblock %}
             <div class="chat">
                 <div class="chat-header clearfix">
                     <div class="row">

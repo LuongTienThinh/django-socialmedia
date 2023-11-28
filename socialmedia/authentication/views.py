@@ -5,12 +5,14 @@ from django.contrib.auth.views import LoginView, PasswordChangeView, LogoutView
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Q
 
 from django.core.mail import send_mail
 from django.http import HttpResponse
 
 from socialmedia.settings import EMAIL_HOST_USER
+from django.contrib import messages
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ChangePasswordForm, ForgotPasswordForm
 from .models import OTP, User
 from profiles.models import Profile
@@ -30,10 +32,19 @@ class RegisterView(CreateView):
         Profile.objects.create(user=self.object, profile_pic=profile_pic_path)  #
         return response  # Return the response object to continue the no
 
+class CustomAuthenticationForm(AuthenticationForm):
+    error_messages = {
+        'invalid_login': "Tên đăng nhập hoặc mật khẩu không đúng.",
+        # Các thông báo lỗi khác nếu cần
+    }
+
 # đăng nhập
 class LoginView(LoginView):
     form_class = CustomAuthenticationForm
     template_name = 'authentication/login.html'
+    def form_invalid(self, form):
+        messages.error(self.request, form.error_messages['invalid_login'])
+        return super().form_invalid(form)
     def form_valid(self, form):
         response = super().form_valid(form)
         user = form.get_user()

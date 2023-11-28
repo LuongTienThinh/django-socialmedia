@@ -18,7 +18,8 @@
           {% endif %}
         
         <div class="position-relative d-flex justify-content-between align-items-center">
-          <div class="info d-flex justify-content-center align-items-center ps-5" style="margin-left: 15rem;">
+          <div class="info d-flex justify-content-center align-items-center ps-5" style="margin-left: 12rem;">
+          
             <div class="avatar">
               {% if object.profile_pic %}
               <img src="{{ object.profile_pic.url }}" alt="">
@@ -64,7 +65,7 @@
               {% if not user_block  %}
               <div class="multi-user me-5">                            
                 {% if request.user.id != object.user.id %}
-                <form action="{% url 'inbox_detail' object.user.username %}" method="post" style="margin-bottom: 1rem;">
+                <form action="{% url 'inbox_detail' object.user.id %}" method="post" style="margin-bottom: 1rem;">
                   {% csrf_token %}
                   <button type="submit" class="btn-primary"><i class="fa-solid fa-comment-dots"></i> Nhắn tin</button>
                 </form>
@@ -81,7 +82,7 @@
                       <button type="submit">Thêm bạn bè</button>
                     </form>
                   {% elif status == 'pending' %}
-                    {% if object.user == fs.user2 %}
+                    {% if object.user == friendship.user2 %}
                       <form action="{% url 'social:reject_friend_request' fs.first.id %}" method="post">
                         {% csrf_token %}
                         <button type="submit">Hủy yêu cầu</button>
@@ -121,7 +122,7 @@
                     <button type="submit">Theo dõi</button>
                   </form>
                   {% elif request.user.id != object.user.id %}             
-                    <button type="submit" class="btn-primary">Đã theo dõi  <i class="fa-solid fa-check" ></i></button>
+                    <button type="submit" class="btn-primary">Đã theo dõi <i class="fa-solid fa-check" ></i></button>
                   {% endif %}
                 </div>
               </div>
@@ -261,6 +262,7 @@
             </div>
 
             <div class="right-profile">
+              {% if request.user == object.user %}
               <div class="card upload-post mt-0">
                 <div class="card-top d-flex align-items-center justify-content-between">
                   {% if object.profile_pic %}
@@ -360,7 +362,7 @@
                   </div>
                 </div>
               </div>
-
+              {% endif %}
               <div class="card post-detail">
                 <div class="card-top d-flex align-items-center">
                   {% if object.profile_pic %}

@@ -10,15 +10,18 @@
         <div class="col-lg-12">
             <div class="chat-app">
                 <div id="plist" class="people-list ">
-                    <div class="input-group ">
-                        <input type="text" class="form-control" placeholder="Search...">
+                    <div class="input-group">                    
+                        <a href="" class="func-item w-100 p-3" data-bs-toggle="modal" data-bs-target="#example"> 
+                            <i class="fa-solid fa-add"></i>
+                            <span>Tạo Phòng chat</span>
+                        </a>                    
                     </div>
                     <div class="list-user overflow-auto scroll-smooth">
                         <div class="d-block">
                             <ul class="list-unstyled chat-list mt-2 mb-0">
                                 {% for user_item in combined_list %}
                                     {% if user_item.type == "user"  %}
-                                    <a href="{% url 'inbox_detail' user_item.object.username %}">
+                                    <a href="{% url 'inbox_detail' user_item.object.id %}">
                                         <li class="clearfix "  {% if user_item.object.username == receiver.username %} id="active" {% endif %}>
                                             {% for profile in profiles %}   
                                                 {% if user_item.object == profile.user %}             
@@ -31,34 +34,82 @@
                                                 {% endif %}
                                             {% endfor %}
                                             <div class="about">
-                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.username}}</div>
+                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.username}}</div>
                                             </div>
                                         </li>
                                     </a>
                                     {% else %}
-                                    <a href="{% url 'inbox_room_detail' user_item.object.name %}">
-                                        <li class="clearfix ">                                            
+                                    <li class="clearfix ">                                            
+                                            <a href="{% url 'inbox_room_detail' user_item.object.id %}" style="width: 100%;">
                                             {% if user_item.object.image %}             
                                                 <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
                                             {% else %}
                                                 <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
                                             {% endif %}
                                             <div class="about">
-                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.name}}</div>
+                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.name}}</div>
                                             </div>
+                                        </a>
                                         </li>
-                                    </a>
                                     {% endif %}
                                 {% endfor %}                                
                             </ul>
                         </div>
                     </div>
                 </div>
+                {% block room %}
+                    <div class="modal fade" id="example" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo phòng chat</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{% url 'create_room' %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div href="" class="user">
+                                        <a href="" class="d-flex align-items-center justify-content-center">
+                                            {% for profile in profiles %}               
+                                                {% if user.id == profile.user.id %}
+                                                    {% if profile.profile_pic %}
+                                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                                        {% else %}
+                                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                        {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </a>
+                                        <div class="author">
+                                            <div>Người tạo: {{ user.username }}</div>                                       
+                                        </div>
+                                    </div>
+                                    <div class="post-body mt-4">
+                                        <h3 class="post-title w-100 rounded">
+                                            <input class=" w-100 rounded form-control" type="text" name="name" required id="id_name" placeholder="Nhập tên phòng">
+                                        </h3>
+                                        
+                                    </div>
+                                </div>                               
+                                <div class="modal-footer d-flex justify-content-lg-center">                                    
+                                    <div class="p-2 rounded" style="position: relative; display: inline-block; width: 15%; background-color: var(--bg-light-3);">
+                                        <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image" style="align-self: center;opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer;">
+                                        <div id="file-icon" class="text-center">                             
+                                            Ảnh
+                                        </div>
+                                    </div>             
+                                    <button type="submit" class="btn btn-primary btn-upload">Tạo phòng</button>
+                                </div>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+                {% endblock %}
                     <div class="chat">
                         <div class="chat-header clearfix">
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
+                                    <a href="{% url 'profiles:profile' receiver.id   %}" data-toggle="modal" data-target="#view_info">
                                         {% for profile in profiles %}   
                                                 {% if receiver == profile.user %}             
                                                     <img src="{% if profile.profile_pic %}
@@ -69,17 +120,48 @@
                                                     alt="avatar">
                                                 {% endif %}
                                         {% endfor %}
+                                        <div class="chat-about">
+                                            <h6 class="m-b-0">{{ receiver.username }}</h6>
+                                        </div>
                                     </a>
-                                    <div class="chat-about">
-                                        <h6 class="m-b-0">{{ receiver.username }}</h6>
-                                    </div>
                                 </div>
                                 <div class="col-lg-6 hidden-sm text-end">
                                     <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+                                    <button class="btn ms-auto" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu">
+                                        <li>                             
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete">
+                                                <i class="fa-solid fa-trash"></i>
+                                                <span>Xóa đoạn chat</span>
+                                            </a>      
+                                        </li>
+                                    </ul>
                                 </div>
+                                {% block deletechatprivate %}
+                                    <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Bạn có chắc muốn xóa đoạn chat này?</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                    
+
+                                            </div>
+                                            <div class="modal-footer d-flex justify-content-lg-center">                                    
+                                                <form action="{% url 'delete_private_chat' receiver.id  %}" method="post" enctype="multipart/form-data">
+                                                    {% csrf_token %}                                                                                      
+                                                    <button type="submit" class="btn btn-primary ">Xóa</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                {% endblock %} 
                             </div>
                         </div>
                         <div class="chat-history overflow-auto scroll-smooth">
@@ -126,7 +208,7 @@
                                             <li class="clearfix">
                                                 <div class="message-data text-start">
                                                     {% for profile in profiles %}   
-                                                        {% if message.sender != profile.user %}             
+                                                        {% if message.sender == profile.user %}             
                                                             <img src="{% if profile.profile_pic %}
                                                                 {{ profile.profile_pic.url  }}
                                                             {% else %} 
@@ -193,8 +275,8 @@
     $(function() {
         
         var receiver = null;
-        var receiver_id = "{{ receiver.username }}"; 
-        var logged_in = "{{ request.user.username }}"; 
+        var receiver_id = "{{ receiver.id }}"; 
+        var logged_in = "{{ request.user.id }}"; 
 
         const pathname = window.location.pathname;
         const parts = pathname.split('/');
@@ -237,6 +319,8 @@
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
+                    var chatHistory = document.querySelector('.chat-history')
+                    chatHistory.scrollTop = chatHistory.scrollHeight
                     
                     
 
@@ -256,6 +340,8 @@
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
+                    var chatHistory = document.querySelector('.chat-history')
+                    chatHistory.scrollTop = chatHistory.scrollHeight
             }
            
         }
@@ -267,7 +353,7 @@
         $('#send-btn').on('click', function() {
             var input = $('#chat-input');
             var message = input.val();
-            var receiver = "{{ receiver.username }}"
+            var receiver = "{{ receiver_user.username }}"
             var sender = "{{request.user.username}}"; 
             var fileImage = document.getElementById('file-image');
             var fileVideo = document.getElementById('file-video');

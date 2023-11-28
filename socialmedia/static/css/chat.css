@@ -6,7 +6,7 @@
 }
 
 .chat-app {
-    background: #fff;
+    background: var(--light);
     transition: .5s;
     border: 0;
     border-radius: .55rem;
@@ -24,6 +24,9 @@
     z-index: 7;
     height: 100%;
     background-color: #eaeaea;
+}
+.chat-app .input-group .func-item:hover {
+    background-color: var(--light);
 }
 
 .chat-app .list-user{
@@ -52,12 +55,12 @@
 }
 
 .people-list .chat-list li:hover {
-    background: white;
+    background: var(--light);
     cursor: pointer
 }
 
 .people-list .chat-list li#active {
-    background: white;
+    background: var(--light);
 }
 
 .people-list .chat-list li .name {
@@ -65,13 +68,15 @@
 }
 
 .people-list .chat-list img {
-    width: 50px;
+    width: 40px;
     border-radius: 50%;
+    height: 40px;
+    object-fit: cover;
 }
 
 .people-list img {
     float: left;
-    border-radius: 50%
+    border-radius: 50%;
 }
 
 .people-list .about {
@@ -92,7 +97,9 @@
 .chat .chat-header img {
     float: left;
     border-radius: 40px;
-    width: 40px
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
 .chat .chat-header .chat-about {
@@ -102,7 +109,7 @@
 
 .chat .chat-history {
     padding: 20px;
-    border-bottom: 2px solid #fff;
+    border-bottom: 2px solid var(--light);
     height: calc(100vh - 242px);
 }
 
@@ -127,6 +134,8 @@
 .chat .chat-history .message-data img {
     border-radius: 40px;
     width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
 .chat .chat-history .message-data.text-start .message-data-time {
@@ -161,34 +170,24 @@
 
 .chat .chat-history .message:after {
     bottom: 100%;
-    left: 10px;
     border: solid transparent;
     content: " ";
     height: 0;
     width: 0;
     position: absolute;
     pointer-events: none;
-    border-bottom-color: #fff;
+    border-bottom-color: var(--light);
     border-width: 10px;
     margin-left: -10px
 }
 
 .chat .chat-history .my-message {
-    background: #efefef
+    background: #efefef;
 }
 
 .chat .chat-history .my-message:after {
-    bottom: 100%;
-    left: 30px;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
     border-bottom-color: #efefef;
-    border-width: 10px;
-    margin-left: -10px
+    left: 20px;
 }
 
 .chat .chat-history .other-message {
@@ -199,7 +198,6 @@
 .chat .chat-history .other-message:after {
     border-bottom-color: #e8f1f3;
     right: 10px;
-    left: unset;
 }
 
 .chat .chat-message {
@@ -260,7 +258,7 @@
         height: 465px;
         width: 100%;
         overflow-x: auto;
-        background: #fff;
+        background: var(--light);
         left: -400px;
         display: none
     }

@@ -653,7 +653,7 @@
                     {% endfor %}
                 </div>
                     {% if  post.comments.all|length > 1 %}
-                        <button id="btnMoreComment{{post.id}}" class="btn btn-link" onclick="toggleComment( '{{post.id}}' )">
+                        <button id="btnMoreComment{{post.id}}" class="btn" style="border: none;" onclick="toggleComment( '{{post.id}}' )">
                             Xem thêm
                         </button>
                     {% endif %}
@@ -876,14 +876,14 @@
                             {% for profile in profiles %}   
                                 {% if friend.id == profile.user.id %}                                         
                                     <li>
-                                        <a href="#" class="user-item" id="{{friend.username}}">
+                                        <a href="{% url 'profiles:profile' profile.user.id   %}" class="user-item">
                                             <img src="{% if profile.profile_pic %}
                                                 {{ profile.profile_pic.url  }}
                                             {% else %} 
                                                 https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
                                             {% endif %} "
                                             class="card-img" alt="avatar">
-                                            <span id = "user-item">{{ friend.username }}</span>
+                                            <span>{{ friend.username }}</span>
                                         </a>
                                     </li>        
                                 {% endif %}

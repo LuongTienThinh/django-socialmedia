@@ -27,6 +27,8 @@ class ChatRoom (models.Model):
     image = models.ImageField(upload_to='room-messages/cover-pic/', blank=True, null=True)
     creator = models.ForeignKey(User, max_length=255, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name="group_chat_members")
+    def __str__(self):        
+        return f"room: {str(self.name)} "
     
 
 class RoomMessage(models.Model):
