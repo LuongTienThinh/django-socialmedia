@@ -9,106 +9,44 @@
         <div class="col-lg-12">
             <div class="card chat-app">
                 <div id="plist" class="people-list ">
-                    <div class="input-group ">                    
-                        <a href="" class="func-item" data-bs-toggle="modal" data-bs-target="#example"> 
-                            <i class="fa-solid fa-add"></i>
-                            <span>Tạo Phòng chat</span>
-                        </a>                    
+                    <div class="input-group ">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Search...">
                     </div>
                     <div class="list-user overflow-auto scroll-smooth">
                         <div class="d-block">
                             <ul class="list-unstyled chat-list mt-2 mb-0">
-                                {% for user_item in combined_list %}
-                                    {% if user_item.type == "user"  %}
-                                    <a href="{% url 'inbox_detail' user_item.object.id %}">
-                                        <li class="clearfix "  {% if user_item.object.username == receiver.username %} id="active" {% endif %}>
-                                            {% for profile in profiles %}   
-                                                {% if user_item.object == profile.user %}             
-                                                    <img src="{% if profile.profile_pic %}
-                                                        {{ profile.profile_pic.url  }}
-                                                    {% else %} 
-                                                        https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
-                                                    {% endif %}" 
-                                                    alt="avatar" style="width: 50px; " >
-                                                {% endif %}
-                                            {% endfor %}
-                                            <div class="about">
-                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.username}}</div>
-                                            </div>
-                                        </li>
-                                    </a>
-                                    {% else %}
-                                    <li class="clearfix ">                                            
-                                            <a href="{% url 'inbox_room_detail' user_item.object.id %}" style="width: 100%;">
-                                            {% if user_item.object.image %}             
-                                                <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
-                                            {% else %}
-                                                <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
+                                {% for user_item in list_user %}
+                                <a href="{% url 'inbox_detail' user_item.username %}">
+                                    <li class="clearfix " {% if user_item.id == receiver.id %} id="active" {% endif %}>
+                                        {% for profile in profiles %}   
+                                            {% if user_item == profile.user %}             
+                                                <img src="{% if profile.profile_pic %}
+                                                    {{ profile.profile_pic.url  }}
+                                                {% else %} 
+                                                    https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                {% endif %}" 
+                                                alt="avatar" style="width: 50px; " >
                                             {% endif %}
-                                            <div class="about">
-                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.name}}</div>
-                                            </div>
-                                        </a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}                                
+                                        {% endfor %}
+                                        <div class="about">
+                                            <div class="name" style="text-transform: capitalize;">{{user_item.username}}</div>
+                                        </div>
+                                    </li>
+                                </a>
+                            {% endfor %}
+                                
                             </ul>
                         </div>
                     </div>
                 </div>
-                {% block room %}
-                    <div class="modal fade" id="example" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo phòng chat</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form action="{% url 'create_room' %}" method="post" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="modal-body">
-                                    <div href="" class="user">
-                                        <a href="" class="d-flex align-items-center justify-content-center">
-                                            {% for profile in profiles %}               
-                                                {% if user.id == profile.user.id %}
-                                                    {% if profile.profile_pic %}
-                                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
-                                                        {% else %}
-                                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
-                                                        {% endif %}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </a>
-                                        <div class="author">
-                                            <div>Người tạo: {{ user.username }}</div>                                       
-                                        </div>
-                                    </div>
-                                    <div class="post-body mt-4">
-                                        <h3 class="post-title w-100 rounded">
-                                            <input class=" w-100 rounded form-control" type="text" name="name" required id="id_name" placeholder="Nhập tên phòng">
-                                        </h3>
-                                        
-                                    </div>
-                                </div>                               
-                                <div class="modal-footer d-flex justify-content-lg-center">                                    
-                                    <div class="p-2 rounded" style="position: relative; display: inline-block; width: 15%; background-color: var(--bg-light-3);">
-                                        <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image" style="align-self: center;opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer;">
-                                        <span id="file-icon">                             
-                                            Ảnh
-                                        </span>
-                                    </div>             
-                                    <button type="submit" class="btn btn-primary btn-upload">Tạo phòng</button>
-                                </div>
-                            </form>
-                        </div>
-                        </div>
-                    </div>
-                {% endblock %}
                     <div class="chat">
                         <div class="chat-header clearfix">
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <a href="{% url 'profiles:profile' receiver.id   %}" data-toggle="modal" data-target="#view_info">
+                                    <a href="javascript:void(0);" data-toggle="modal" data-target="#view_info">
                                         {% for profile in profiles %}   
                                                 {% if receiver == profile.user %}             
                                                     <img src="{% if profile.profile_pic %}
@@ -119,48 +57,17 @@
                                                     alt="avatar">
                                                 {% endif %}
                                         {% endfor %}
-                                        <div class="chat-about">
-                                            <h6 class="m-b-0">{{ receiver.username }}</h6>
-                                        </div>
                                     </a>
+                                    <div class="chat-about">
+                                        <h6 class="m-b-0">{{ receiver.username }}</h6>
+                                    </div>
                                 </div>
                                 <div class="col-lg-6 hidden-sm text-end">
                                     <a href="javascript:void(0);" class="btn btn-outline-secondary"><i class="fa fa-camera"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
-                                    <button class="btn ms-auto" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu">
-                                        <li>                             
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete">
-                                                <i class="fa-solid fa-trash"></i>
-                                                <span>Xóa đoạn chat</span>
-                                            </a>      
-                                        </li>
-                                    </ul>
                                 </div>
-                                {% block deletechatprivate %}
-                                    <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Bạn có chắc muốn xóa đoạn chat này?</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                    
-
-                                            </div>
-                                            <div class="modal-footer d-flex justify-content-lg-center">                                    
-                                                <form action="{% url 'delete_private_chat' receiver.id  %}" method="post" enctype="multipart/form-data">
-                                                    {% csrf_token %}                                                                                      
-                                                    <button type="submit" class="btn btn-primary ">Xóa</button>
-                                                </form>
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                            </div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                {% endblock %} 
                             </div>
                         </div>
                         <div class="chat-history overflow-auto scroll-smooth">
@@ -255,21 +162,14 @@
 <script>
     $(function() {
         
-        var receiver = null;
-        var receiver_id = "{{ receiver.id }}"; 
-        var logged_in = "{{ request.user.id }}"; 
+        var room =  "{{room.name}}"   
 
         const pathname = window.location.pathname;
         const parts = pathname.split('/');
         const username = parts[parts.length - 2];
 
-        if (receiver_id === logged_in) {
-            receiver = receiver_id;
-        } else {
-            receiver = receiver_id;
-        }
 
-        var socket = new WebSocket('ws://' + window.location.host + '/ws/chat-private/' + receiver + '/');
+        var socket = new WebSocket('ws://' + window.location.host + '/ws/chat-room/' + room + '/');
         console.log(socket);
 
         socket.onopen = function() {
@@ -284,6 +184,7 @@
             var image = data.image;
             var video = data.video;
             var profileImage = data.profile_image;
+
             if  (sender === "{{sender}}") {
                 var chatMessage = '<li class="clearfix">';
                     chatMessage += ' <div class="message-data text-end">';
@@ -300,9 +201,6 @@
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
-                    var chatHistory = document.querySelector('.chat-history')
-                    chatHistory.scrollTop = chatHistory.scrollHeight
-                    
                     
 
             } else{
@@ -321,8 +219,6 @@
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
-                    var chatHistory = document.querySelector('.chat-history')
-                    chatHistory.scrollTop = chatHistory.scrollHeight
             }
            
         }
@@ -334,7 +230,7 @@
         $('#send-btn').on('click', function() {
             var input = $('#chat-input');
             var message = input.val();
-            var receiver = "{{ receiver_user.username }}"
+            var room = "{{ room.name }}"
             var sender = "{{request.user.username}}"; 
             var fileImage = document.getElementById('file-image');
             var fileVideo = document.getElementById('file-video');
@@ -348,7 +244,7 @@
                     var data = {               
                         'message': message,
                         'sender': sender,
-                        'receiver': receiver,                        
+                        'room': room,                      
                         'fileData': fileData, // Dữ liệu của hình ảnh hoặc video dưới dạng chuỗi Base64
                         'fileType': fileType,
                     };
@@ -359,7 +255,7 @@
                 var data = {               
                     'message': message,
                     'sender': sender,
-                    'receiver': receiver,
+                    'room': room,
                     'fileData': null, // Đặt giá trị fileData là null nếu không có file nào được chọn
                     'fileType': null,
                 };
@@ -370,19 +266,16 @@
             $('#file-image').val('');
             $('#file-video').val('');
         
-            var sendButton = $('#send-btn');       
-            $(".chat-history").scrollTop(100000000000);
-                });
+            var sendButton = $('#send-btn');            
+
+        });
+
+    });
+
+
+    $(document).ready(function() {
         
-            });   
-           
-        $(document).ready(function() {
-            $(".chat-history").scrollTop(100000000000);
-        });     
-    
-    
-            
-  
+    });
 
 </script>
 
