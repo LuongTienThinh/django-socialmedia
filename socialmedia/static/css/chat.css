@@ -5,13 +5,14 @@
     height: calc(100vh - 70px);
 }
 
-.card {
-    background: #fff;
+.chat-app {
+    background: var(--light);
     transition: .5s;
     border: 0;
     border-radius: .55rem;
     position: relative;
     width: 100%;
+    height: 100%;
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
 }
 .chat-app .people-list {
@@ -21,15 +22,19 @@
     top: 0;
     padding: 20px;
     z-index: 7;
+    height: 100%;
     background-color: #eaeaea;
+}
+.chat-app .input-group .func-item:hover {
+    background-color: var(--light);
 }
 
 .chat-app .list-user{
-    max-height: 583px;
-    height: 583px;
+    height: calc(100vh - 242px);
 }
 
 .chat-app .chat {
+    height: 100%;
     margin-left: 460px;
     border-left: 1px solid #eaeaea;
 }
@@ -44,16 +49,18 @@
 .people-list .chat-list li {
     padding: 10px 15px;
     list-style: none;
-    border-radius: 3px
+    border-radius: 3px;
+    min-height: 70px;
+    margin: 10px 0;
 }
 
 .people-list .chat-list li:hover {
-    background: white;
+    background: var(--light);
     cursor: pointer
 }
 
 .people-list .chat-list li#active {
-    background: white;
+    background: var(--light);
 }
 
 .people-list .chat-list li .name {
@@ -61,13 +68,15 @@
 }
 
 .people-list .chat-list img {
-    width: 45px;
-    border-radius: 50%
+    width: 40px;
+    border-radius: 50%;
+    height: 40px;
+    object-fit: cover;
 }
 
 .people-list img {
     float: left;
-    border-radius: 50%
+    border-radius: 50%;
 }
 
 .people-list .about {
@@ -88,7 +97,9 @@
 .chat .chat-header img {
     float: left;
     border-radius: 40px;
-    width: 40px
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
 .chat .chat-header .chat-about {
@@ -98,10 +109,8 @@
 
 .chat .chat-history {
     padding: 20px;
-    border-bottom: 2px solid #fff;
-    max-height: 520px;
-    height: 520px;
-    
+    border-bottom: 2px solid var(--light);
+    height: calc(100vh - 242px);
 }
 
 .chat .chat-history ul {
@@ -118,17 +127,35 @@
 }
 
 .chat .chat-history .message-data {
-    margin-bottom: 15px
+    margin-bottom: 15px;
+    position: relative;
 }
 
 .chat .chat-history .message-data img {
     border-radius: 40px;
-    width: 40px
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
-.chat .chat-history .message-data-time {
+.chat .chat-history .message-data.text-start .message-data-time {
     color: #434651;
-    padding-left: 6px
+    padding-left: 6px;
+    position: absolute;
+    top: 5px;
+    left: 50px;
+}
+
+.chat .chat-history .message-data.text-end .message-data-time {
+    color: #434651;
+    padding-left: 6px;
+    position: absolute;
+    top: 5px;
+    right: 50px;
+}
+
+.chat .chat-history .message-data-time .date {
+    font-size: .6rem;
 }
 
 .chat .chat-history .message {
@@ -143,51 +170,41 @@
 
 .chat .chat-history .message:after {
     bottom: 100%;
-    left: 7%;
     border: solid transparent;
     content: " ";
     height: 0;
     width: 0;
     position: absolute;
     pointer-events: none;
-    border-bottom-color: #fff;
+    border-bottom-color: var(--light);
     border-width: 10px;
     margin-left: -10px
 }
 
 .chat .chat-history .my-message {
-    background: #efefef
+    background: #efefef;
 }
 
 .chat .chat-history .my-message:after {
-    bottom: 100%;
-    left: 30px;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
     border-bottom-color: #efefef;
-    border-width: 10px;
-    margin-left: -10px
+    left: 20px;
 }
 
 .chat .chat-history .other-message {
     background: #e8f1f3;
-    text-align: right
+    text-align: right;
 }
 
 .chat .chat-history .other-message:after {
     border-bottom-color: #e8f1f3;
-    left: 93%
+    right: 10px;
 }
 
 .chat .chat-message {
     padding: 20px
 }
 
-.chat .chat-message .input-group-prepend{
+.chat .chat-message .input-group-prepend {
     width: 100%;
 }
 
@@ -222,11 +239,12 @@
     float: right
 }
 
-.clearfix {
+.row.clearfix {
     --bs-gutter-x: none;
+    height: 100%;
 }
 
-.clearfix:after {
+.clearfix::after {
     visibility: hidden;
     display: block;
     font-size: 0;
@@ -240,7 +258,7 @@
         height: 465px;
         width: 100%;
         overflow-x: auto;
-        background: #fff;
+        background: var(--light);
         left: -400px;
         display: none
     }
