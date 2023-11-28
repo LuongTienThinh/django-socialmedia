@@ -7,12 +7,9 @@
 <div class="content-chat" >
     <div class="row clearfix">
         <div class="col-lg-12">
-            <div class="card chat-app">
+            <div class="chat-app">
                 <div id="plist" class="people-list ">
                     <div class="input-group ">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fa fa-search"></i></span>
-                        </div>
                         <input type="text" class="form-control" placeholder="Search...">
                     </div>
                     <div class="list-user overflow-auto scroll-smooth">
@@ -28,7 +25,7 @@
                                                 {% else %} 
                                                     https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
                                                 {% endif %}" 
-                                                alt="avatar" style="width: 50px; " >
+                                                alt="avatar">
                                             {% endif %}
                                         {% endfor %}
                                         <div class="about">
@@ -77,7 +74,16 @@
                                         {% if message.sender == request.user %}
                                             <li class="clearfix">
                                                 <div class="message-data text-end">
-                                                    <span class="message-data-time">{{message.date}}</span>
+                                                    <span class="message-data-time">
+                                                        <div class="sender">{{message.sender}}</div>
+                                                        <div class="date">
+                                                            {% with time_since=message.date|timesince %}
+                                                                {% with values=time_since|split_timesince:", " %}
+                                                                    {{values}}
+                                                                {% endwith %}
+                                                            {% endwith %}
+                                                        </div>
+                                                    </span>
                                                     {% for profile in profiles %}   
                                                         {% if message.sender == profile.user %}             
                                                             <img src="{% if profile.profile_pic %}
@@ -114,7 +120,16 @@
                                                             alt="avatar">
                                                         {% endif %}
                                                     {% endfor %}
-                                                    <span class="message-data-time">{{message.date}}</span>
+                                                    <span class="message-data-time">
+                                                        <div class="sender">{{message.sender}}</div>
+                                                        <div class="date">
+                                                            {% with time_since=message.date|timesince %}
+                                                                {% with values=time_since|split_timesince:", " %}
+                                                                    {{values}}
+                                                                {% endwith %}
+                                                            {% endwith %}
+                                                        </div>
+                                                    </span>
                                                 </div>
                                                 <div class="message my-message"> 
                                                     {{message.message}}                                         

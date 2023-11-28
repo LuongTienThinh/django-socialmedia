@@ -112,7 +112,8 @@ def inbox_group_detail(request, roomname):
     room = ChatRoom.objects.get(name = roomname)
     message_list = RoomMessage.objects.filter(
         Q(room__id = room.id)
-    ).order_by("-id")[:10]
+    ).order_by("-date").values()[:10]
+    print(message_list.count())
 
     sender = request.user
    
