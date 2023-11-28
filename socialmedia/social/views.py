@@ -5,7 +5,7 @@ from .models import Friendship, Follow, Group, GroupPost, GroupMembership,  Mess
 from .forms import FriendshipForm, FollowForm, GroupForm, GroupPostForm, GroupCommentForm, GroupReplyForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse, HttpResponseNotFound
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -18,9 +18,18 @@ User = get_user_model()
 def Group_Posts(request, group_id):
     # Lấy thông tin nhóm dựa trên group_id
     group = Group.objects.get(id=group_id)
+    friends = User.objects.filter(
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).distinct()
     
     # Lấy tất cả bài viết thuộc nhóm đó
-    posts = GroupPost.objects.filter(group=group)
+    following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
+    posts = GroupPost.objects.filter(Q(group=group) & Q(author = request.user) |Q(author__in=following) | Q(author__in=friends)).exclude(
+        author__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        ).exclude( Q(group_comments__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)) |
+    Q(group_comments__group_replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))).order_by('-created_at')
+
     # danh sách người dùng tham gia nhóm
     members = User.objects.filter(groupmembership__group=group)
 
@@ -108,25 +117,36 @@ class SendFriendRequestView(CreateView):
     form_class = FriendshipForm
 
     def dispatch(self, request, *args, **kwargs):
+        user_block_list = Block.objects.filter(blocker = self.request.user)
         user2 = get_object_or_404(User, pk=kwargs['user_id'])
         user1 = request.user
-        friendship, created = Friendship.objects.get_or_create(
-            user1=user1,
-            user2=user2,
-            defaults={'status': 'pending'}
-        )
-        Follow.objects.create(
-            followee = user1,
-            follower= user2
-        )
-        if created:
-            # Yêu cầu kết bạn được tạo mới
-            pass  # Bạn có thể thêm mã xử lý tại đây nếu cần
+        is_user2_blocked = user_block_list.exclude(blocked_user=user2).exists()
+        if not is_user2_blocked:
+            friendship, created = Friendship.objects.get_or_create(
+                user1=user1,
+                user2=user2,
+                defaults={'status': 'pending'}
+            )
+            Follow.objects.create(
+                followee = user1,
+                follower= user2
+            )
+            if created:
+                # Yêu cầu kết bạn được tạo mới
+                pass  # Bạn có thể thêm mã xử lý tại đây nếu cần
+            else:
+                # Yêu cầu kết bạn đã tồn tại
+                pass  # Bạn có thể thêm mã xử lý tại đây nếu cần
+
         else:
-            # Yêu cầu kết bạn đã tồn tại
-            pass  # Bạn có thể thêm mã xử lý tại đây nếu cần
+            Friendship.objects.filter(Q(user1=request.user, user2=user2) | Q(user1=user2, user2=request.user)).delete()
+
+            # Xóa mối quan hệ theo dõi nếu có
+            Follow.objects.filter(follower=user2, followee=request.user).delete()
+            return Http404("<h1>This user is blocked</h1>")
 
         return redirect(reverse_lazy('profiles:profile', kwargs={'pk': user2.id}))
+    
 
     def get_success_url(self):
         # Phương thức này không còn cần thiết nữa, vì chúng ta đã xử lý mọi thứ trong dispatch
@@ -472,6 +492,7 @@ class EditReplyView(View):
         else:
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
     
+
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class AddReplyView(View):
     def post(self, request, comment_id):
@@ -494,15 +515,24 @@ class AddReplyView(View):
 def block_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
 
+    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+
+    # Xóa mối quan hệ theo dõi nếu có
+    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
+
     # Kiểm tra xem đã có trong danh sách chặn chưa
     if not Block.objects.filter(blocker=request.user, blocked_user=blocked_user).exists():
         Block.objects.create(blocker=request.user, blocked_user=blocked_user)
-
+   
     return redirect('profiles:profile', pk=user_id)
 
 @login_required
 def unblock_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
+    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+
+    # Xóa mối quan hệ theo dõi nếu có+
+    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
 
     # Kiểm tra xem đã chặn chưa
     try:
@@ -512,8 +542,8 @@ def unblock_user(request, user_id):
         pass  # Nếu không tìm thấy bản ghi chặn, không cần làm gì cả
 
     # Điều hướng trở lại trang người dùng hoặc trang trước đó
-    referer = request.META.get('HTTP_REFERER', None)
-    if referer:
-        return redirect(referer)
-    else:
-        return redirect('profiles:profile', pk=user_id)
+    # referer = request.META.get('HTTP_REFERER', None)
+    # if referer:
+    #     return redirect(referer)
+    # else:
+    return redirect('profiles:profile', pk=user_id)

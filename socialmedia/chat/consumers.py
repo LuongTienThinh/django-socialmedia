@@ -13,7 +13,7 @@ User = get_user_model()
 
 class ChatMessageConsumer(WebsocketConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = self.scope['url_route']['kwargs']['user_id']
         self.room_group_name = 'chat-private_%s' % self.room_name
 
         async_to_sync(self.channel_layer.group_add)(
@@ -91,7 +91,7 @@ class ChatMessageConsumer(WebsocketConsumer):
 
 class ChatRoomConsumer(WebsocketConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = 'chat-room_%s' % self.room_name
 
         async_to_sync(self.channel_layer.group_add)(

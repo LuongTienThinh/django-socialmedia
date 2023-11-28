@@ -39,11 +39,16 @@ def home1(request):
         friends = User.objects.filter(
                 Q(friendships1__user2=request.user, friendships1__status='friends') |
                 Q(friendships2__user1=request.user, friendships2__status='friends')
-            ).distinct()
+            ).exclude(
+        id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        ).distinct()
         
 
         # Lấy những bài post mà người tạo không bị chặn
-        post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(user__in=blocked_users).order_by('-created_at')
+        post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(
+        user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        ).exclude( Q(comments__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)) |
+    Q(comments__replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))).order_by('-created_at')
 
 
         # danh sách nhóm
@@ -81,6 +86,7 @@ def home1(request):
         )
 
         list_user = User.objects.all()
+
         message_list =[]
         for user_chat in list_user:
             message = ChatMessage.objects.filter(
@@ -153,12 +159,19 @@ def group(request):
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
         ).distinct()
+    # danh sach nguoi dang theo doi
+    following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
     # danh sach bài viết 
     post_list = Post.objects.all().order_by('-created_at') 
     # danh sách nhóm
     group_list = request.user.custom_groups.all()
     # danh sach bài viết trong nhóm
-    group_post = GroupPost.objects.all() 
+
+    group_post = GroupPost.objects.filter( Q(author = request.user) |Q(author__in=following) | Q(author__in=friends)).exclude(
+        author__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+        ).exclude( Q(group_comments__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)) |
+    Q(group_comments__group_replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))).order_by('-created_at')
+
    # danh sách người dùng tham gia nhóm
     user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
     # danh sách nhóm đã tham gia    

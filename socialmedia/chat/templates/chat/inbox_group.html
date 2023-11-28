@@ -9,18 +9,18 @@
         <div class="col-lg-12">
             <div class="card chat-app">
                 <div id="plist" class="people-list ">
-                    <div class="input-group ">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fa fa-search"></i></span>
-                        </div>
-                        <input type="text" class="form-control" placeholder="Search...">
+                    <div class="input-group ">                    
+                        <a href="" class="func-item" data-bs-toggle="modal" data-bs-target="#example"> 
+                            <i class="fa-solid fa-add"></i>
+                            <span>Tạo Phòng chat</span>
+                        </a>                    
                     </div>
                     <div class="list-user overflow-auto scroll-smooth">
                         <div class="d-block">
                             <ul class="list-unstyled chat-list mt-2 mb-0">
                                 {% for user_item in combined_list %}
                                     {% if user_item.type == "user"  %}
-                                    <a href="{% url 'inbox_detail' user_item.object.username %}">
+                                    <a href="{% url 'inbox_detail' user_item.object.id %}">
                                         <li class="clearfix " >
                                             {% for profile in profiles %}   
                                                 {% if user_item.object == profile.user %}             
@@ -33,12 +33,12 @@
                                                 {% endif %}
                                             {% endfor %}
                                             <div class="about">
-                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.username}}</div>
+                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.username}}</div>
                                             </div>
                                         </li>
                                     </a>
                                     {% else %}
-                                    <a href="{% url 'inbox_room_detail' user_item.object.name %}">
+                                    <a href="{% url 'inbox_room_detail' user_item.object.id %}">
                                         <li class="clearfix " {% if user_item.object.name == room.name %} id="active" {% endif %}>                                            
                                             {% if user_item.object.image %}             
                                                 <img src="{{ user_item.object.image.url  }}" alt="avatar" style="width: 40px; " >
@@ -46,8 +46,10 @@
                                                 <img src="{% static 'room.png' %}" alt=""  style="width: 40px;">
                                             {% endif %}
                                             <div class="about">
-                                                <div class="name" style="text-transform: capitalize;">{{user_item.object.name}}</div>
+                                                <div class="name p-2" style="text-transform: capitalize;">{{user_item.object.name}}</div>
                                             </div>
+                                            
+                                            
                                         </li>
                                     </a>
                                     {% endif %}
@@ -56,6 +58,54 @@
                         </div>
                     </div>
                 </div>
+                {% block room %}
+                    <div class="modal fade" id="example" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Tạo phòng chat</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{% url 'create_room' %}" method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div href="" class="user">
+                                        <a href="" class="d-flex align-items-center justify-content-center">
+                                            {% for profile in profiles %}               
+                                                {% if user.id == profile.user.id %}
+                                                    {% if profile.profile_pic %}
+                                                            <img src="{{ profile.profile_pic.url }}" style="width: 50px; height:50px" class="rounded-pill" alt="">
+                                                        {% else %}
+                                                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDJaEoQJ0PLbNOn_xHRIw7mcyuIOj0_hVZlA&usqp=CAU" style="width: 50px; height:50px" style="width: 40px; height:40px" alt="">
+                                                        {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </a>
+                                        <div class="author">
+                                            <div>Người tạo: {{ user.username }}</div>                                       
+                                        </div>
+                                    </div>
+                                    <div class="post-body mt-4">
+                                        <h3 class="post-title w-100 rounded">
+                                            <input class=" w-100 rounded form-control" type="text" name="name" required id="id_name" placeholder="Nhập tên phòng">
+                                        </h3>
+                                        
+                                    </div>
+                                </div>                               
+                                <div class="modal-footer d-flex justify-content-lg-center">                                    
+                                    <div class="p-2 rounded" style="position: relative; display: inline-block; width: 15%; background-color: var(--bg-light-3);">
+                                        <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image" style="align-self: center;opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer;">
+                                        <span id="file-icon">                             
+                                            Ảnh
+                                        </span>
+                                    </div>             
+                                    <button type="submit" class="btn btn-primary btn-upload">Tạo phòng</button>
+                                </div>
+                            </form>
+                        </div>
+                        </div>
+                    </div>
+                {% endblock %}
                     <div class="chat">
                         <div class="chat-header clearfix">
                             <div class="row">
@@ -68,7 +118,7 @@
                                             {% endif %}
                                     </a>
                                     <div class="chat-about">
-                                        <h6 class="m-b-0">{{ room.name}}</h6>
+                                        <h6 class="m-b-0">{{ room.name }}</h6>
                                     </div>
                                 </div>
                                 <div class="col-lg-6 hidden-sm text-end">
@@ -76,9 +126,225 @@
                                     <a href="javascript:void(0);" class="btn btn-outline-primary"><i class="fa fa-image"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-info"><i class="fa fa-cogs"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-outline-warning"><i class="fa fa-question"></i></a>
+                                    <button class="btn ms-auto" type="button" id="dropdownMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu">
+                                        <li>                             
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#listmember">
+                                                <i class="fa-solid fa-people-group"></i>
+                                                <span>Thành viên</span>
+                                            </a>      
+                                        </li>
+                                        {% if request.user == room.creator %}
+                                            <li>                             
+                                                <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addmember">
+                                                    <i class="fa-solid fa-user-plus"></i>
+                                                    <span>Thêm thành viên</span>
+                                                </a>      
+                                            </li>
+                                            <li>                             
+                                                <a href="{% url 'edit_room' room.id %}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit">
+                                                    <i class="fa-solid fa-edit"></i>
+                                                    <span>Chỉnh sửa phòng chat</span>
+                                                </a>      
+                                            </li>                                        
+                                            <li>                             
+                                                <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                    <span>Xóa phòng chat</span>
+                                                </a>      
+                                            </li>
+                                        {% else %} 
+                                            <li>                             
+                                                <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#out">
+                                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                                    <span>Rời phòng chat</span>
+                                                </a>      
+                                            </li>                                            
+                                        {% endif %}                                       
+                                    </ul>
                                 </div>
                             </div>
                         </div>
+                        {% block addmember %}
+                            <div class="modal fade" id="addmember" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Danh sách bạn bè</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                   
+                                    </div>
+                                    <div class="list-user overflow-auto scroll-smooth">
+                                        <div class="d-block">
+                                            <ul class="list-unstyled chat-list mt-2 mb-0">
+                                                {% for user_item in not_joined_friends %}   
+                                                    <a href="{% url 'profiles:profile' user_item.id   %}">
+                                                        <li class="clearfix m-3" >
+                                                            <div class="about d-flex">
+                                                                {% for profile in profiles %}   
+                                                                    {% if user_item == profile.user %}             
+                                                                        <img src="{% if profile.profile_pic %}
+                                                                            {{ profile.profile_pic.url  }}
+                                                                        {% else %} 
+                                                                            https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                                        {% endif %}" 
+                                                                        alt="avatar" style="width: 50px; " >
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                                <span class="p-2 ms-2 name" style="text-transform: capitalize;">{{user_item.username}}</span>
+                                                                <div class="ms-auto me-2">
+                                                                    <form action="{% url 'add_member_room' room.id  user_item.id %}" method="post" enctype="multipart/form-data">
+                                                                        {% csrf_token %}                                                                                      
+                                                                        <button type="submit" class="btn btn-primary ">Thêm vào đoạn chat</button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </a>    
+                                                {% endfor %}                                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-lg-center">                                  
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        {% endblock %}   
+
+                        {% block deletemember %}
+                            <div class="modal fade" id="listmember" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Danh sách thành viên</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                   
+                                    </div>
+                                    <div class="list-user overflow-auto scroll-smooth">
+                                        <div class="d-block">
+                                            <ul class="list-unstyled chat-list mt-2 mb-0">
+                                                {% for user_item in room_members %}   
+                                                    <a href="{% url 'profiles:profile' user_item.id   %}">
+                                                        <li class="clearfix m-3" >
+                                                            <div class="about d-flex">
+                                                                {% for profile in profiles %}   
+                                                                    {% if user_item == profile.user %}             
+                                                                        <img src="{% if profile.profile_pic %}
+                                                                            {{ profile.profile_pic.url  }}
+                                                                        {% else %} 
+                                                                            https://scontent.fsgn2-3.fna.fbcdn.net/v/t1.30497-1/143086968_2856368904622192_1959732218791162458_n.png?stp=cp0_dst-png_p60x60&_nc_cat=1&ccb=1-7&_nc_sid=2b6aad&_nc_eui2=AeE1vTPkHb-3caw-Qa8LcUBUso2H55p0AlGyjYfnmnQCUZJq8s60z2bWHjSCVInwd04OWKdpTROsfDIQw33wpZKQ&_nc_ohc=x-5IH6VdBkQAX973AOb&_nc_ht=scontent.fsgn2-3.fna&oh=00_AfDK83mRdv0PL08D0btIF9cOTS3s8hnIALTSupH9AKV5XQ&oe=657722F8
+                                                                        {% endif %}" 
+                                                                        alt="avatar" style="width: 50px; " >
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                                <span class="p-1 ms-2 name"  style="text-transform: capitalize;">{{user_item.username}}</span>
+                                                                <div class="ms-auto me-2">
+                                                                    {% if request.user == room.creator %}
+                                                                    <form action="{% url 'delete_member_room' room.id  user_item.id %}" method="post" enctype="multipart/form-data">
+                                                                        {% csrf_token %}                                                                                      
+                                                                        <button type="submit" class="btn btn-primary ">Xóa khỏi đoạn chat</button>
+                                                                    </form>
+                                                                    {% else %}
+                                                                        <a href="{% url 'profiles:profile' user_item.id   %}" >
+                                                                            <button class="btn btn-primary ">Xem trang cá nhân</button>
+                                                                        </a>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </a>    
+                                                {% endfor %}                                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-lg-center">                                  
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        {% endblock %} 
+
+                        {% block outmember %}
+                            <div class="modal fade" id="out" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Bạn có chắc muốn rời khỏi nhóm này?</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                    
+
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-lg-center">                                    
+                                        <form action="{% url 'delete_member_room' room.id request.user.id %}" method="post" enctype="multipart/form-data">
+                                            {% csrf_token %}                                                                                      
+                                            <button type="submit" class="btn btn-primary ">Rời nhóm</button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        {% endblock %}                           
+                        
+                        {% block deleteroom %}
+                            <div class="modal fade" id="delete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Bạn có chắc muốn xóa nhóm này?</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                                                                    
+
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-lg-center">                                    
+                                        <form action="{% url 'delete_room' room.id  %}" method="post" enctype="multipart/form-data">
+                                            {% csrf_token %}                                                                                      
+                                            <button type="submit" class="btn btn-primary ">Xóa</button>
+                                        </form>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        {% endblock %}   
+
+                        {% block editroom %}
+                            <div class="modal fade" id="edit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h1 class="modal-title fs-5 text-center" id="exampleModalLabel">Chỉnh sửa phòng chat</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="{% url 'edit_room' room.id %}" method="post" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <div class="modal-body">
+                                                <div class="p-1">
+                                                  <input type="text" name="name" class="form-control" value="{{room.name}}" placeholder="Nhập tên phòng" maxlength="255" required id="id_name">                                                  
+                                                </div>                                                         
+                                                <div class="p-1">
+                                                    {% if room.image %} <br>
+                                                    Ảnh hiện tại: <a href="/media/room-messages/cover-pic/room.png">{{room.image.url}}</a>
+                                                    <input type="checkbox" name="image-clear" id="image-clear_id">
+                                                    <label for="image-clear_id">Xóa</label><br>
+                                                    {% endif %}
+                                                    Thay đổi:
+                                                    <input type="file" name="image" accept="image/*" id="id_image">
+                                                </div>
+                                            </div>         
+                                            <div>
+                                                
+                                            </div>                      
+                                            <div class="modal-footer d-flex justify-content-lg-center">                                                                                           
+                                                <button type="submit" class="btn btn-primary btn-upload">Chỉnh sửa</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endblock %}      
                         <div class="chat-history overflow-auto scroll-smooth">
                             <div class="d-block">
                                 <ul class="m-b-0" id="chat-messages">
@@ -171,7 +437,7 @@
 <script>
     $(function() {
         
-        var room =  "{{room.name}}"   
+        var room =  "{{room.id}}"
 
         const pathname = window.location.pathname;
         const parts = pathname.split('/');
@@ -195,38 +461,46 @@
 
             if  (sender === "{{sender}}") {
                 var chatMessage = '<li class="clearfix">';
-                    chatMessage += ' <div class="message-data text-end">';
-                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage += '<div class="message-data text-end">';
+                    chatMessage += '<span class="message-data-time " >' + sender +'</span>'
+                    chatMessage +=  '<img src="' + profileImage + '" alt=""">'
                     chatMessage +='</div>'
                     chatMessage +='<div class="message other-message float-right">' + message 
                     if(image){
-                        chatMessage += '<img src="' + image + '" alt="" style="width: 300px;"></div>';
+                        chatMessage += '<br><img src="' + image + '" alt="" style="width: 300px;">';
                     }
                     if(video){
-                        chatMessage += '<video controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video></div>' ;                            
+                        chatMessage += '<br><video  controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video>' ;                            
                     }    
                     chatMessage +='</li>'
+                    chatMessage += '</div>'
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
+                    var chatHistory = document.querySelector('.chat-history')
+                    chatHistory.scrollTop = chatHistory.scrollHeight
                     
 
             } else{
                 var chatMessage = '<li class="clearfix">';
                     chatMessage += ' <div class="message-data text-start">';
-                    chatMessage += '<span class="message-data-time">10:10 AM, Today</span>'
+                    chatMessage +=  '<img src="' + profileImage + '" alt=""">'
+                    chatMessage += '<span class="message-data-time "  >' + sender +'</span>'
                     chatMessage +='</div>'
-                    chatMessage +='<div class="message my-message ">' + message + '</div>'
+                    chatMessage +='<div class="message my-message ">' + message
                     if(image){
-                        chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
+                        chatMessage += '<br><img src="' + image + '" alt="" style="width: 300px;">';
                     }
                     if(video){
-                        chatMessage += '<video controls><source src='+ video + ' type="video/mp4"> </video>' ;                            
+                        chatMessage += '<br><video controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video>' ;                            
                     }    
                     chatMessage +='</li>'
+                    chatMessage += '</div>'
 
                     // Append the chat message to the main div
                     $('#chat-messages').append(chatMessage);
+                    var chatHistory = document.querySelector('.chat-history')
+                    chatHistory.scrollTop = chatHistory.scrollHeight
             }
            
         }
@@ -274,9 +548,13 @@
             $('#file-image').val('');
             $('#file-video').val('');
         
-            var sendButton = $('#send-btn');            
-
+            var sendButton = $('#send-btn');    
+            $(".chat-history").scrollTop(100000000000);       
+            
         });
+        $(document).ready(function() {
+            $(".chat-history").scrollTop(100000000000);
+        });     
 
     });
 

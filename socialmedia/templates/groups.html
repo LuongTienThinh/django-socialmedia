@@ -110,19 +110,24 @@
                             </div>
                         </div>
                     </div>                               
-                    <div class="modal-footer justify-content-lg-center">
-                        <button type="file" class="btn-add-file">
-                            <i class="fa-solid fa-images">
-                                <span>Ảnh</span>
-                                <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image">
-                            </i>
-                        </button>                           
+                    <div class="modal-footer d-flex justify-content-lg-center">                                    
+                        <div class="p-2 rounded" style="position: relative; display: inline-block; width: 15%; background-color: var(--bg-light-3);">
+                            <input class="btn-add-file" type="file" name="image" accept="image/*" id="id_image" style="align-self: center;opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer;">
+                            <span id="file-icon">                             
+                                Ảnh
+                            </span>
+                        </div>             
                         <button type="submit" class="btn btn-primary btn-upload">Tạo nhóm</button>
                     </div>
                 </form>
               </div>
             </div>
         </div>
+        <script>
+            document.getElementById('file-icon').addEventListener('click', function() {
+    document.getElementById('id_image').click();
+});
+        </script>
         <div class="main-content">
             <div class="card upload-post mt-0">
                 <div class="card-top d-flex align-items-center justify-content-between">

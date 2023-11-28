@@ -11,6 +11,13 @@
       <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username" placeholder="Tên đăng nhập">
       <input type="password" name="password" autocomplete="current-password" required="" id="id_password" placeholder="Mật khẩu">
       <button type="submit" class="btn-login">Đăng nhập</button>
+      {% if messages %}
+        <ul class="errorlist py-2">
+          {% for message in messages %}
+            <li style="color: red;">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
       <a class="forgot-password text-primary" href="{% url 'forgot_password' %}">Quên mật khẩu?</a>
     </form>
     <hr>
