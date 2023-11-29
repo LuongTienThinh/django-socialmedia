@@ -19,8 +19,17 @@ def Group_Posts(request, group_id):
     # Lấy thông tin nhóm dựa trên group_id
     group = Group.objects.get(id=group_id)
     friends = User.objects.filter(
-            Q(friendships1__user2=request.user, friendships1__status='friends') |
-            Q(friendships2__user1=request.user, friendships2__status='friends')
+                Q(friendships1__user2=request.user, friendships1__status='friends') |
+                Q(friendships2__user1=request.user, friendships2__status='friends')
+            ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
         ).distinct()
     
     # Lấy tất cả bài viết thuộc nhóm đó
@@ -31,7 +40,13 @@ def Group_Posts(request, group_id):
     Q(group_comments__group_replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))).order_by('-created_at')
 
     # danh sách người dùng tham gia nhóm
-    members = User.objects.filter(groupmembership__group=group)
+    members = User.objects.filter(groupmembership__group=group).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).distinct()
 
     user_groups = GroupMembership.objects.filter(user=request.user, status='approved')
     # danh sách nhóm đã tham gia    
@@ -39,11 +54,14 @@ def Group_Posts(request, group_id):
     # danh sách nhóm bị từ chối
     groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
     # danh sách nhom chưa tham gia
-    groups_not_joined = Group.objects.exclude(
-    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    ) 
+    if not groups_joined:
+        groups_not_joined = Group.objects.all()
+    else:
+        groups_not_joined = Group.objects.all().exclude(
+        Q(id__in=groups_joined) | Q (id__in = groups_rejected)
+        )
     # kiểm tra là thành viên của nhóm
-    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    is_member = GroupMembership.objects.filter(user=request.user, group=group,status='approved').exists()
     # trạng thái
     status = GroupMembership.objects.get(user=request.user, group=group).status if is_member else None
 
@@ -55,7 +73,7 @@ def Group_Posts(request, group_id):
     )
     # Lấy các group_ids mà có thông báo
     group_ids_with_messages = memberships.values_list('group', flat=True)
-    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+    messages = MessageGroup.objects.all()
 
     # edit group post
     group_post_list = GroupPost.objects.all().order_by('-created_at')
@@ -74,21 +92,26 @@ def Group_Posts(request, group_id):
     profiles = Profile.objects.all()
 
     #danh sách bạn bè
-    friends = User.objects.filter(
+    suggest_friends = User.objects.exclude(
+            # Loại bỏ người dùng là bạn của người dùng hiện tại
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
-        ).distinct()
+        ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
+        )
     
     invite_friends = Friendship.objects.filter(
         Q(user2=request.user, status='pending')
     ).order_by('-created_at')
 
-    suggest_friends = User.objects.exclude(
-        Q(friendships1__user2=request.user, friendships1__status='friends') |
-        Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id).exclude(
-    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
-    )
+    
 
     context = {
         'group': group,
@@ -120,7 +143,7 @@ class SendFriendRequestView(CreateView):
         user_block_list = Block.objects.filter(blocker = self.request.user)
         user2 = get_object_or_404(User, pk=kwargs['user_id'])
         user1 = request.user
-        is_user2_blocked = user_block_list.exclude(blocked_user=user2).exists()
+        is_user2_blocked = Block.objects.filter(Q(blocked_user=user2, blocker = user1)|Q(blocked_user=user1, blocker = user2)).exists()
         if not is_user2_blocked:
             friendship, created = Friendship.objects.get_or_create(
                 user1=user1,
@@ -143,7 +166,7 @@ class SendFriendRequestView(CreateView):
 
             # Xóa mối quan hệ theo dõi nếu có
             Follow.objects.filter(follower=user2, followee=request.user).delete()
-            return Http404("<h1>This user is blocked</h1>")
+            return render(request, 'error.html')
 
         return redirect(reverse_lazy('profiles:profile', kwargs={'pk': user2.id}))
     
@@ -172,13 +195,17 @@ class AcceptFriendRequestView(UpdateView):
                 user2=friendship.user1,
                 status='friends'
             )
+            # Follow.objects.create(
+            #     followee = friendship.user1,
+            #     follower= friendship.user2
+            # )
         elif friendship.user1 == request.user:
             # Người dùng hiện tại là người đã gửi yêu cầu kết bạn, 
             # họ không thể chấp nhận yêu cầu kết bạn của chính họ
-            raise Http404("Bạn không thể chấp nhận yêu cầu kết bạn của chính bạn.")
+            return render(request, 'error.html')
         else:
             # Người dùng hiện tại không liên quan đến yêu cầu kết bạn này
-            raise Http404("Yêu cầu kết bạn không hợp lệ.")
+            return render(request, 'error.html')
 
         # return redirect(reverse_lazy('profiles:profile', kwargs={'pk': friendship.user1.pk}))
         return redirect('home')
@@ -226,7 +253,7 @@ class UnfollowUserView(View):
             follower = Follow.objects.get(follower=_follower, followee=request.user)
             follower.delete()
         except Follow.DoesNotExist:
-            raise Http404("Bạn chưa theo dõi người dùng này.")
+            return render(request, 'error.html')
 
         return redirect(reverse_lazy('profiles:profile', kwargs={'pk': _follower.pk}))
 
@@ -289,17 +316,20 @@ class CreateGroupPostView(CreateView):
     def form_valid(self, form):
         group_id = self.kwargs.get('group_id')
         group = get_object_or_404(Group, id=group_id)
-        post = form.save(commit=False)
-        post.group = group
-        post.author = self.request.user
-        post.save()
+        if  group.members.filter(id=self.request.user.id).exists():
+            post = form.save(commit=False)
+            post.group = group
+            post.author = self.request.user
+            post.save()
 
-        message = MessageGroup.objects.create(
-            group=group,
-            user=self.request.user,
-            message=f"Đã thêm bài viết mới: {post.title}",
-            post=post
-        )
+            message = MessageGroup.objects.create(
+                group=group,
+                user=self.request.user,
+                message=f"Đã thêm bài viết mới: {post.title}",
+                post=post
+            )
+        else:
+            return HttpResponseNotFound("không thể thêm bài viết")
         return super().form_valid(form)
     
     def get_success_url(self):
@@ -310,13 +340,19 @@ class CreateGroupPostView(CreateView):
 class DeleteGroupPost(View):
     def post(self, request, post_id):
         post = get_object_or_404(GroupPost, id=post_id)
-        if request.user == post.user:
+        if request.user == post.user or request.user == post.group.creator:
             post.delete()
+            message = MessageGroup.objects.create(
+            group=post.group,
+            user=self.request.user,
+            message=f"Đã xóa bài viết: {post.title}",
+            post=post
+        )
         return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
             
     def get(self, request, post_id):
         post = get_object_or_404(GroupPost, id=post_id)
-        if request.user == post.author:
+        if request.user == post.author or request.user == post.group.creator:
             post.delete()
 
         return redirect('group')
@@ -354,7 +390,8 @@ class JoinGroupView(CreateView):
         group = get_object_or_404(Group, id=group_id)
         membership, created = GroupMembership.objects.get_or_create(user=request.user, group=group)
         message = f"{request.user.username} đã yêu cầu tham gia nhóm {group.name}"
-        MessageGroup.objects.create(user=request.user, group=group, message=message)
+        if not MessageGroup.objects.filter(user=request.user, group=group, message=message).exists():
+            MessageGroup.objects.create(user=request.user, group=group, message=message)
         if created:
             membership.status = 'requested'
             membership.save()
@@ -369,14 +406,33 @@ class JoinGroupView(CreateView):
 
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class LeaveGroupView(CreateView):
-    def get(self, request, group_id):
-        try:
-            membership = GroupMembership.objects.get(user=request.user, group_id=group_id)
+    def post(self, request,user_id, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = get_object_or_404(User,id=user_id)
+        if request.user == group.creator:
+            membership = GroupMembership.objects.get(user=user, group_id=group_id)
             membership.delete()  # Xóa mối quan hệ của người dùng với nhóm
-        except GroupMembership.DoesNotExist:
-            pass  # Người dùng không tham gia nhóm, không cần thực hiện gì
+            
+            return redirect('social:group_posts', group_id=group_id) 
 
-        return redirect('social:group_posts', group_id=group_id) 
+        if request.user == user:
+            membership = GroupMembership.objects.get(user=user, group_id=group_id)
+            membership.delete()  # Xóa mối quan hệ của người dùng với nhóm
+            return redirect('group') 
+        
+    def get(self, request,user_id, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = get_object_or_404(User,id=user_id)
+        if request.user == group.creator:
+            membership = GroupMembership.objects.get(user=user, group_id=group_id)
+            membership.delete()  # Xóa mối quan hệ của người dùng với nhóm
+            
+            return redirect('social:group_posts', group_id=group_id) 
+
+        if request.user == user:
+            membership = GroupMembership.objects.get(user=user, group_id=group_id)
+            membership.delete()  # Xóa mối quan hệ của người dùng với nhóm
+            return redirect('group') 
 
 # like
 @login_required(login_url='/auth/login/')
@@ -405,7 +461,7 @@ def Like_Post(request, post_id):
 class AddCommentView(View):
     def post(self, request, post_id):
         post = GroupPost.objects.get(pk=post_id)
-        form = GroupCommentForm(request.POST) 
+        form = GroupCommentForm(request.POST, request.FILES) 
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
@@ -448,7 +504,7 @@ class EditCommentView(View):
         comment = get_object_or_404(GroupComment, pk=comment_id)
 
         if request.user == comment.user:
-            form = GroupCommentForm(request.POST, instance=comment)
+            form = GroupCommentForm(request.POST, request.FILES, instance=comment)
 
             if form.is_valid():
                 form.save()
@@ -515,11 +571,10 @@ class AddReplyView(View):
 def block_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
 
-    if not Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).exists():
-        Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
 
-        # Xóa mối quan hệ theo dõi nếu có
-        Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
+    # Xóa mối quan hệ theo dõi nếu có
+    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
 
     # Kiểm tra xem đã có trong danh sách chặn chưa
     if not Block.objects.filter(blocker=request.user, blocked_user=blocked_user).exists():
@@ -530,11 +585,10 @@ def block_user(request, user_id):
 @login_required
 def unblock_user(request, user_id):
     blocked_user = User.objects.get(pk=user_id)
-    if not Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).exists():
-        Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
+    Friendship.objects.filter(Q(user1=request.user, user2=blocked_user) | Q(user1=blocked_user, user2=request.user)).delete()
 
-        # Xóa mối quan hệ theo dõi nếu có+
-        Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
+    # Xóa mối quan hệ theo dõi nếu có+
+    Follow.objects.filter(follower=blocked_user, followee=request.user).delete()
 
     # Kiểm tra xem đã chặn chưa
     try:
@@ -543,9 +597,5 @@ def unblock_user(request, user_id):
     except Block.DoesNotExist:
         pass  # Nếu không tìm thấy bản ghi chặn, không cần làm gì cả
 
-    # Điều hướng trở lại trang người dùng hoặc trang trước đó
-    # referer = request.META.get('HTTP_REFERER', None)
-    # if referer:
-    #     return redirect(referer)
-    # else:
+
     return redirect('profiles:profile', pk=user_id)

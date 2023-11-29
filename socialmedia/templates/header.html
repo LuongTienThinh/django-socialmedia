@@ -39,39 +39,40 @@
                         <i class="fa-solid fa-bell"></i>
 
                 </button>
-                <ul class="dropdown-menu">       
-                    <li>
-                        <div class="notifycation">
+                <ul class="dropdown-menu ">       
+                    <div class="notifycation overflow-auto scroll-smooth" style="max-height: 400px">
+                        <div class="d-block">
                             <div class="title text-center">Thông báo</div>
                             <hr>
-                            {% for message in messages  %}
-                                <div class="item rounded">
-                                    <div class="represent mb-2">
-                                        <div class="detail">
-                                            <div class="d-flex justify-content-between">
-                                                <div class="name">{% if message.post %} {{ message.post.author }} {% endif %} {{ message.message }}</div>
+                            <li>
+                                {% for message in messages  %}
+                                    <div class="item rounded">
+                                        <div class="represent mb-2">
+                                            <div class="detail">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="name">{% if message.post %} {{ message.post.author }} {% endif %} {{ message.message }}</div>
+                                                </div>
                                             </div>
                                         </div>
+                                        {% if message.post %} 
+                                            <span>{{ message.post.created_at }}</span>
+                                        {% else %}
+                                            <div class="action">
+                                                {% if message.status == 'approved' %}
+                                                    <p>Bạn đã xác nhận <i class="fa-solid fa-check" style="color: #0cca32;"></i></p>
+                                                {% elif message.status == 'rejected' %}
+                                                    <p>Bạn đã từ chối <i class="fa-solid fa-xmark" style="color: #e51f29;"></i></p>
+                                                {% else %}
+                                                    <a href="{% url 'confirm-membership' message.user.id 'approve' message.group.id %}" class="accept">Xác nhận</a>
+                                                    <a href="{% url 'confirm-membership' message.user.id 'reject' message.group.id %}" class="reject">Từ chối</a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                    {% if message.post %} 
-                                        <span>{{ message.post.created_at }}</span>
-                                    {% else %}
-                                        <div class="action">
-                                            {% if message.status == 'approved' %}
-                                                <p>Bạn đã xác nhận <i class="fa-solid fa-check" style="color: #0cca32;"></i></p>
-                                            {% elif message.status == 'rejected' %}
-                                                <p>Bạn đã từ chối <i class="fa-solid fa-xmark" style="color: #e51f29;"></i></p>
-                                            {% else %}
-                                                <a href="{% url 'confirm-membership' message.user.id 'approve' message.group.id %}" class="accept">Xác nhận</a>
-                                                <a href="{% url 'confirm-membership' message.user.id 'reject' message.group.id %}" class="reject">Từ chối</a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </li>
                         </div>
-                    </li>
-                    
+                    </div>
                 </ul>
             </div>
             <!-- user -->

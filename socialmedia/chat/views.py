@@ -210,8 +210,21 @@ class DeleteMembersRoomChat(View):
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')
 class DeletePrivateChat(View):
     def post(self, request, user_id):
-        user = get_object_or_404(User,id=user_id)
-        chatroom = ChatMessage.objects.filter(Q(sender=request.user, receiver=user) | Q(sender=user, receiver=request.user))
-        chatroom.delete()
-        return redirect('inbox')
+        receiver = get_object_or_404(User,id=user_id)
+        sender = request.user  # Thay bằng người gửi cụ thể
+
+        # Lấy tất cả các tin nhắn liên quan đến người gửi và người nhận
+        messages_to_delete = ChatMessage.objects.filter(sender=sender, receiver=receiver) | ChatMessage.objects.filter(sender=receiver, receiver=sender)
+
+        # Kiểm tra xem có tin nhắn nào để xóa hay không
+        if messages_to_delete.exists():
+            # Xóa tất cả các tin nhắn
+            messages_to_delete.delete()
+            # Tin nhắn đã được xóa thành công
+            return redirect('inbox')
+        else:
+            messages_to_delete.delete()
+            # Không có tin nhắn nào để xóa
+            # Thực hiện logic hoặc trả về thông báo tùy thuộc vào yêu cầu của bạn
+            return redirect('inbox')
         

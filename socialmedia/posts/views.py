@@ -26,7 +26,7 @@ def home1(request):
         )
         # Lấy các group_ids mà có thông báo
         group_ids_with_messages = memberships.values_list('group', flat=True)
-        messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+        messages = MessageGroup.objects.all()
 
         # danh sach bài viết 
         # Lấy danh sách những người dùng đã bị chặn bởi người dùng hiện tại
@@ -40,15 +40,29 @@ def home1(request):
                 Q(friendships1__user2=request.user, friendships1__status='friends') |
                 Q(friendships2__user1=request.user, friendships2__status='friends')
             ).exclude(
-        id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
         ).distinct()
         
 
         # Lấy những bài post mà người tạo không bị chặn
-        post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)).exclude(
+        post_list = Post.objects.filter( Q(user = request.user) |Q(user__in=following) | Q(user__in=friends)
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            user__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
         user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
         ).exclude( Q(comments__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)) |
-    Q(comments__replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))).order_by('-created_at')
+        Q(comments__replies__user__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True))|
+        Q(comments__user__in=Block.objects.filter(blocked_user=request.user).values_list('blocker__id', flat=True)) |
+        Q(comments__replies__user__in=Block.objects.filter(blocked_user=request.user).values_list('blocker__id', flat=True))
+        ).order_by('-created_at')
 
 
         # danh sách nhóm
@@ -58,9 +72,11 @@ def home1(request):
         # danh sách nhóm bị từ chối
         groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
         # danh sách nhom chưa tham gia
-        groups_not_joined = Group.objects.exclude(
-        Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-        )
+        if not groups_joined:
+            groups_not_joined = Group.objects.all()
+        else:
+            groups_not_joined = Group.objects.all().exclude(
+            Q(id__in=groups_joined) | Q (id__in = groups_rejected))
 
         invite_friends = Friendship.objects.filter(
             Q(user2=request.user, status='pending')
@@ -79,10 +95,18 @@ def home1(request):
         profiles = Profile.objects.all()
 
         suggest_friends = User.objects.exclude(
+            # Loại bỏ người dùng là bạn của người dùng hiện tại
             Q(friendships1__user2=request.user, friendships1__status='friends') |
             Q(friendships2__user1=request.user, friendships2__status='friends')
-        ).exclude(pk=request.user.id).exclude(
-        id__in=Block.objects.filter(Q(blocker=request.user)|Q(blocked_user=request.user))
+        ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
         )
 
         list_user = User.objects.all()
@@ -123,8 +147,17 @@ def friend(request):
  
 
     friends = User.objects.filter(
-            Q(friendships1__user2=request.user, friendships1__status='friends') |
-            Q(friendships2__user1=request.user, friendships2__status='friends')
+                Q(friendships1__user2=request.user, friendships1__status='friends') |
+                Q(friendships2__user1=request.user, friendships2__status='friends')
+            ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
         ).distinct()
     post_list = Post.objects.all().order_by('-created_at') 
     num_friends = friends.count()
@@ -134,7 +167,7 @@ def friend(request):
         status='requested'
     )
     group_ids_with_messages = memberships.values_list('group', flat=True)
-    messages = MessageGroup.objects.filter(group__in=group_ids_with_messages)
+    messages = MessageGroup.objects.all()
 
     profiles = Profile.objects.all()
     
@@ -156,8 +189,17 @@ def group(request):
 
     # bạn bè
     friends = User.objects.filter(
-            Q(friendships1__user2=request.user, friendships1__status='friends') |
-            Q(friendships2__user1=request.user, friendships2__status='friends')
+                Q(friendships1__user2=request.user, friendships1__status='friends') |
+                Q(friendships2__user1=request.user, friendships2__status='friends')
+            ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
         ).distinct()
     # danh sach nguoi dang theo doi
     following = Follow.objects.filter(followee=request.user).values_list('follower', flat=True)
@@ -179,10 +221,16 @@ def group(request):
     # danh sách nhóm bị từ chối
     groups_rejected = GroupMembership.objects.filter(user=request.user, status='rejected').values('group')
     # danh sách nhom chưa tham gia
-    groups_not_joined = Group.objects.exclude(
-    Q(id__in=groups_joined) | Q(id__in=groups_rejected)
-    ) 
-    # edit group post
+    
+    if not groups_joined:
+        groups_not_joined = Group.objects.all()
+    else:
+        groups_not_joined = Group.objects.all().exclude(
+        Q(id__in=groups_joined) | Q (id__in = groups_rejected)
+        )
+
+
+      # edit group post
     group_post_list = GroupPost.objects.all().order_by('-created_at')
     post_forms = []
     for post in group_post_list:
@@ -199,11 +247,19 @@ def group(request):
     profiles = Profile.objects.all()
 
     suggest_friends = User.objects.exclude(
-        Q(friendships1__user2=request.user, friendships1__status='friends') |
-        Q(friendships2__user1=request.user, friendships2__status='friends')
-    ).exclude(pk=request.user.id).exclude(
-    id__in=Block.objects.filter(blocker=request.user).values_list('blocked_user__id', flat=True)
-    )
+            # Loại bỏ người dùng là bạn của người dùng hiện tại
+            Q(friendships1__user2=request.user, friendships1__status='friends') |
+            Q(friendships2__user1=request.user, friendships2__status='friends')
+        ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=request.user.id
+        )
 
 
     return render(request, 'groups.html', {'messages': messages,'friends':friends, 'post_list':post_list, 'group_list':group_list, 'group_post':group_post, 'groups_not_joined':groups_not_joined ,'user_groups':user_groups, 'post_forms':post_forms, 'profiles':profiles, 'invite_friends':invite_friends, 'suggest_friends':suggest_friends})
@@ -306,7 +362,7 @@ class EditCommentView(View):
         comment = get_object_or_404(Comment, pk=comment_id)
 
         if request.user == comment.user :
-            form = CommentForm(request.POST, instance=comment)
+            form = CommentForm(request.POST, request.FILES, instance=comment)
 
             if form.is_valid():
                 form.save()
@@ -397,6 +453,28 @@ class ConfirmMembershipView(View):
             membership.save()
 
             message.status = 'approved'
+            message.delete()
+
+        elif action == 'reject':
+            membership.status = 'rejected'
+            membership.save()
+
+            message.status = 'rejected'
+            message.delete()
+        
+        # Chuyển hướng về trang gốc, chẳng hạn là trang chứa danh sách yêu cầu
+        return redirect('home')
+    
+    def post(self,request, user_id,group_id, action):
+        # Lấy thông tin Membership dựa trên membership_id
+        membership = GroupMembership.objects.get(user=user_id, group=group_id)
+        message = MessageGroup.objects.get(user=user_id, group=group_id)
+        
+        if action == 'approve':
+            membership.status = 'approved'
+            membership.save()
+
+            message.status = 'approved'
             message.save()
 
         elif action == 'reject':
@@ -431,15 +509,30 @@ class DeleteSharePost(View):
         else:
             # Xử lí khi người dùng không có quyền xóa
             return HttpResponse("Bạn không có quyền xóa bản ghi này.")
+    def post(self, request, share_id):
+        share = get_object_or_404(Share, id=share_id)
+        if share.user == request.user:  # Kiểm tra xem người dùng hiện tại có quyền xóa không
+            share.delete()
+            return redirect('profiles:profile', pk=request.user.id) # Điều hướng sau khi xóa
+        else:
+            # Xử lí khi người dùng không có quyền xóa
+            return HttpResponse("Bạn không có quyền xóa bản ghi này.")
 
 def search(request):
     query = request.GET.get('q', '')
     
     # Tìm kiếm bài post theo title hoặc content
-    post_results = Post.objects.filter(Q(title__icontains=query) | Q(content__icontains=query) | Q(user__username__icontains=query))
+
+    post_results = Post.objects.filter(Q(title__icontains=query) | Q(content__icontains=query) | Q(user__username__icontains=query)).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            user__id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).distinct()
     
     # Tìm kiếm người dùng theo username
-    user_results = User.objects.filter(username__icontains=query)
+    user_results = User.objects.filter(username__icontains=query).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=request.user).values('blocker')
+        ).distinct()
     
     # Tìm kiếm nhóm theo tên nhóm
     group_results = Group.objects.filter(name__icontains=query)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AddPostView, search, home1, friend, group, Like_Post, ConfirmMembershipView, AddCommentView, DeleteCommentView, EditCommentView, AddReplyView, DeleteReplyView, EditReplyView, SharePostView, DeletePost, EditPostView
+from .views import AddPostView, search, home1, friend, group, Like_Post, DeleteSharePost, ConfirmMembershipView, AddCommentView, DeleteCommentView, EditCommentView, AddReplyView, DeleteReplyView, EditReplyView, SharePostView, DeletePost, EditPostView
 
 urlpatterns = [
     path('', home1, name='home'),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('edit_reply/<int:reply_id>/', EditReplyView.as_view(), name='edit_reply'),
     path('confirm-membership/<int:user_id>/<str:action>/<int:group_id>/', ConfirmMembershipView.as_view(), name='confirm-membership'),
     path('share-post/<int:post_id>/', SharePostView.as_view(), name='share_post'),
+    path('delete-share-post/<int:share_id>/', DeleteSharePost.as_view(), name='delete_share_post'),
     path('delete-post/<int:post_id>/', DeletePost.as_view(), name='delete_post'),
     path('edit-post/<int:post_id>/', EditPostView.as_view(), name='edit_post'),
     path('search/', search, name='search'),

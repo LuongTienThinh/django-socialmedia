@@ -251,13 +251,18 @@
                                     <button class="input-group-text" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="margin: 5px; padding: 1rem;">
                                         <i class="fa fa-image"></i>
                                     </button>
+                                    <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="dropdownMenuButton" style="width: 10%;">
+                                        <li>
+                                            <label class="file-label1" for="image">Hình ảnh</label>
+                                            <input class="btn-add-file" value="Đính kèm" type="file" name="image" accept="image/*" id="file-image">
+                                        </li>
+                                        <li>
+                                            <label class="file-label2" for="video">Video</label>
+                                            <input class="btn-add-file" value="Đính kèm" type="file" name="video" accept="video/*" id="file-video">
+                                        </li>
+                                    </ul>
                                     <input type="text" class="form-control" id="chat-input" placeholder="Enter text here...">      
-                                    <ul class="dropdown-menu dropdown-menu-start  w-25" aria-labelledby="dropdownMenuButton" style="width: fit-content;">
-                                        <label for="image">image</label>
-                                        <input type="file" name="image"  accept="image/*" id="file-image">
-                                        <label for="video">video</label>
-                                        <input type="file" name="video"  accept="video/*" id="file-video">   
-                                    </ul>                            
+                               
                                     <button class="input-group-text" style="margin: 5px; padding: 1rem;" id="send-btn">
                                     <i class="fa fa-send"></i>
                                     </button>
@@ -312,10 +317,10 @@
                     chatMessage +='</div>'
                     chatMessage +='<div class="message other-message float-right">' + message 
                     if(image){
-                        chatMessage += '<img src="' + image + '" alt="" style="width: 300px;"></div>';
+                        chatMessage += '<br><img src="' + image + '" alt="" style="width: 300px;"></div>';
                     }
                     if(video){
-                        chatMessage += '<video controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video></div>' ;                            
+                        chatMessage += '<br><video controls style="width: 300px;"><source src='+ video + ' type="video/mp4"> </video></div>' ;                            
                     }    
                     chatMessage +='</li>'
 
@@ -334,10 +339,10 @@
                     chatMessage +='</div>'
                     chatMessage +='<div class="message my-message ">' + message + '</div>'
                     if(image){
-                        chatMessage += '<img src="' + image + '" alt="" style="width: 100px;">';
+                        chatMessage += '<br><img src="' + image + '" alt="" style="width: 100px;">';
                     }
                     if(video){
-                        chatMessage += '<video controls><source src='+ video + ' type="video/mp4"> </video>' ;                            
+                        chatMessage += '<br><video controls><source src='+ video + ' type="video/mp4"> </video>' ;                            
                     }    
                     chatMessage +='</li>'
 
@@ -353,7 +358,7 @@
             console.log('WebSocket connection closed.');
         }
 
-        $('#send-btn').on('click', function() {
+        function submitMessage() {
             var input = $('#chat-input');
             var message = input.val();
             var receiver = "{{ receiver_user.username }}"
@@ -387,17 +392,29 @@
                 };
                 socket.send(JSON.stringify(data));
             }
+
             
             input.val('');
             $('#file-image').val('');
             $('#file-video').val('');
         
+        }
+
+        $('#send-btn').on('click', function() {
+            submitMessage()
             var sendButton = $('#send-btn');       
             $(".chat-history").scrollTop(100000000000);
                 });
         
-            });   
+                
+        $('#chat-input').keyup(function(e) {
+            if(e.which == 13) {
+                submitMessage();
+            }
+        });   
+    });
            
+
         $(document).ready(function() {
             $(".chat-history").scrollTop(100000000000);
         });     

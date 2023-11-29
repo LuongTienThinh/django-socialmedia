@@ -43,7 +43,20 @@ class ProfileDetailView(DetailView):
         friends = User.objects.filter(
             Q(friendships1__user2=self.object.user, friendships1__status='friends') |
             Q(friendships2__user1=self.object.user, friendships2__status='friends')
+        ).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=self.request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=self.request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=self.request.user.id
         ).distinct()
+        
+
+
+
         num_friends = friends.count()
         user_post_list = Post.objects.filter(user=self.object.user).order_by('-created_at')
         shared_posts = Share.objects.filter(user=self.object.user).order_by('-shared_at')
@@ -88,8 +101,27 @@ class ProfileDetailView(DetailView):
         # danh sách người dùng bị chặn
         user_block_list = Block.objects.filter(blocker = self.request.user)
 
-        follows = Follow.objects.filter(follower=self.object.user)
-        following = Follow.objects.filter(followee=self.object.user)
+        follows = Follow.objects.filter(follower=self.object.user).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=self.request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=self.request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=self.request.user.id
+        ).distinct()
+        
+        following = Follow.objects.filter(followee=self.object.user).exclude(
+            # Loại bỏ người dùng đã chặn người dùng hiện tại
+            id__in=Block.objects.filter(blocker=self.request.user).values('blocked_user')
+        ).exclude(
+            # Loại bỏ người dùng đã bị người dùng hiện tại chặn
+            id__in=Block.objects.filter(blocked_user=self.request.user).values('blocker')
+        ).exclude(
+            # Loại bỏ người dùng hiện tại
+            pk=self.request.user.id
+        ).distinct()
         can_follow = Follow.objects.filter(Q(followee=self.request.user,follower=self.object.user))
         
         context['friends'] = friends
@@ -131,6 +163,7 @@ class AddPostView(View):
             post.save()  # Lưu bài viết vào cơ sở dữ liệu   
             return redirect('profiles:profile', pk=request.user.id)
         return render(request, self.template_name, {'form': form}, pk=request.user.id)
+    
 
 # delete post
 @method_decorator(login_required(login_url='/auth/login/'), name='dispatch')

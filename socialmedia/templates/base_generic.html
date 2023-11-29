@@ -158,26 +158,35 @@
                 hiddenLess.id = `hidden-less-${i}`;
                 hiddenLess.classList.add('hidden-less', 'text-info', 'text-decoration-underline');
                 hiddenLesses.push(hiddenLess);
+            } else {
+                showMores.push({});
+                hiddenLesses.push({});
             }
         });
 
         showMores.forEach(e => {
-            const pos = e.id.split('-').reverse()[0];
-            e.addEventListener('click', () => {
-                postContent[pos].innerHTML = content[pos];
-                showMores[pos].remove();
-                postContent[pos].parentNode.appendChild(hiddenLesses[pos]);
-                linkInPost();
-            });
+            console.log(e);
+            if (e.id) {
+                const pos = e.id.split('-').reverse()[0];
+                e.addEventListener('click', () => {
+                    postContent[pos].innerHTML = content[pos];
+                    showMores[pos].remove();
+                    postContent[pos].parentNode.appendChild(hiddenLesses[pos]);
+                    linkInPost();
+                });
+            }
         });
 
         hiddenLesses.forEach(e => {
-            const pos = e.id.split('-').reverse()[0];
-            e.addEventListener('click', () => {
-                postContent[pos].innerHTML = content[pos].substring(0, maxLength) + `...`;
-                hiddenLesses[pos].remove();
-                postContent[pos].parentNode.appendChild(showMores[pos]);
-            });
+            console.log(e);
+            if (e.id) {
+                const pos = e.id.split('-').reverse()[0];
+                e.addEventListener('click', () => {
+                    postContent[pos].innerHTML = content[pos].substring(0, maxLength) + `...`;
+                    hiddenLesses[pos].remove();
+                    postContent[pos].parentNode.appendChild(showMores[pos]);
+                });
+            }
         });
         const user_receiver = document.getElementById('user-item').innerHTML;
         console.log( "receiver"+  user_receiver);

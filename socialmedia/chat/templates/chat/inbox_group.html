@@ -529,7 +529,7 @@
             console.log('WebSocket connection closed.');
         }
 
-        $('#send-btn').on('click', function() {
+        function submitMessage() {
             var input = $('#chat-input');
             var message = input.val();
             var room = "{{ room.name }}"
@@ -568,10 +568,21 @@
             $('#file-image').val('');
             $('#file-video').val('');
         
+        }
+
+        $('#send-btn').on('click', function() {
+            
+            submitMessage();
             var sendButton = $('#send-btn');    
             $(".chat-history").scrollTop(100000000000);       
             
         });
+        $('#chat-input').keyup(function(e) {
+            if(e.which == 13) {
+                submitMessage();
+            }
+        });   
+
         $(document).ready(function() {
             $(".chat-history").scrollTop(100000000000);
         });     

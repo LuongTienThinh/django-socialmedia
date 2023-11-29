@@ -512,6 +512,10 @@ ul.func a:hover,
     background: #f0f0f0;
 }
 
+.modal-body.custom-scrollbar > * {
+    margin: 1rem 0;
+}
+
 .modal-footer .dropdown-menu {
     width: 100%;
 }

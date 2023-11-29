@@ -4,6 +4,36 @@
     margin-top: 70px;
     height: calc(100vh - 70px);
 }
+.btn-add-file {
+    background-color: transparent !important;
+    opacity: 0;
+    padding: 0;
+    cursor: pointer;
+}
+.file-label1{
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+.file-label2{
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+}
+.btn-add-file input:hover {
+    background-color: var(--light);
+}
+.file-label1:hover {
+    background-color: var(--light);
+}
 
 .chat-app {
     background: var(--light);

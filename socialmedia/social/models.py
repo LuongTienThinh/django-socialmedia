@@ -97,6 +97,7 @@ class Block(models.Model):
 class GroupComment(models.Model):
     content = models.TextField()
     post = models.ForeignKey(GroupPost, related_name='group_comments', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='group_comments/images/', blank=True, null=True)
     user = models.ForeignKey(User, related_name='group_comments', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self) :

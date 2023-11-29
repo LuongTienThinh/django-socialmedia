@@ -34,7 +34,7 @@ class GroupPostForm(forms.ModelForm):
 class GroupCommentForm(forms.ModelForm):
     class Meta:
         model = GroupComment
-        fields = ('content',)
+        fields = ('content','image',)
 
 class GroupReplyForm(forms.ModelForm):
     class Meta:
